@@ -37,19 +37,21 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 		return;
 	toupper(m_ircddbUsername);
 	get_value(cfg, "ircddb.password", m_ircddbPassword, 1, 30, "");
+	lprint("IRCDDB: calsign='%s' address='%s' host='%s' user='%s' password='%s'", m_callsign, m_address, m_ircddbHostname, m_ircddbUsername, m_ircddbPassword);
 
 	// module parameters
 	for (int i=1; i<=15; i++) {
 		char key[32];
 		std::string basename, subscribe, unsubscribe;
 		sprintf(key, "module.%d.basename", i);
-		if (! get_value(cfg, key, basename, 1, 7, "STN999"))
-			continue;
-		toupper(basename);
-		if (! isalnum(basename[0])) {
-			lprint("Malformed basename for module %d", i);
+		if (! get_value(cfg, key, basename, 1, 7, ""))
 			basename.empty();
-			continue;
+		else {
+			toupper(basename);
+			if (! isalnum(basename[0])) {
+				lprint("Malformed basename for module %d", i);
+				basename.empty();
+			}
 		}
 		
 		sprintf(key, "module.%d.band", i);
@@ -57,7 +59,7 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 		toupper(module[i].band);
 		if (! isalpha(module[i].band[0])) {
 			lprint("Module %d band is not a letter", i);
-			return;
+			basename.empty();
 		}
 		
 		sprintf(key, "module.%d,subscribe", i);
@@ -65,19 +67,23 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 		toupper(subscribe);
 		if (subscribe[0] != ' ' && ('A' > subscribe[0] || subscribe[0] > 'Z')) {
 			lprint("subscribe suffix not space or letter");
-			return;
+			basename.empty();
 		}
 		sprintf(key, "module.%d.unsubscribe", i);
 		get_value(cfg, key, unsubscribe, 1, 1, "T");
 		toupper(unsubscribe);
 		if ('A' > unsubscribe[0] || unsubscribe[0] > 'Z') {
 			lprint("unsubscribe suffix not a letter");
-			return;
+			basename.empty();
 		}
 		if (! subscribe.compare(unsubscribe)) {
 			// subscribe and unsubscribe suffix needs to be different
 			lprint("subscribe and unsubscribe for %s are identical", basename);
-			return;
+			basename.empty();
+		}
+		if (0 == basename.size()) {
+			module[i].callsign.empty();
+			continue;
 		}
 
 		// pad basename with spaces
@@ -113,7 +119,7 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 		sprintf(key, "module.%d.reflector", i);
 		if (! get_value(cfg, key, basename, 8, 8, "")) {
 			lprint("reflector %d must be undefined or exactly 8 chars!", i);
-			return;
+			basename.empty();
 		}
 		if (basename.size()) {
 			toupper(basename);
@@ -123,12 +129,16 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 			else
 				module[i].reflector.empty();
 		}
+		lprint("Module %d: callsign='%s' unsubscribe='%s' info='%s' permanent='%s' usertimeout=%d grouptimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'",
+			i, module[i].callsign, module[i].logoff, module[i].info, module[i].permanent, module[i].usertimeout, module[i].grouptimeout,
+			SCS_GROUP_CALLSIGN==module[i].callsignswitch ? "Group" : "User",
+			module[i].txmsgswitch ? "true" : "false", module[i].reflector);
 	}
 
 	// remote control
 	get_value(cfg, "remote.enabled", m_remoteEnabled, false);
 	if (m_remoteEnabled) {
-		get_value(cfg, "remote.password", m_remotePassword, 6, 30, "pa55w0rd");
+		get_value(cfg, "remote.password", m_remotePassword, 6, 30, "");
 		int ivalue;
 		get_value(cfg, "remote.port", ivalue, 1000, 65000, 32156);
 		m_remotePort = (unsigned int)ivalue;
@@ -137,10 +147,12 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 		m_x = (unsigned int)ivalue;
 		get_value(cfg, "remote.windowY", ivalue, 0, 2000, 0);
 		m_y = (unsigned int)ivalue;
+		lprint("Remote enabled: password='%s', port=%d, logEnabled=%s windowX=%d windowY=%d", m_remotePassword, m_remotePort, m_logEnabled?"true":"false", m_x, m_y);
 	} else {
 		m_remotePort = m_x = m_y = 0U;
 		m_remotePassword.empty();
 		m_logEnabled = false;
+		lprint("Remote disabled");
 	}
 }
 

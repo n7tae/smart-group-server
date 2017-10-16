@@ -4,7 +4,7 @@
 #include <ctime>
 #include <string>
 #include <iterator>
-#include <ctype>
+#include <cstring>
 
 #include "Utilities.h"
 
