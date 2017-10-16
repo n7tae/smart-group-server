@@ -6,7 +6,7 @@ LOGDIR=/var/log
 CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DDATA_DIR=$(CFGDIR) -DDEXTRA_LINK
 LDFLAGS=-L/usr/lib -lconfig++
 
-OBJS = AMBEData.o CCITTChecksum.o HeaderData.o SmartServerConfig.o RemoteStarNetUser.o RemoteStarNetGroup.o UDPReaderWriter.o Utilities.o Utils.o
+OBJS = AMBEData.o CCITTChecksum.o G2ProtocolHandler.o HeaderData.o SmartServerConfig.o RemoteStarNetUser.o RemoteStarNetGroup.o UDPReaderWriter.o Utilities.o Utils.o
 
 smartgroup : $(OBJS)
 
@@ -15,6 +15,9 @@ AMBEData.o : AMBEData.cpp AMBEData.h DStarDefines.h Utils.h
 
 CCITTChecksum.o : CCITTChecksum.cpp CCITTChecksum.h Utils.h
 	g++ -c $(CPPFLAGS) CCITTChecksum.cpp
+
+G2ProtocolHandler.o : G2ProtocolHandler.cpp G2ProtocolHandler.h UDPReaderWriter.h Utils.h HeaderData.h AMBEData.h
+	g++ -c $(CPPFLAGS) G2ProtocolHandler.cpp
 
 HeaderData.o : HeaderData.cpp HeaderData.h CCITTChecksum.h DStarDefines.h Utils.h
 	g++ -c $(CPPFLAGS) HeaderData.cpp
