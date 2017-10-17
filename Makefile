@@ -6,7 +6,7 @@ LOGDIR=/var/log
 CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DDATA_DIR=$(CFGDIR) -DDEXTRA_LINK
 LDFLAGS=-L/usr/lib -lconfig++
 
-OBJS = AMBEData.o CacheManager.o CCITTChecksum.o G2ProtocolHandler.o GatewayCache.o HeaderData.o SmartServerConfig.o RemoteStarNetUser.o RemoteStarNetGroup.o RepeaterCache.o TextCollector.o UserCache.o UDPReaderWriter.o Utilities.o Utils.o
+OBJS = AMBEData.o CacheManager.o CCITTChecksum.o G2ProtocolHandler.o GatewayCache.o HeaderData.o SmartServerConfig.o RemoteStarNetUser.o RemoteStarNetGroup.o RepeaterCache.o TextCollector.o Timer.o UserCache.o UDPReaderWriter.o Utilities.o Utils.o
 
 smartgroup : $(OBJS)
 
@@ -42,6 +42,9 @@ RepeaterCache.o : RepeaterCache.cpp RepeaterCache.h
 
 TextCollector.o : TextCollector.cpp TextCollector.h DStarDefines.h Utils.h
 	g++ -c $(CPPFLAGS) TextCollector.cpp
+
+Timer.o : Timer.cpp Timer.h
+	g++ -c $(CPPFLAGS) Timer.cpp
 
 UDPReaderWriter.o : UDPReaderWriter.cpp Utilities.h
 	g++ -c $(CPPFLAGS) UDPReaderWriter.cpp
