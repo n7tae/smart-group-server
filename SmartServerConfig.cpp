@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "Utilities.h"
+#include "Utils.h"
 #include "SmartServerConfig.h"
 
 
@@ -10,7 +10,7 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 {
 	
 	if (pathname.size() < 1) {
-		lprint("Configuration filename too short!");
+		CUtils::lprint("Configuration filename too short!");
 		return;
 	}
 
@@ -19,25 +19,25 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 		cfg.readFile(pathname.c_str());
 	}
 	catch(const FileIOException &fioex) {
-		lprint("Can't read %s\n", pathname.c_str());
+		CUtils::lprint("Can't read %s\n", pathname.c_str());
 		return;
 	}
 	catch(const ParseException &pex) {
-		lprint("Parse error at %s:%d - %s\n", pex.getFile(), pex.getLine(), pex.getError());
+		CUtils::lprint("Parse error at %s:%d - %s\n", pex.getFile(), pex.getLine(), pex.getError());
 		return;
 	}
 
 	if (! get_value(cfg, "ircddb.callsign", m_callsign, 3, 8, "ABXCDE"))
 		return;
-	toupper(m_callsign);
+	CUtils::ToUpper(m_callsign);
 	get_value(cfg, "ircddb.address", m_address, 0, 20, "");
 	if (! get_value(cfg, "ircddb.hostname", m_ircddbHostname, 5, 30, "rr.openquad.net"))
 		return;
 	if (! get_value(cfg, "ircddb.username", m_ircddbUsername, 3, 8, "ABXCDE"))
 		return;
-	toupper(m_ircddbUsername);
+	CUtils::ToUpper(m_ircddbUsername);
 	get_value(cfg, "ircddb.password", m_ircddbPassword, 1, 30, "");
-	lprint("IRCDDB: calsign='%s' address='%s' host='%s' user='%s' password='%s'", m_callsign, m_address, m_ircddbHostname, m_ircddbUsername, m_ircddbPassword);
+	CUtils::lprint("IRCDDB: calsign='%s' address='%s' host='%s' user='%s' password='%s'", m_callsign, m_address, m_ircddbHostname, m_ircddbUsername, m_ircddbPassword);
 
 	// module parameters
 	for (int i=1; i<=15; i++) {
@@ -47,38 +47,38 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 		if (! get_value(cfg, key, basename, 1, 7, ""))
 			basename.empty();
 		else {
-			toupper(basename);
+			CUtils::ToUpper(basename);
 			if (! isalnum(basename[0])) {
-				lprint("Malformed basename for module %d", i);
+				CUtils::lprint("Malformed basename for module %d", i);
 				basename.empty();
 			}
 		}
 		
 		sprintf(key, "module.%d.band", i);
 		get_value(cfg, key, module[i].band, 1, 1, "A");
-		toupper(module[i].band);
+		CUtils::ToUpper(module[i].band);
 		if (! isalpha(module[i].band[0])) {
-			lprint("Module %d band is not a letter", i);
+			CUtils::lprint("Module %d band is not a letter", i);
 			basename.empty();
 		}
 		
 		sprintf(key, "module.%d,subscribe", i);
 		get_value(cfg, key, subscribe, 1, 1, "A");
-		toupper(subscribe);
+		CUtils::ToUpper(subscribe);
 		if (subscribe[0] != ' ' && ('A' > subscribe[0] || subscribe[0] > 'Z')) {
-			lprint("subscribe suffix not space or letter");
+			CUtils::lprint("subscribe suffix not space or letter");
 			basename.empty();
 		}
 		sprintf(key, "module.%d.unsubscribe", i);
 		get_value(cfg, key, unsubscribe, 1, 1, "T");
-		toupper(unsubscribe);
+		CUtils::ToUpper(unsubscribe);
 		if ('A' > unsubscribe[0] || unsubscribe[0] > 'Z') {
-			lprint("unsubscribe suffix not a letter");
+			CUtils::lprint("unsubscribe suffix not a letter");
 			basename.empty();
 		}
 		if (! subscribe.compare(unsubscribe)) {
 			// subscribe and unsubscribe suffix needs to be different
-			lprint("subscribe and unsubscribe for %s are identical", basename);
+			CUtils::lprint("subscribe and unsubscribe for %s are identical", basename);
 			basename.empty();
 		}
 		if (0 == basename.size()) {
@@ -97,7 +97,7 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 
 		sprintf(key, "module.%d.permanent", i);
 		get_value(cfg, key, module[i].permanent, 0, 8, "");
-		toupper(module[i].permanent);
+		CUtils::ToUpper(module[i].permanent);
 
 		int ivalue;
 		sprintf(key, "module.%d.usertimout", i);
@@ -118,18 +118,18 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 
 		sprintf(key, "module.%d.reflector", i);
 		if (! get_value(cfg, key, basename, 8, 8, "")) {
-			lprint("reflector %d must be undefined or exactly 8 chars!", i);
+			CUtils::lprint("reflector %d must be undefined or exactly 8 chars!", i);
 			basename.empty();
 		}
 		if (basename.size()) {
-			toupper(basename);
+			CUtils::ToUpper(basename);
 			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS"))
 							&& isdigit(basename[3]) && isdigit(basename[4]) && isdigit(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
 				module[i].reflector = basename;
 			else
 				module[i].reflector.empty();
 		}
-		lprint("Module %d: callsign='%s' unsubscribe='%s' info='%s' permanent='%s' usertimeout=%d grouptimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'",
+		CUtils::lprint("Module %d: callsign='%s' unsubscribe='%s' info='%s' permanent='%s' usertimeout=%d grouptimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'",
 			i, module[i].callsign, module[i].logoff, module[i].info, module[i].permanent, module[i].usertimeout, module[i].grouptimeout,
 			SCS_GROUP_CALLSIGN==module[i].callsignswitch ? "Group" : "User",
 			module[i].txmsgswitch ? "true" : "false", module[i].reflector);
@@ -147,12 +147,12 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 		m_x = (unsigned int)ivalue;
 		get_value(cfg, "remote.windowY", ivalue, 0, 2000, 0);
 		m_y = (unsigned int)ivalue;
-		lprint("Remote enabled: password='%s', port=%d, logEnabled=%s windowX=%d windowY=%d", m_remotePassword, m_remotePort, m_logEnabled?"true":"false", m_x, m_y);
+		CUtils::lprint("Remote enabled: password='%s', port=%d, logEnabled=%s windowX=%d windowY=%d", m_remotePassword, m_remotePort, m_logEnabled?"true":"false", m_x, m_y);
 	} else {
 		m_remotePort = m_x = m_y = 0U;
 		m_remotePassword.empty();
 		m_logEnabled = false;
-		lprint("Remote disabled");
+		CUtils::lprint("Remote disabled");
 	}
 }
 
@@ -167,7 +167,7 @@ bool CSmartServerConfig::get_value(const Config &cfg, const char *path, int &val
 			value = default_value;
 	} else
 		value = default_value;
-	lprint("%s = [%u]\n", path, value);
+	CUtils::lprint("%s = [%u]\n", path, value);
 	return true;
 }
 
@@ -175,7 +175,7 @@ bool CSmartServerConfig::get_value(const Config &cfg, const char *path, bool &va
 {
 	if (! cfg.lookupValue(path, value))
 		value = default_value;
-	lprint("%s = [%s]\n", path, value ? "true" : "false");
+	CUtils::lprint("%s = [%s]\n", path, value ? "true" : "false");
 	return true;
 }
 
@@ -184,12 +184,12 @@ bool CSmartServerConfig::get_value(const Config &cfg, const char *path, std::str
 	if (cfg.lookupValue(path, value)) {
 		int l = value.length();
 		if (l<min || l>max) {
-			lprint("%s is invalid\n", path, value.c_str());
+			CUtils::lprint("%s is invalid\n", path, value.c_str());
 			return false;
 		}
 	} else
 		value = default_value;
-	lprint("%s = [%s]\n", path, value.c_str());
+	CUtils::lprint("%s = [%s]\n", path, value.c_str());
 	return true;
 }
 

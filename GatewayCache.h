@@ -3,7 +3,7 @@
 #pragma once
 
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -76,5 +76,5 @@ public:
 	unsigned int getCount() const;
 
 private:
-	std::map<std::string, CGatewayRecord *> m_cache;
+	std::unordered_map<std::string, CGatewayRecord *> m_cache;
 };

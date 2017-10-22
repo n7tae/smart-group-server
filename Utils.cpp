@@ -14,8 +14,15 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
+#include <ctime>
+#include <string>
+#include <cctype>
+#include <iterator>
+#include <cstring>
 #include "Utils.h"
-#include "Utilities.h"
 
 void CUtils::dump(const char* title, const bool* data, unsigned int length)
 {
@@ -258,4 +265,45 @@ void CUtils::clean(std::string &str, const std::string& allowed)
 		if (n < 0)
 			str[i] = ' ';
 	}
+}
+
+void CUtils::lprint(const char *fmt,...)
+{
+	time_t ltime;
+	struct tm tm;
+	const short BFSZ = 512;
+	char buf[BFSZ];
+
+	time(&ltime);
+	localtime_r(&ltime, &tm);
+
+	snprintf(buf,BFSZ - 1,"%02d/%02d/%02d %d:%02d:%02d:",
+	         tm.tm_mon+1,tm.tm_mday,tm.tm_year % 100,
+	         tm.tm_hour,tm.tm_min,tm.tm_sec);
+
+	va_list args;
+	va_start(args,fmt);
+	vsnprintf(buf + strlen(buf), BFSZ - strlen(buf) -1, fmt, args);
+	va_end(args);
+
+	printf("%s", buf);
+	return;
+}
+
+std::string CUtils::ToUpper(std::string &str)
+{
+	for (auto it=str.begin(); it!=str.end(); it++) {
+		if (islower(*it))
+			*it = toupper(*it);
+	}
+	return str;
+}
+
+std::string CUtils::Trim(std::string &str)
+{
+	while (str.size() && std::isspace(str[0]))
+		str.erase(str.begin());
+	while (str.size() && std::isspace(str[str.size()-1]))
+		str.erase(--str.end());
+	return str;
 }

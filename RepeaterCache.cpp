@@ -8,7 +8,7 @@ CRepeaterCache::CRepeaterCache()
 
 CRepeaterCache::~CRepeaterCache()
 {
-	for (std::map<std::string, CRepeaterRecord *>::iterator it = m_cache.begin(); it != m_cache.end(); ++it)
+	for (std::unordered_map<std::string, CRepeaterRecord *>::iterator it = m_cache.begin(); it != m_cache.end(); ++it)
 		delete it->second;
 }
 

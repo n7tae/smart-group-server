@@ -8,7 +8,7 @@ CUserCache::CUserCache()
 
 CUserCache::~CUserCache()
 {
-	for (std::map<std::string, CUserRecord *>::iterator it = m_cache.begin(); it != m_cache.end(); ++it)
+	for (std::unordered_map<std::string, CUserRecord *>::iterator it = m_cache.begin(); it != m_cache.end(); ++it)
 		delete it->second;
 	m_cache.clear();
 }

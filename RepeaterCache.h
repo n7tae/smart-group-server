@@ -3,7 +3,7 @@
 #pragma once
 
 #include <string>
-#include <map>
+#include <unordered_map>
 
 class CRepeaterRecord {
 public:
@@ -45,5 +45,5 @@ public:
 	unsigned int getCount() const;
 
 private:
-	std::map<std::string, CRepeaterRecord *> m_cache;
+	std::unordered_map<std::string, CRepeaterRecord *> m_cache;
 };
