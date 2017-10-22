@@ -6,7 +6,7 @@ LOGDIR=/var/log
 CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DDATA_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
 LDFLAGS=-L/usr/lib -lconfig++
 
-OBJS = AMBEData.o AnnouncementUnit.o APRSCollector.o APRSWriter.o APRSWriterThread.o AudioUnit.o CacheManager.o CallsignList.o CCITTChecksum.o ConnectData.o DDData.o DExtraProtocolHandler.o DPlusProtocolHandler.o DRATSServer.o DVTOOLFileReader.o G2ProtocolHandler.o GatewayCache.o HeaderData.o HeaderLogger.o HeardData.o IRCDDB.o PollData.o RemoteLinkData.o RemoteRepeaterData.o RemoteStarNetUser.o RemoteStarNetGroup.o RepeaterCache.o SlowDataEncoder.o SmartServerConfig.o StarNetHandler.o StatusData.o TCPReaderWriterClient.o TCPReaderWriterServer.o TextCollector.o TextData.o Timer.o UserCache.o UDPReaderWriter.o Utils.o
+OBJS = AMBEData.o AnnouncementUnit.o APRSCollector.o APRSWriter.o APRSWriterThread.o AudioUnit.o CacheManager.o CallsignList.o CCITTChecksum.o ConnectData.o DDData.o DExtraProtocolHandler.o DPlusProtocolHandler.o DRATSServer.o DVTOOLFileReader.o EchoUnit.o G2ProtocolHandler.o GatewayCache.o HeaderData.o HeaderLogger.o HeardData.o IRCDDB.o PollData.o RemoteLinkData.o RemoteRepeaterData.o RemoteStarNetUser.o RemoteStarNetGroup.o RepeaterCache.o SlowDataEncoder.o SmartServerConfig.o StarNetHandler.o StatusData.o TCPReaderWriterClient.o TCPReaderWriterServer.o TextCollector.o TextData.o Timer.o UserCache.o UDPReaderWriter.o Utils.o
 
 smartgroup : $(OBJS)
 
@@ -54,6 +54,9 @@ DRATSServer.o : DRATSServer.cpp DRATSServer.h DStarDefines.h Utils.h
 
 DVTOOLFileReader.o : DVTOOLFileReader.cpp DVTOOLFileReader.h DStarDefines.h
 	g++ -c $(CPPFLAGS) DVTOOLFileReader.cpp
+
+EchoUnit.o : EchoUnit.cpp EchoUnit.h DStarDefines.h Defs.h Utils.h
+	g++ -c $(CPPFLAGS) EchoUnit.cpp
 
 G2ProtocolHandler.o : G2ProtocolHandler.cpp G2ProtocolHandler.h UDPReaderWriter.h Utils.h HeaderData.h AMBEData.h
 	g++ -c $(CPPFLAGS) G2ProtocolHandler.cpp
@@ -140,6 +143,7 @@ DExtraProtocolHandler.h : UDPReaderWriter.h DStarDefines.h ConnectData.h HeaderD
 DPlusProtocolHandler.h : UDPReaderWriter.h DStarDefines.h ConnectData.h HeaderData.h AMBEData.h PollData.h
 DRATSServer.h : TCPReaderWriterServer.h RepeaterCallback.h HeaderData.h AMBEData.h Defs.h
 DVTOOLFileReader.h : HeaderData.h AMBEData.h
+EchoUnit.h : RepeaterCallback.h HeaderData.h AMBEData.h Timer.h
 HeardData.h : DStarDefines.h HeaderData.h
 HeaderLogger.h : HeaderData.h DDData.h
 PollData.h : Defs.h
