@@ -1,6 +1,6 @@
 /*
- *   Copyright (C) 2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (C) 2012,2013 by Jonathan Naylor G4KLX
+ *   Copyright (c) Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,30 +17,31 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "RemoteStarNetUser.h"
+#pragma once
 
-CRemoteStarNetUser::CRemoteStarNetUser(const std::string& callsign, uint32_t timer, uint32_t timeout) :
-m_callsign(callsign),
-m_timer(timer),
-m_timeout(timeout)
-{
-}
+#include <string>
 
-CRemoteStarNetUser::~CRemoteStarNetUser()
-{
-}
+class CDTMF {
+public:
+	CDTMF();
+	~CDTMF();
 
-std::string CRemoteStarNetUser::getCallsign() const
-{
-	return m_callsign;
-}
+	bool decode(const unsigned char* ambe, bool end);
 
-uint32_t CRemoteStarNetUser::getTimer() const
-{
-	return (uint32_t)m_timer;
-}
+	bool hasCommand() const;
 
-uint32_t CRemoteStarNetUser::getTimeout() const
-{
-	return (uint32_t)m_timeout;
-}
+	std::string translate();
+
+	void reset();
+
+private:
+	std::string  m_data;
+	std::string  m_command;
+	bool         m_pressed;
+	unsigned int m_releaseCount;
+	unsigned int m_pressCount;
+	char         m_lastChar;
+
+	std::string processReflector(const std::string& prefix, const std::string& command) const;
+	std::string processCCS(const std::string& command) const;
+};

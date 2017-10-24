@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2010,2011 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2012,2013 by Jonathan Naylor G4KLX
  *   Copyright (c) 2017 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -19,19 +19,37 @@
 
 #pragma once
 
-#include "SmartServerThread.h"
+#include <string>
 
-class CSmartServerAppD {
+#include "DCSProtocolHandler.h"
 
+class CDCSProtocolHandlerEntry {
 public:
-	CSmartServerAppD(const std::string &configFile);
-	~CSmartServerAppD();
+	CDCSProtocolHandler* m_handler;
+	unsigned int         m_port;
+	bool                 m_inUse;
+};
 
-	bool init();
+class CDCSProtocolHandlerPool {
+public:
+	CDCSProtocolHandlerPool(unsigned int n, unsigned int port, const std::string& addr = std::string(""));
+	~CDCSProtocolHandlerPool();
 
-	void run();
+	bool open();
+
+	CDCSProtocolHandler* getHandler(unsigned int port = 0U);
+	void release(CDCSProtocolHandler* handler);
+
+	DCS_TYPE      read();
+	CAMBEData*    readData();
+	CPollData*    readPoll();
+	CConnectData* readConnect();
+
+	void close();
 
 private:
-	CSmartServerThread *m_thread;
-	bool createThread();
+	CDCSProtocolHandlerEntry* m_pool;
+	unsigned int              m_n;
+	unsigned int              m_index;
 };
+

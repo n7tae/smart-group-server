@@ -159,7 +159,7 @@ protected:
 #else
 	CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch);
 #endif
-	~CStarNetHandler();
+	virtual ~CStarNetHandler();
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	void linkInt();
@@ -212,5 +212,3 @@ private:
 	void sendToRepeaters(CAMBEData& data) const;
 	void sendAck(const CUserData& user, const std::string& text) const;
 };
-
-#endif

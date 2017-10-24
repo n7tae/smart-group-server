@@ -116,7 +116,7 @@ void CEchoUnit::clock(unsigned int ms)
 
 	if (m_status == ES_TRANSMIT) {
 		auto now = std::chrono::high_resolution_clock::now();
-		auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - m_time);
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_time);
 		unsigned int needed = elapsed.count() / DSTAR_FRAME_TIME_MS;
 
 		while (m_out < needed) {

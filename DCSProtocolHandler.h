@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2010,2011 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2012,2013 by Jonathan Naylor G4KLX
  *   Copyright (c) 2017 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -19,40 +19,51 @@
 
 #pragma once
 
+#include <netinet/in.h>
+#include <string>
+
 #include "UDPReaderWriter.h"
 #include "DStarDefines.h"
-#include "HeaderData.h"
+#include "ConnectData.h"
 #include "AMBEData.h"
+#include "PollData.h"
 
-enum G2_TYPE {
-	GT_NONE,
-	GT_HEADER,
-	GT_AMBE
+enum DCS_TYPE {
+	DC_NONE,
+	DC_DATA,
+	DC_POLL,
+	DC_CONNECT
 };
 
-class CG2ProtocolHandler {
+class CDCSProtocolHandler {
 public:
-	CG2ProtocolHandler(unsigned int port, const std::string& addr = std::string(""));
-	~CG2ProtocolHandler();
+	CDCSProtocolHandler(unsigned int port, const std::string& addr = std::string(""));
+	~CDCSProtocolHandler();
 
 	bool open();
 
-	bool writeHeader(const CHeaderData& header);
-	bool writeAMBE(const CAMBEData& data);
+	unsigned int getPort() const;
 
-	G2_TYPE read();
-	CHeaderData* readHeader();
-	CAMBEData*   readAMBE();
+	bool writeData(const CAMBEData& data);
+	bool writeConnect(const CConnectData& connect);
+	bool writePoll(const CPollData& poll);
+
+	DCS_TYPE      read();
+	CAMBEData*    readData();
+	CPollData*    readPoll();
+	CConnectData* readConnect();
 
 	void close();
 
 private:
 	CUDPReaderWriter m_socket;
-	G2_TYPE          m_type;
+	DCS_TYPE         m_type;
 	unsigned char*   m_buffer;
 	unsigned int     m_length;
-	in_addr          m_address;
-	unsigned int     m_port;
+	in_addr          m_yourAddress;
+	unsigned int     m_yourPort;
+	unsigned int     m_myPort;
 
 	bool readPackets();
 };
+

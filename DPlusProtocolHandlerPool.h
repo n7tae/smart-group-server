@@ -1,6 +1,5 @@
 /*
- *   Copyright (C) 2010,2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (C) 2012,2013 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,40 +18,37 @@
 
 #pragma once
 
-#include "UDPReaderWriter.h"
-#include "DStarDefines.h"
-#include "HeaderData.h"
-#include "AMBEData.h"
+#include <string>
 
-enum G2_TYPE {
-	GT_NONE,
-	GT_HEADER,
-	GT_AMBE
+#include "DPlusProtocolHandler.h"
+
+class CDPlusProtocolHandlerEntry {
+public:
+	CDPlusProtocolHandler* m_handler;
+	unsigned int           m_port;
+	bool                   m_inUse;
 };
 
-class CG2ProtocolHandler {
+class CDPlusProtocolHandlerPool {
 public:
-	CG2ProtocolHandler(unsigned int port, const std::string& addr = std::string(""));
-	~CG2ProtocolHandler();
+	CDPlusProtocolHandlerPool(unsigned int n, unsigned int port, const std::string& addr = std::string(""));
+	~CDPlusProtocolHandlerPool();
 
 	bool open();
 
-	bool writeHeader(const CHeaderData& header);
-	bool writeAMBE(const CAMBEData& data);
+	CDPlusProtocolHandler* getHandler(unsigned int port = 0U);
+	void release(CDPlusProtocolHandler* handler);
 
-	G2_TYPE read();
-	CHeaderData* readHeader();
-	CAMBEData*   readAMBE();
+	DPLUS_TYPE    read();
+	CHeaderData*  readHeader();
+	CAMBEData*    readAMBE();
+	CPollData*    readPoll();
+	CConnectData* readConnect();
 
 	void close();
 
 private:
-	CUDPReaderWriter m_socket;
-	G2_TYPE          m_type;
-	unsigned char*   m_buffer;
-	unsigned int     m_length;
-	in_addr          m_address;
-	unsigned int     m_port;
-
-	bool readPackets();
+	CDPlusProtocolHandlerEntry* m_pool;
+	unsigned int                m_n;
+	unsigned int                m_index;
 };

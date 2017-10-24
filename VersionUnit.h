@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2012 by Jonathan Naylor G4KLX
  *   Copyright (c) 2017 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -17,30 +17,40 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "RemoteStarNetUser.h"
+#pragma once
 
-CRemoteStarNetUser::CRemoteStarNetUser(const std::string& callsign, uint32_t timer, uint32_t timeout) :
-m_callsign(callsign),
-m_timer(timer),
-m_timeout(timeout)
-{
-}
+#include <string>
+#include <chrono>
 
-CRemoteStarNetUser::~CRemoteStarNetUser()
-{
-}
+#include "RepeaterCallback.h"
+#include "AMBEData.h"
+#include "Timer.h"
+#include "Defs.h"
 
-std::string CRemoteStarNetUser::getCallsign() const
-{
-	return m_callsign;
-}
+enum VERSION_STATUS {
+	VS_IDLE,
+	VS_WAIT,
+	VS_TRANSMIT
+};
 
-uint32_t CRemoteStarNetUser::getTimer() const
-{
-	return (uint32_t)m_timer;
-}
+class CVersionUnit {
+public:
+	CVersionUnit(IRepeaterCallback* handler, const std::string& callsign);
+	~CVersionUnit();
 
-uint32_t CRemoteStarNetUser::getTimeout() const
-{
-	return (uint32_t)m_timeout;
-}
+	void sendVersion();
+
+	void cancel();
+
+	void clock(unsigned int ms);
+
+private:
+	IRepeaterCallback* m_handler;
+	std::string        m_callsign;
+	VERSION_STATUS     m_status;
+	CTimer             m_timer;
+	CAMBEData**        m_data;
+	unsigned int       m_id;
+	unsigned int       m_out;
+	std::chrono::high_resolution_clock::time_point  m_time;
+};

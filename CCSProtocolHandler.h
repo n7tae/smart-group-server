@@ -1,7 +1,6 @@
 /*
- *   Copyright (C) 2010,2011 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2013 by Jonathan Naylor G4KLX
  *   Copyright (c) 2017 by Thomas A. Early N7TAE
- *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -19,40 +18,57 @@
 
 #pragma once
 
+#include <string>
+#include <netinet/in.h>
+
 #include "UDPReaderWriter.h"
 #include "DStarDefines.h"
-#include "HeaderData.h"
+#include "ConnectData.h"
+#include "HeardData.h"
 #include "AMBEData.h"
+#include "PollData.h"
+#include "CCSData.h"
 
-enum G2_TYPE {
-	GT_NONE,
-	GT_HEADER,
-	GT_AMBE
+enum CCS_TYPE {
+	CT_NONE,
+	CT_DATA,
+	CT_POLL,
+	CT_CONNECT,
+	CT_MISC
 };
 
-class CG2ProtocolHandler {
+class CCCSProtocolHandler {
 public:
-	CG2ProtocolHandler(unsigned int port, const std::string& addr = std::string(""));
-	~CG2ProtocolHandler();
+	CCCSProtocolHandler(unsigned int port, const std::string& addr = std::string(""));
+	~CCCSProtocolHandler();
 
 	bool open();
 
-	bool writeHeader(const CHeaderData& header);
-	bool writeAMBE(const CAMBEData& data);
+	unsigned int getPort() const;
 
-	G2_TYPE read();
-	CHeaderData* readHeader();
-	CAMBEData*   readAMBE();
+	bool writeData(const CAMBEData& data);
+	bool writeConnect(const CConnectData& connect);
+	bool writePoll(const CPollData& poll);
+	bool writeHeard(const CHeardData& heard);
+	bool writeMisc(const CCCSData& data);
+
+	CCS_TYPE      read();
+	CAMBEData*    readData();
+	CPollData*    readPoll();
+	CConnectData* readConnect();
+	CCCSData*     readMisc();
 
 	void close();
 
 private:
 	CUDPReaderWriter m_socket;
-	G2_TYPE          m_type;
+	CCS_TYPE         m_type;
 	unsigned char*   m_buffer;
 	unsigned int     m_length;
-	in_addr          m_address;
-	unsigned int     m_port;
+	in_addr          m_yourAddress;
+	unsigned int     m_yourPort;
+	unsigned int     m_myPort;
 
 	bool readPackets();
 };
+
