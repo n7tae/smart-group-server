@@ -6,7 +6,9 @@ LOGDIR=/var/log
 CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DDATA_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
 LDFLAGS=-L/usr/lib -lconfig++
 
-OBJS = AMBEData.o AnnouncementUnit.o APRSCollector.o APRSWriter.o APRSWriterThread.o AudioUnit.o CacheManager.o CallsignList.o CCITTChecksum.o CCSData.o CCSHandler.o CCSProtocolHandler.o ConnectData.o DCSHandler.o DCSProtocolHandler.o DCSProtocolHandlerPool.o DDData.o DDHandler.o DExtraHandler.o DExtraProtocolHandler.o DExtraProtocolHandlerPool.o DPlusAuthenticator.o DPlusHandler.o DPlusProtocolHandler.o DPlusProtocolHandlerPool.o DRATSServer.o DTMF.o DVTOOLFileReader.o EchoUnit.o G2ProtocolHandler.o GatewayCache.o HeaderData.o HeaderLogger.o HeardData.o IRCDDB.o PollData.o RemoteLinkData.o RemoteRepeaterData.o RemoteStarNetUser.o RemoteStarNetGroup.o RepeaterCache.o RepeaterHandler.o SlowDataEncoder.o StarNetServerConfig.o StarNetHandler.o StatusData.o TCPReaderWriterClient.o TCPReaderWriterServer.o TextCollector.o TextData.o Timer.o UserCache.o UDPReaderWriter.o Utils.o VersionUnit.o
+OBJS = AMBEData.o AnnouncementUnit.o APRSCollector.o APRSWriter.o APRSWriterThread.o AudioUnit.o CacheManager.o CallsignList.o CCITTChecksum.o CCSData.o CCSHandler.o CCSProtocolHandler.o ConnectData.o DCSHandler.o DCSProtocolHandler.o DCSProtocolHandlerPool.o DDData.o DDHandler.o DExtraHandler.o DExtraProtocolHandler.o DExtraProtocolHandlerPool.o DPlusAuthenticator.o DPlusHandler.o DPlusProtocolHandler.o DPlusProtocolHandlerPool.o DRATSServer.o DTMF.o DVTOOLFileReader.o EchoUnit.o G2Handler.o G2ProtocolHandler.o GatewayCache.o HeaderData.o HeaderLogger.o HeardData.o PollData.o RemoteHandler.o RemoteLinkData.o RemoteProtocolHandler.o RemoteRepeaterData.o RemoteStarNetUser.o RemoteStarNetGroup.o RepeaterCache.o RepeaterHandler.o SHA256.o SlowDataEncoder.o StarNetHandler.o StarNetServerConfig.o StarNetServerThread.o StatusData.o TCPReaderWriterClient.o TCPReaderWriterServer.o TextCollector.o TextData.o Timer.o UserCache.o UDPReaderWriter.o Utils.o VersionUnit.o
+
+IRCOBJS = IRCDDB.o IRCMessage.o IRCMessageQueue.o
 
 smartgroup : $(OBJS)
 
@@ -35,7 +37,7 @@ CallsignList.o : CallsignList.cpp CallsignList.h DStarDefines.h Utils.h
 	g++ -c $(CPPFLAGS) CallsignList.cpp
 
 CCITTChecksum.o : CCITTChecksum.cpp CCITTChecksum.h Utils.h
-	g++ -c $(CPPFLAGS) CCITTChecksum.cpp
+	Rg++ -c $(CPPFLAGS) CCITTChecksum.cpp
 
 CCSData.o : CCSData.cpp CCSData.h DStarDefines.h Utils.h
 	g++ -c $(CPPFLAGS) CCSData.cpp
@@ -97,7 +99,10 @@ DVTOOLFileReader.o : DVTOOLFileReader.cpp DVTOOLFileReader.h DStarDefines.h
 EchoUnit.o : EchoUnit.cpp EchoUnit.h DStarDefines.h Defs.h Utils.h
 	g++ -c $(CPPFLAGS) EchoUnit.cpp
 
-G2ProtocolHandler.o : G2ProtocolHandler.cpp G2ProtocolHandler.h UDPReaderWriter.h Utils.h HeaderData.h AMBEData.h
+G2Handler.o : G2Handler.cpp G2Handler.h StarNetHandler.h Utils.h Defs.h
+	g++ -c $(CPPFLAGS) G2Handler.cpp
+
+G2ProtocolHandler.o : G2ProtocolHandler.cpp G2ProtocolHandler.h Utils.h
 	g++ -c $(CPPFLAGS) G2ProtocolHandler.cpp
 
 GatewayCache.o : GatewayCache.cpp GatewayCache.h
@@ -115,11 +120,23 @@ HeardData.o : HeardData.cpp HeardData.h
 IRCDDB.o : IRCDDB.cpp IRCDDB.h
 	g++ -c $(CPPFLAGS) IRCDDB.cpp
 
+IRCMessage.o : IRCMessage.cpp IRCMessage.h
+	g++ -c $(CPPFLAGS) IRCMessage.cpp
+
+IRCMessageQueue.o : IRCMessageQueue.cpp IRCMessageQueue.h
+	g++ -c $(CPPFLAGS) IRCMessageQueue.cpp
+
 PollData.o : PollData.cpp PollData.h DStarDefines.h Utils.h
 	g++ -c $(CPPFLAGS) PollData.cpp
 
+RemoteHandler.o : RemoteHandler.cpp RemoteHandler.h RepeaterHandler.h StarNetHandler.h DExtraHandler.h DPlusHandler.h DStarDefines.h DCSHandler.h Utils.h
+	g++ -c $(CPPFLAGS) RemoteHandler.cpp
+
 RemoteLinkData.o : RemoteLinkData.cpp RemoteLinkData.h
 	g++ -c $(CPPFLAGS) RemoteLinkData.cpp
+
+RemoteProtocolHandler.o : RemoteProtocolHandler.cpp RemoteProtocolHandler.h DStarDefines.h SHA256.h Utils.h
+	g++ -c $(CPPFLAGS) RemoteProtocolHandler.cpp
 
 RemoteRepeaterData.o : RemoteRepeaterData.cpp RemoteRepeaterData.h
 	g++ -c $(CPPFLAGS) RemoteRepeaterData.cpp
@@ -136,14 +153,20 @@ RepeaterCache.o : RepeaterCache.cpp RepeaterCache.h
 RepeaterHandler.o : RepeaterHandler.cpp RepeaterHandler.h DExtraHandler.h DPlusHandler.h DStarDefines.h DCSHandler.h CCSHandler.h HeaderData.h DDHandler.h AMBEData.h Utils.h
 	g++ -c $(CPPFLAGS) RepeaterHandler.cpp
 
+SHA256.o : SHA256.cpp SHA256.h
+	g++ -c $(CPPFLAGS) SHA256.cpp
+
 SlowDataEncoder.o : SlowDataEncoder.cpp SlowDataEncoder.h CCITTChecksum.h DStarDefines.h
 	g++ -c $(CPPFLAGS) SlowDataEncoder.cpp
 
-StarNetServerConfig.o : StarNetServerConfig.cpp StarNetServerConfig.h Defs.h
-	g++ -c $(CPPFLAGS) StarNetServerConfig.cpp
-
 StarNetHandler.o : StarNetHandler.cpp StarNetHandler.h SlowDataEncoder.h RepeaterHandler.h DExtraHandler.h DStarDefines.h DCSHandler.h Utils.h
 	g++ -c $(CPPFLAGS) StarNetHandler.cpp
+
+StarNetServerConfig.o : StarNetServerConfig.cpp StarNetServerConfig.h Utils.h
+	g++ -c $(CPPFLAGS) StarNetServerConfig.cpp
+
+StarNetServerThread.o : StarNetServerThread.cpp StarNetServerThread.h StarNetServerDefs.h StarNetHandler.h DExtraHandler.h DCSHandler.h HeaderData.h G2Handler.h AMBEData.h Utils.h
+	g++ -c $(CPPFLAGS) StarNetServerThread.cpp
 
 StatusData.o : StatusData.cpp StatusData.h DStarDefines.h Utils.h
 	g++ -c $(CPPFLAGS) StatusData.cpp
@@ -198,16 +221,24 @@ DPlusProtocolHandler.h : UDPReaderWriter.h DStarDefines.h ConnectData.h HeaderDa
 DRATSServer.h : TCPReaderWriterServer.h RepeaterCallback.h HeaderData.h AMBEData.h Defs.h
 DVTOOLFileReader.h : HeaderData.h AMBEData.h
 EchoUnit.h : RepeaterCallback.h HeaderData.h AMBEData.h Timer.h
+G2Handler.h : G2ProtocolHandler.h RepeaterHandler.h DStarDefines.h HeaderLogger.h HeaderData.h AMBEData.h Timer.h
+G2ProtocolHandler.h : UDPReaderWriter.h DStarDefines.h HeaderData.h AMBEData.h
 HeardData.h : DStarDefines.h HeaderData.h
 HeaderLogger.h : HeaderData.h DDData.h
+IRCApplication.h : IRCMessageQueue.h
+IRCMessageQueue.h : IRCMessage.h
 PollData.h : Defs.h
 ReflectorCallback.h : DStarDefines.h HeaderData.h AMBEData.h Defs.h
+RemoteHandler.h : RemoteProtocolHandler.h Timer.h
 RemoteLinkData.h : Defs.h
+RemoteProtocolHandler.h : RemoteStarNetGroup.h RemoteRepeaterData.h UDPReaderWriter.h Defs.h
 RemoteRepeaterData.h : RemoteLinkData.h
 RepeaterCallback.h : DStarDefines.h HeaderData.h AMBEData.h Defs.h
 RepeaterHandler.h : RepeaterProtocolHandler.h DExtraProtocolHandler.h DPlusProtocolHandler.h RemoteRepeaterData.h G2ProtocolHandler.h ReflectorCallback.h RepeaterCallback.h AnnouncementUnit.h StarNetHandler.h TextCollector.h CacheManager.h HeaderLogger.h CallsignList.h DRATSServer.h CCSCallback.h VersionUnit.h CCSHandler.h StatusData.h APRSWriter.h HeardData.h AudioUnit.h EchoUnit.h PollData.h DDData.h IRCDDB.h Timer.h DTMF.h Defs.h
 SlowDataEncoder.h : HeaderData.h
 StarNetHandler.h : RemoteStarNetGroup.h G2ProtocolHandler.h ReflectorCallback.h RepeaterCallback.h TextCollector.h CacheManager.h HeaderData.h AMBEData.h IRCDDB.h Timer.h
+StarNetServerConfig.h : Defs.h
+StarNetServerThread.h : DExtraProtocolHandlerPool.h DCSProtocolHandler.h G2ProtocolHandler.h RemoteHandler.h CacheManager.h IRCDDB.h Timer.h Defs.h
 TCPReaderWriterServer.h : TCPReaderWriterClient.h
 TextCollector.h : AMBEData.h Defs.h
 TextData.h : Defs.h

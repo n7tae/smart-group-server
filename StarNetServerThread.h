@@ -30,10 +30,10 @@
 #include "Timer.h"
 #include "Defs.h"
 
-class CSmartServerThread {
+class CStarNetServerThread {
 public:
-	CSmartServerThread(bool nolog, const std::string& logDir);
-	virtual ~CSmartServerThread();
+	CStarNetServerThread();
+	virtual ~CStarNetServerThread();
 
 	virtual void setCallsign(const std::string& callsign);
 	virtual void setAddress(const std::string& address);
@@ -79,15 +79,14 @@ private:
 
 	void processIrcDDB();
 	void processG2();
+	void loadReflectors(const std::string fname);
 	
 #if defined(DEXTRA_LINK)
 	void processDExtra();
-	void loadReflectors(const char *fname);
 #endif
 
 #if defined(DCS_LINK)
 	void processDCS();
-	void loadReflectors(const char *fname);
 #endif
 };
 

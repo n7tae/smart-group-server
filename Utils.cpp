@@ -11,6 +11,9 @@
  *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *	GNU General Public License for more details.
  */
+ 
+#include <sys/types.h>
+#include <netdb.h>
 
 #include <cassert>
 #include <cmath>
@@ -299,6 +302,15 @@ std::string CUtils::ToUpper(std::string &str)
 	return str;
 }
 
+std::string CUtils::ToLower(std::string &str)
+{
+	for (auto it=str.begin(); it!=str.end(); it++) {
+		if (isupper(*it))
+			*it = tolower(*it);
+	}
+	return str;
+}
+
 std::string CUtils::Trim(std::string &str)
 {
 	while (str.size() && std::isspace(str[0]))
@@ -307,3 +319,106 @@ std::string CUtils::Trim(std::string &str)
 		str.erase(--str.end());
 	return str;
 }
+
+void CUtils::ReplaceChar(std::string &str, char from, char to)
+{
+	for (auto it=str.begin(); it!=str.end(); it++) {
+		if (from == *it)
+			*it = to;
+	}
+}
+
+int CUtils::getAllIPV4Addresses(const char * name, unsigned short port, unsigned int * num, struct sockaddr_in * addr, unsigned int max_addr)
+{
+
+	struct addrinfo hints;
+	struct addrinfo * res;
+
+	memset(&hints, 0x00, sizeof(struct addrinfo));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+
+	int r = getaddrinfo( name, NULL, &hints, &res );
+
+	if (r == 0) {
+		struct addrinfo * rp;
+		unsigned int numAddr = 0;
+
+		for (rp = res; rp != NULL; rp = rp->ai_next) {
+			if (rp->ai_family == AF_INET)
+				numAddr ++;
+		}
+
+		if (numAddr > 0) {
+			if (numAddr > max_addr)
+				numAddr = max_addr;
+
+			int * shuffle = new int[numAddr];
+
+			unsigned int i;
+
+			for (i=0; i < numAddr; i++)
+				shuffle[i] = i;
+
+			for (i=0; i < (numAddr - 1); i++) {
+				if (rand() & 1) {
+					int tmp;
+					tmp = shuffle[i];
+					shuffle[i] = shuffle[i+1];
+					shuffle[i+1] = tmp;
+				}
+			}
+
+			for (i=(numAddr - 1); i > 0; i--) {
+				if (rand() & 1) {
+					int tmp;
+					tmp = shuffle[i];
+					shuffle[i] = shuffle[i-1];
+					shuffle[i-1] = tmp;
+				}
+			}
+
+			for (rp = res, i=0 ; (rp != NULL) && (i < numAddr); rp = rp->ai_next) {
+				if (rp->ai_family == AF_INET) {
+					memcpy(addr+shuffle[i], rp->ai_addr, sizeof (struct sockaddr_in));
+					addr[shuffle[i]].sin_port = htons(port);
+					i++;
+				}
+			}
+
+			delete[] shuffle;
+		}
+
+		*num = numAddr;
+		freeaddrinfo(res);
+		return 0;
+	} else {
+		std::string e(gai_strerror(r));
+		lprint("getaddrinfo: %s", e.c_str());
+		return 1;
+	}
+}
+
+void CUtils::safeStringCopy(char *dest, const char *src, unsigned int buf_size)
+{
+	unsigned int i = 0;
+
+	while (i < (buf_size - 1)  &&  (src[i] != 0)) {
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = 0;
+}
+
+std::string CUtils::getCurrentTime(void)
+{
+	time_t now = time(NULL);
+	struct tm* tm;
+	struct tm tm_buf;
+	char buffer[25];
+
+	tm = gmtime_r(&now, &tm_buf);
+	strftime(buffer, 25, "%Y-%m-%d %H:%M:%S", tm);
+	return std::string(buffer);
+}
+

@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <sys/socket.h>
 #include <string>
 
 enum TRISTATE {
@@ -35,5 +36,10 @@ public:
 	static void          clean(std::string& str, const std::string& allowed);
 	static void          lprint(const char *fmt,...);
 	static std::string   ToUpper(std::string &str);
+	static std::string   ToLower(std::string &str);
 	static std::string   Trim(std::string &str);
+	static int           getAllIPV4Addresses(const char *name, unsigned short port, unsigned int *num, struct sockaddr_in *addr, unsigned int max_addr);
+	static void          safeStringCopy(char * dest, const char * src, unsigned int buf_size);
+	static std::string   getCurrentTime(void);
+	static void          ReplaceChar(std::string &str, char from, char to);
 };

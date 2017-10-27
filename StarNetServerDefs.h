@@ -1,6 +1,6 @@
 /*
- *   Copyright (C) 2010,2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (C) 2010,2011,2012,2014 by Jonathan Naylor G4KLX
+ *   Copyright (c) 2017 by Thomas A. Early
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,19 +19,13 @@
 
 #pragma once
 
-#include "StarNetServerThread.h"
+#include <string>
 
-class CSmartServerAppD {
+const std::string APPLICATION_NAME ("StarNet Server");
+const std::string LOG_BASE_NAME("STARnetServer");
+const std::string CONFIG_FILE_NAME("starnetserver");
 
-public:
-	CSmartServerAppD(const std::string &configFile);
-	~CSmartServerAppD();
-
-	bool init();
-
-	void run();
-
-private:
-	CSmartServerThread *m_thread;
-	bool createThread();
-};
+const unsigned int MAX_STARNETS     = 15U;
+const unsigned int MAX_DEXTRA_LINKS = 15U;
+const unsigned int MAX_DCS_LINKS    = 15U;
+const unsigned int MAX_ROUTES       = 0U;

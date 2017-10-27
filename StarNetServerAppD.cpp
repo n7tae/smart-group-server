@@ -17,22 +17,22 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-//#include "IcomRepeaterProtocolHandler.h"
-//#include "HBRepeaterProtocolHandler.h"
-#include "SmartGroupServerConfig.h"
-#include "SmartGroupServerAppD.h"
-//#include "SmartGroupServerDefs.h"
-#include "APRSWriter.h"
-//#include "Version.h"
-#include "Logger.h"
-#include "IRCDDBClient.h"
-#include "Utilities.h"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <string>
+
+//#include "IcomRepeaterProtocolHandler.h"
+//#include "HBRepeaterProtocolHandler.h"
+#include "StarNetGroupServerConfig.h"
+#include "StarNetGroupServerAppD.h"
+#include "SmartGroupServerDefs.h"
+#include "APRSWriter.h"
+#include "Version.h"
+//#include "Logger.h"
+#include "IRCDDBClient.h"
+#include "Utils.h"
 
 int main(int argc, char** argv)
 {
@@ -106,7 +106,7 @@ void CStarNetServerAppD::run()
 {
 	m_thread->run();
 
-	lprint("exiting");
+	CUtils::lprint("exiting");
 }
 
 bool CStarNetServerAppD::createThread()
@@ -122,28 +122,28 @@ bool CStarNetServerAppD::createThread()
 		CallSign.push_back(' ');
 	CallSign.push_back('G');
 
-	lprint("Gateway callsign set to %s, local address set to %s", CallSign.c_str(), address.c_str());
+	CUtils::lprint("Gateway callsign set to %s, local address set to %s", CallSign.c_str(), address.c_str());
 
 	bool logEnabled;
 	config.getMiscellaneous(logEnabled);
-	lprint("Log enabled set to %s", logEnabled ? "true" : "false");
+	CUtils::lprint("Log enabled set to %s", logEnabled ? "true" : "false");
 
 	std::string hostname, username, password;
 	config.getIrcDDB(hostname, username, password);
-	lprint("ircDDB host set to %s, username set to %s", hostname.c_str(), username.c_str());
+	CUtils::lprint("ircDDB host set to %s, username set to %s", hostname.c_str(), username.c_str());
 
 	if (!hostname.IsEmpty() && !username.IsEmpty()) {
-		CIRCDDB* ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, "linux_smartgroup-20171014", address); 
+		CIRCDDB* ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_") + LOG_BASE_NAME + std::string("-") + VERSION, address); 
 		bool res = ircDDB->open();
 		if (!res) {
-			lprint("Cannot initialise the ircDDB protocol handler");
+			CUtils::lprint("Cannot initialise the ircDDB protocol handler");
 			return false;
 		}
 
 		m_thread->setIRC(ircDDB);
 	}
 
-	for (int i=1; i<=15; i++) {
+	for (unsigned int i=1U; i<=MAX_STARNETS; i++) {
 		std::string band, callsign, logoff, info, permanent, reflector;
 		unsigned int usertimeout, grouptimeout;
 		STARNET_CALLSIGN_SWITCH callsignswitch;
@@ -161,12 +161,12 @@ bool CStarNetServerAppD::createThread()
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch, reflector);
-			lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s"),
+			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s"),
 				callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
 				SCS_GROUP_CALLSIGN==module[i].callsignswitch ? "Group" : "User", module[i].txmsgswitch ? "true" : "false", reflector.c_str());
 #else
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch);
-			lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s"),
+			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s"),
 				callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
 				SCS_GROUP_CALLSIGN==module[i].callsignswitch ? "Group" : "User", module[i].txmsgswitch ? "true" : "false");
 #endif
@@ -177,7 +177,7 @@ bool CStarNetServerAppD::createThread()
 	str::string remotePassword;
 	unsigned int remotePort;
 	config.getRemote(remoteEnabled, remotePassword, remotePort);
-	lprint("Remote enabled set to %d, port set to %u", int(remoteEnabled), remotePort);
+	CUtils::lprint("Remote enabled set to %d, port set to %u", int(remoteEnabled), remotePort);
 	m_thread->setRemote(remoteEnabled, remotePassword, remotePort);
 
 	m_thread->setLog(logEnabled);

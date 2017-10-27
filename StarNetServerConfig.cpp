@@ -20,7 +20,7 @@
 #include <string>
 
 #include "Utils.h"
-#include "SmartServerConfig.h"
+#include "StarNetServerConfig.h"
 
 
 CSmartServerConfig::CSmartServerConfig(const std::string &pathname)

@@ -24,9 +24,11 @@
 #include <pwd.h>
 #include <ctime>
 #include <fstream>
+#include <cstring>
+#include <cassert>
 
-#include "SmartServerThread.h"
-//#include "SmartServerDefs.h"
+#include "StarNetServerThread.h"
+#include "StarNetServerDefs.h"
 #include "StarNetHandler.h"
 #include "DExtraHandler.h"			// DEXTRA LINK
 #include "DCSHandler.h"				// DCS LINK
@@ -38,7 +40,7 @@
 
 const unsigned int REMOTE_DUMMY_PORT = 65015U;
 
-CSmartServerThread::CSmartServerThread() :
+CStarNetServerThread::CStarNetServerThread() :
 m_killed(false),
 m_stopped(true),
 m_callsign(),
@@ -77,7 +79,7 @@ m_remote(NULL)
 
 }
 
-CSmartServerThread::~CSmartServerThread()
+CStarNetServerThread::~CStarNetServerThread()
 {
 	CHeaderData::finalise();
 	CG2Handler::finalise();
@@ -93,13 +95,13 @@ CSmartServerThread::~CSmartServerThread()
 
 }
 
-void CSmartServerThread::run()
+void CStarNetServerThread::run()
 {
 #if defined(DEXTRA_LINK)
 	m_dextraPool = new CDExtraProtocolHandlerPool(MAX_DEXTRA_LINKS, DEXTRA_PORT, m_address);
-	ret = m_dextraPool->open();
+	bool ret = m_dextraPool->open();
 	if (!ret) {
-		lprint("Could not open the DExtra protocol pool");
+		CUtils::lprint("Could not open the DExtra protocol pool");
 		delete m_dextraPool;
 		m_dextraPool = NULL;
 	}
@@ -109,7 +111,7 @@ void CSmartServerThread::run()
 	m_dcsPool = new CDCSProtocolHandlerPool(MAX_DCS_LINKS, DCS_PORT, m_address);
 	ret = m_dcsPool->open();
 	if (!ret) {
-		lprint("Could not open the DCS protocol pool");
+		CUtils::lprint("Could not open the DCS protocol pool");
 		delete m_dcsPool;
 		m_dcsPool = NULL;
 	}
@@ -118,21 +120,21 @@ void CSmartServerThread::run()
 	m_g2Handler = new CG2ProtocolHandler(G2_DV_PORT, m_address);
 	ret = m_g2Handler->open();
 	if (!ret) {
-		lprint("Could not open the G2 protocol handler");
+		CUtils::lprint("Could not open the G2 protocol handler");
 		delete m_g2Handler;
 		m_g2Handler = NULL;
 	}
 
 	// Wait here until we have the essentials to run
 #if defined(DEXTRA_LINK)
-	while (!m_killed && (m_g2Handler == NULL || m_dextraPool == NULL || m_irc == NULL || m_callsign.IsEmpty()))
-		::wxMilliSleep(500UL);		// 1/2 sec
+	while (!m_killed && (m_g2Handler == NULL || m_dextraPool == NULL || m_irc == NULL || 0==m_callsign.size()))
+		usleep(500000);
 #elif defined(DCS_LINK)
-	while (!m_killed && (m_g2Handler == NULL || m_dcsPool == NULL || m_irc == NULL || m_callsign.IsEmpty()))
-		::wxMilliSleep(500UL);		// 1/2 sec
+	while (!m_killed && (m_g2Handler == NULL || m_dcsPool == NULL || m_irc == NULL || 0==m_callsign.size()))
+		usleep(500000);
 #else
-	while (!m_killed && (m_g2Handler == NULL || m_irc == NULL || m_callsign.IsEmpty()))
-		::wxMilliSleep(500UL);		// 1/2 sec
+	while (!m_killed && (m_g2Handler == NULL || m_irc == NULL || 0==m_callsign.size()))
+		usleep(500000);
 #endif
 
 	if (m_killed)
@@ -140,7 +142,7 @@ void CSmartServerThread::run()
 
 	m_stopped = false;
 
-	lprint("Starting the StarNet Server thread");
+	CUtils::lprint("Starting the StarNet Server thread");
 
 	CHeaderLogger* headerLogger = NULL;
 	if (m_logEnabled) {
@@ -155,6 +157,7 @@ void CSmartServerThread::run()
 #if defined(DEXTRA_LINK)
 	loadReflectors(DEXTRA_HOSTS_FILE_NAME);
 #endif
+
 #if defined(DCS_LINK)
 	loadReflectors(DCS_HOSTS_FILE_NAME);
 #endif
@@ -182,7 +185,7 @@ void CSmartServerThread::run()
 	CStarNetHandler::link();
 #endif
 
-	if (m_remoteEnabled && !m_remotePassword.IsEmpty() && m_remotePort > 0U) {
+	if (m_remoteEnabled && m_remotePassword.size() && m_remotePort > 0U) {
 		m_remote = new CRemoteHandler(m_remotePassword, m_remotePort);
 		bool res = m_remote->open();
 		if (!res) {
@@ -229,13 +232,13 @@ void CSmartServerThread::run()
 		}
 	}
 	catch (std::exception& e) {
-		lprint("Exception raised - \"%s\"", e.what());
+		CUtils::lprint("Exception raised - \"%s\"", e.what());
 	}
 	catch (...) {
-		lprint("Unknown exception raised");
+		CUtils::lprint("Unknown exception raised");
 	}
 
-	lprint("Stopping the StarNet Server thread");
+	CUtils::lprint("Stopping the StarNet Server thread");
 
 #if defined(DEXTRA_LINK)
 	// Unlink from all reflectors
@@ -270,12 +273,12 @@ void CSmartServerThread::run()
 	}
 }
 
-void CSmartServerThread::kill()
+void CStarNetServerThread::kill()
 {
 	m_killed = true;
 }
 
-void CSmartServerThread::setCallsign(const std::string& callsign)
+void CStarNetServerThread::setCallsign(const std::string& callsign)
 {
 	if (!m_stopped)
 		return;
@@ -283,13 +286,13 @@ void CSmartServerThread::setCallsign(const std::string& callsign)
 	m_callsign = callsign;
 }
 
-void CSmartServerThread::setAddress(const std::string& address)
+void CStarNetServerThread::setAddress(const std::string& address)
 {
 	m_address = address;
 }
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-void CSmartServerThread::addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
+void CStarNetServerThread::addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
 {
 	CStarNetHandler::add(callsign, logoff, repeater, infoText, permanent, userTimeout, groupTimeout, callsignSwitch, txMsgSwitch, reflector);
 }
@@ -300,14 +303,14 @@ void CStarNetServerThread::addStarNet(const std::string& callsign, const std::st
 }
 #endif
 
-void CSmartServerThread::setIRC(CIRCDDB* irc)
+void CStarNetServerThread::setIRC(CIRCDDB* irc)
 {
 	assert(irc != NULL);
 
 	m_irc = irc;
 }
 
-void CSmartServerThread::setRemote(bool enabled, const std::string& password, unsigned int port)
+void CStarNetServerThread::setRemote(bool enabled, const std::string& password, unsigned int port)
 {
 	if (enabled) {
 		m_remoteEnabled  = true;
@@ -320,7 +323,7 @@ void CSmartServerThread::setRemote(bool enabled, const std::string& password, un
 	}
 }
 
-void CSmartServerThread::processIrcDDB()
+void CStarNetServerThread::processIrcDDB()
 {
 	// Once per second
 	if (m_statusTimer.hasExpired()) {
@@ -329,19 +332,19 @@ void CSmartServerThread::processIrcDDB()
 			case 0:
 			case 10:
 				if (m_lastStatus != IS_DISCONNECTED) {
-					lprint("Disconnected from ircDDB");
+					CUtils::lprint("Disconnected from ircDDB");
 					m_lastStatus = IS_DISCONNECTED;
 				}
 				break;
 			case 7:
 				if (m_lastStatus != IS_CONNECTED) {
-					lprint("Connected to ircDDB");
+					CUtils::lprint("Connected to ircDDB");
 					m_lastStatus = IS_CONNECTED;
 				}
 				break;
 			default:
 				if (m_lastStatus != IS_CONNECTING) {
-					lprint("Connecting to ircDDB");
+					CUtils::lprint("Connecting to ircDDB");
 					m_lastStatus = IS_CONNECTING;
 				}
 				break;
@@ -364,11 +367,11 @@ void CSmartServerThread::processIrcDDB()
 					if (!res)
 						break;
 
-					if (!address.IsEmpty()) {
-						lprint("USER: %s %s %s %s", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
+					if (address.size()) {
+						CUtils::lprint("USER: %s %s %s %s", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateUser(user, repeater, gateway, address, timestamp, DP_DEXTRA, false, false);
 					} else {
-						lprint("USER: %s NOT FOUND", user.c_str());
+						CUtils::lprint("USER: %s NOT FOUND", user.c_str());
 					}
 				}
 				break;
@@ -379,11 +382,11 @@ void CSmartServerThread::processIrcDDB()
 					if (!res)
 						break;
 
-					if (!address.IsEmpty()) {
-						lprint("REPEATER: %s %s %s", repeater.c_str(), gateway.c_str(), address.c_str());
+					if (address.size()) {
+						CUtils::lprint("REPEATER: %s %s %s", repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateRepeater(repeater, gateway, address, DP_DEXTRA, false, false);
 					} else {
-						lprint("REPEATER: %s NOT FOUND", repeater.c_str());
+						CUtils::lprint("REPEATER: %s NOT FOUND", repeater.c_str());
 					}
 				}
 				break;
@@ -401,11 +404,11 @@ void CSmartServerThread::processIrcDDB()
 					CDCSHandler::gatewayUpdate(gateway, address);
 #endif
 
-					if (!address.IsEmpty()) {
-						lprint("GATEWAY: %s %s"), gateway.c_str(), address.c_str();
+					if (0 == address.size()) {
+						CUtils::lprint("GATEWAY: %s %s", gateway.c_str(), address.c_str());
 						m_cache.updateGateway(gateway, address, DP_DEXTRA, false, false);
 					} else {
-						lprint("GATEWAY: %s NOT FOUND"), gateway.c_str();
+						CUtils::lprint("GATEWAY: %s NOT FOUND", gateway.c_str());
 					}
 				}
 				break;
@@ -414,7 +417,7 @@ void CSmartServerThread::processIrcDDB()
 }
 
 #if defined(DEXTRA_LINK)
-void CSmartServerThread::processDExtra()
+void CStarNetServerThread::processDExtra()
 {
 	for (;;) {
 		DEXTRA_TYPE type = m_dextraPool->read();
@@ -444,7 +447,7 @@ void CSmartServerThread::processDExtra()
 			case DE_HEADER: {
 					CHeaderData* header = m_dextraPool->readHeader();
 					if (header != NULL) {
-						// lprint("DExtra header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str());
+						// CUtils::lprint("DExtra header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str());
 						CDExtraHandler::process(*header);
 						delete header;
 					}
@@ -465,7 +468,7 @@ void CSmartServerThread::processDExtra()
 #endif
 
 #if defined(DCS_LINK)
-void CSmartServerThread::processDCS()
+void CStarNetServerThread::processDCS()
 {
 	for (;;) {
 		DCS_TYPE type = m_dcsPool->read();
@@ -495,7 +498,7 @@ void CSmartServerThread::processDCS()
 			case DC_DATA: {
 					CAMBEData* data = m_dcsPool->readData();
 					if (data != NULL) {
-						// lprint("DCS header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str());
+						// CUtils::lprint("DCS header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str());
 						CDCSHandler::process(*data);
 						delete data;
 					}
@@ -506,7 +509,7 @@ void CSmartServerThread::processDCS()
 }
 #endif
 
-void CSmartServerThread::processG2()
+void CStarNetServerThread::processG2()
 {
 	for (;;) {
 		G2_TYPE type = m_g2Handler->read();
@@ -518,7 +521,7 @@ void CSmartServerThread::processG2()
 			case GT_HEADER: {
 					CHeaderData* header = m_g2Handler->readHeader();
 					if (header != NULL) {
-						// lprint("G2 header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s  Flags: %02X %02X %02X", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str(), header->getFlag1(), header->getFlag2(), header->getFlag3());
+						// CUtils::lprint("G2 header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s  Flags: %02X %02X %02X", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str(), header->getFlag1(), header->getFlag2(), header->getFlag3());
 						CG2Handler::process(*header);
 						delete header;
 					}
@@ -538,7 +541,7 @@ void CSmartServerThread::processG2()
 }
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-void CSmartServerThread::loadReflectors(const char *fname)
+void CStarNetServerThread::loadReflectors(const std::string fname)
 {
 	const char *directory = getenv("HOME");
 	if (! directory)
@@ -547,8 +550,8 @@ void CSmartServerThread::loadReflectors(const char *fname)
 	filepath += "/" + fname;
 
 	struct stat sbuf;
-	if (stat(filepath, &sbuf)) {
-		lprint("%s doesn't exist!", filepath.c_str());
+	if (stat(filepath.c_str(), &sbuf)) {
+		CUtils::lprint("%s doesn't exist!", filepath.c_str());
 		return;
 	}
 
@@ -573,7 +576,7 @@ void CSmartServerThread::loadReflectors(const char *fname)
 					name.push_back('G');
 					struct hostent *he = gethostbyname(second);
 					if (he) {
-						count++
+						count++;
 						char straddr[16];
 						unsigned char *puc = (unsigned char *)&he->h_addr_list[0];
 						snprintf(straddr, 16, "%u.%u.%u.%u", puc[0], puc[1], puc[2], puc[3]);
@@ -583,7 +586,7 @@ void CSmartServerThread::loadReflectors(const char *fname)
 #else
 						m_cache.updateGateway(name, address, DP_DCS, third?1:0, true);
 #endif
-						lprint("reflector:%s, address:%s lock:%s", name.c_str(), address.c_str(), third?"true":"false");
+						CUtils::lprint("reflector:%s, address:%s lock:%s", name.c_str(), address.c_str(), third?"true":"false");
 					}
 				}
 			}
@@ -592,6 +595,6 @@ void CSmartServerThread::loadReflectors(const char *fname)
 	}
 
 
-	lprint("Loaded %u of %u DExtra reflectors", count, tries);
+	CUtils::lprint("Loaded %u of %u DExtra reflectors", count, tries);
 }
 #endif
