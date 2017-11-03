@@ -21,17 +21,17 @@
 
 #include "StarNetServerThread.h"
 
-class CSmartServerAppD {
+class CStarNetServerAppD
+{
+private:
+	std::string m_configFile;
+	CStarNetServerThread *m_thread;
+	bool createThread();
 
 public:
-	CSmartServerAppD(const std::string &configFile);
-	~CSmartServerAppD();
+	CStarNetServerAppD(const std::string &configFile);
+	~CStarNetServerAppD();
 
 	bool init();
-
 	void run();
-
-private:
-	CSmartServerThread *m_thread;
-	bool createThread();
 };

@@ -23,7 +23,7 @@
 #include "StarNetServerConfig.h"
 
 
-CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
+CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 {
 	
 	if (pathname.size() < 1) {
@@ -173,11 +173,11 @@ CSmartServerConfig::CSmartServerConfig(const std::string &pathname)
 	}
 }
 
-CSmartServerConfig::~CSmartServerConfig()
+CStarNetServerConfig::~CStarNetServerConfig()
 {
 }
 
-bool CSmartServerConfig::get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value)
+bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value)
 {
 	if (cfg.lookupValue(path, value)) {
 		if (value < min || value > max)
@@ -188,7 +188,7 @@ bool CSmartServerConfig::get_value(const Config &cfg, const char *path, int &val
 	return true;
 }
 
-bool CSmartServerConfig::get_value(const Config &cfg, const char *path, bool &value, bool default_value)
+bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, bool &value, bool default_value)
 {
 	if (! cfg.lookupValue(path, value))
 		value = default_value;
@@ -196,7 +196,7 @@ bool CSmartServerConfig::get_value(const Config &cfg, const char *path, bool &va
 	return true;
 }
 
-bool CSmartServerConfig::get_value(const Config &cfg, const char *path, std::string &value, int min, int max, const char *default_value)
+bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, std::string &value, int min, int max, const char *default_value)
 {
 	if (cfg.lookupValue(path, value)) {
 		int l = value.length();
@@ -211,26 +211,26 @@ bool CSmartServerConfig::get_value(const Config &cfg, const char *path, std::str
 }
 
 
-void CSmartServerConfig::getGateway(std::string& callsign, std::string& address) const
+void CStarNetServerConfig::getGateway(std::string& callsign, std::string& address) const
 {
 	callsign = m_callsign;
 	address  = m_address;
 }
 
-void CSmartServerConfig::setGateway(const std::string& callsign, const std::string& address)
+void CStarNetServerConfig::setGateway(const std::string& callsign, const std::string& address)
 {
 	m_callsign = callsign;
 	m_address  = address;
 }
 
-void CSmartServerConfig::getIrcDDB(std::string& hostname, std::string& username, std::string& password) const
+void CStarNetServerConfig::getIrcDDB(std::string& hostname, std::string& username, std::string& password) const
 {
 	hostname = m_ircddbHostname;
 	username = m_ircddbUsername;
 	password = m_ircddbPassword;
 }
 
-void CSmartServerConfig::setIrcDDB(const std::string& hostname, const std::string& username, const std::string& password)
+void CStarNetServerConfig::setIrcDDB(const std::string& hostname, const std::string& username, const std::string& password)
 {
 	m_ircddbHostname = hostname;
 	m_ircddbUsername = username;
@@ -238,9 +238,9 @@ void CSmartServerConfig::setIrcDDB(const std::string& hostname, const std::strin
 }
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-void CSmartServerConfig::getStarNet(int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
+void CStarNetServerConfig::getStarNet(int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
 #else
-void CSmartServerConfig::getStarNet(int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch) const
+void CStarNetServerConfig::getStarNet(int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch) const
 #endif
 {
 	band           = module[mod].band;
@@ -259,9 +259,9 @@ void CSmartServerConfig::getStarNet(int mod, std::string& band, std::string& cal
 }
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-void CSmartServerConfig::setStarNet(int mod, const std::string& band, const std::string& callsign, const std::string& logoff, const std::string& info, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
+void CStarNetServerConfig::setStarNet(int mod, const std::string& band, const std::string& callsign, const std::string& logoff, const std::string& info, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
 #else
-void CSmartServerConfig::setStarNet(int mod, const std::string& band, const std::string& callsign, const std::string& logoff, const std::string& info, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch)
+void CStarNetServerConfig::setStarNet(int mod, const std::string& band, const std::string& callsign, const std::string& logoff, const std::string& info, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch)
 #endif
 {
 	module[mod].band           = band;
@@ -280,37 +280,37 @@ void CSmartServerConfig::setStarNet(int mod, const std::string& band, const std:
 }
 
 
-void CSmartServerConfig::getRemote(bool& enabled, std::string& password, unsigned int& port) const
+void CStarNetServerConfig::getRemote(bool& enabled, std::string& password, unsigned int& port) const
 {
 	enabled  = m_remoteEnabled;
 	password = m_remotePassword;
 	port     = m_remotePort;
 }
 
-void CSmartServerConfig::setRemote(bool enabled, const std::string& password, unsigned int port)
+void CStarNetServerConfig::setRemote(bool enabled, const std::string& password, unsigned int port)
 {
 	m_remoteEnabled  = enabled;
 	m_remotePassword = password;
 	m_remotePort     = port;
 }
 
-void CSmartServerConfig::getMiscellaneous(bool& enabled) const
+void CStarNetServerConfig::getMiscellaneous(bool& enabled) const
 {
 	enabled = m_logEnabled;
 }
 
-void CSmartServerConfig::setMiscellaneous(bool enabled)
+void CStarNetServerConfig::setMiscellaneous(bool enabled)
 {
 	m_logEnabled = enabled;
 }
 
-void CSmartServerConfig::getPosition(int& x, int& y) const
+void CStarNetServerConfig::getPosition(int& x, int& y) const
 {
 	x = m_x;
 	y = m_y;
 }
 
-void CSmartServerConfig::setPosition(int x, int y)
+void CStarNetServerConfig::setPosition(int x, int y)
 {
 	m_x = x;
 	m_y = y;

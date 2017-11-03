@@ -1,0 +1,166 @@
+/*
+CIRCDDB - ircDDB client library in C++
+
+Copyright (C) 2010   Michael Dirska, DL1BFF (dl1bff@mdx.de)
+Copyright (c) 2017 by Thomas A. Early N7TAE
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include <sys/types.h>
+#include <sys/socket.h>
+
+#include "IRCReceiver.h"
+#include "Utils.h"
+
+IRCReceiver::IRCReceiver(int sock, IRCMessageQueue *q)
+{
+  this->sock = sock;
+  recvQ = q;
+}
+
+IRCReceiver::~IRCReceiver()
+{
+}
+
+void IRCReceiver::startWork()
+{
+	terminateThread = false;
+
+	m_future = std::async(std::launch::async, &IRCReceiver::Entry, this);
+}
+
+void IRCReceiver::stopWork()
+{
+	terminateThread = true;
+
+	m_future.get();
+}
+
+static int doRead(int sock, char * buf, int buf_size)
+{
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	fd_set rdset;
+	fd_set errset;
+
+	FD_ZERO(&rdset);
+	FD_ZERO(&errset);
+	FD_SET(sock, &rdset);
+	FD_SET(sock, &errset);
+
+	int res;
+
+	res = select(sock+1, &rdset, NULL, &errset, &tv);
+
+	if ( res < 0 ) {
+		CUtils::lprint("IRCReceiver::doRead: select");
+		return -1;
+	} else if ( res > 0 ) {
+		if (FD_ISSET(sock, &errset)) {
+			CUtils::lprint("IRCReceiver::doRead: select (FD_ISSET(sock, exceptfds))");
+			return -1;
+		}
+
+		if (FD_ISSET(sock, &rdset)) {
+			res = recv(sock, buf, buf_size, 0);
+
+			if (res < 0) {
+				CUtils::lprint("IRCReceiver::doRead: read");
+				return -1;
+			} else if (res == 0) {
+				CUtils::lprint("IRCReceiver::doRead: EOF read==0");
+				return -1;
+			} else
+				return res;
+		}
+	}
+	return 0;
+}
+
+bool IRCReceiver::Entry()
+{
+	IRCMessage *m = new IRCMessage();
+	int i;
+	int state = 0;
+	while (!terminateThread) {
+		char buf[200];
+		int r = doRead( sock, buf, sizeof buf );
+		if (r < 0) {
+			recvQ -> signalEOF();
+			delete m;  // delete unfinished IRCMessage
+			break;
+		}
+
+		for (i=0; i < r; i++) {
+			char b = buf[i];
+
+			if (b > 0) {
+				if (b == 10) {
+					recvQ -> putMessage(m);
+					m = new IRCMessage();
+					state = 0;
+				} else if (b == 13) {
+					// do nothing
+				} else switch (state) {
+					case 0:
+						if (b == ':')
+							state = 1; // prefix
+						else if (b == 32) {
+							// do nothing
+						} else {
+							m->command.push_back(b);
+							state = 2; // command
+						}
+						break;
+
+					case 1:
+						if (b == 32)
+							state = 2; // command is next
+						else
+							m->prefix.push_back(b);
+						break;
+
+					case 2:
+						if (b == 32) {
+							state = 3; // params
+							m->numParams = 1;
+							m->params.push_back(std::string(""));
+						} else
+							m->command.push_back(b);
+						break;
+
+					case 3:
+						if (b == 32) {
+							m->numParams++;
+							if (m -> numParams >= 15)
+								state = 5; // ignore the rest
+							m->params.push_back(std::string(""));
+						} else if ((b == ':') && (m->params[m->numParams-1].size() == 0))
+							state = 4; // rest of line is this param
+						else
+							m->params[m->numParams-1].push_back(b);
+						break;
+
+					case 4:
+						m->params[m->numParams-1].push_back(b);
+						break;
+				} // switch
+			} // if
+		} // for
+	} // while
+	return 0;
+}
+

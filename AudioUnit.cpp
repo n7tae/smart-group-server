@@ -30,7 +30,7 @@
 
 unsigned char* CAudioUnit::m_ambe = NULL;
 unsigned int   CAudioUnit::m_ambeLength = 0U;
-//CIndexList_t   CAudioUnit::m_index;
+std::map<std::string, CIndexRecord *> CAudioUnit::m_index;
 
 TEXT_LANG CAudioUnit::m_language = TL_ENGLISH_UK;
 

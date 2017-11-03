@@ -4,7 +4,7 @@ CIRCDDB - ircDDB client library in C++
 
 Copyright (C) 2010-2011   Michael Dirska, DL1BFF (dl1bff@mdx.de)
 Copyright (C) 2012        Jonathan Naylor, G4KLX
-Copyright (c) 2107 by Thomas A. Early N7TAE
+Copyright (c) 2017 by Thomas A. Early N7TAE
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <future>
+#include <ctime>
 
 #include "IRCDDB.h"
 #include "IRCApplication.h"
@@ -33,69 +34,54 @@ class IRCDDBAppPrivate;
 
 class IRCDDBApp : public IRCApplication
 {
-  public:
-    IRCDDBApp(const std::string& update_channel);
+public:
+	IRCDDBApp(const std::string& update_channel);
 
-    virtual ~IRCDDBApp();
+	virtual ~IRCDDBApp();
 
-    virtual void userJoin (const std::string& nick, const std::string& name, const std::string& host);
+	virtual void userJoin(const std::string& nick, const std::string& name, const std::string& host);
+	virtual void userLeave(const std::string& nick);
+	virtual void userChanOp(const std::string& nick, bool op);
+	virtual void userListReset();
+	virtual void msgChannel(IRCMessage *m);
+	virtual void msgQuery(IRCMessage *m);
+	virtual void setCurrentNick(const std::string& nick);
+	virtual void setTopic(const std::string& topic);
+	virtual void setBestServer(const std::string& ircUser);
+	virtual void setSendQ(IRCMessageQueue *s);
+	virtual IRCMessageQueue *getSendQ();
 
-    virtual void userLeave (const std::string& nick);
+	void startWork();
+	void stopWork();
 
-    virtual void userChanOp (const std::string& nick, bool op);
-    virtual void userListReset();
+	IRCDDB_RESPONSE_TYPE getReplyMessageType();
+	IRCMessage *getReplyMessage();
 
-    virtual void msgChannel (IRCMessage * m);
-    virtual void msgQuery (IRCMessage * m);
+	bool findUser(const std::string& s);
+	bool findRepeater(const std::string& s);
+	bool findGateway(const std::string& s);
 
-    virtual void setCurrentNick(const std::string& nick);
-    virtual void setTopic(const std::string& topic);
+	bool sendHeard(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2,
+		unsigned char flag1, unsigned char flag2, unsigned char flag3,const std::string& destination, const std::string& tx_msg, const std::string& tx_stats);
 
-    virtual void setBestServer(const std::string& ircUser);
+	int getConnectionState();
 
-    virtual void setSendQ( IRCMessageQueue * s );
-    virtual IRCMessageQueue * getSendQ ();
+	void rptrQRG(const std::string& callsign, double txFrequency, double duplexShift, double range, double agl);
+	void rptrQTH(const std::string& callsign, double latitude, double longitude, const std::string& desc1, const std::string& desc2, const std::string& infoURL);
+	void kickWatchdog(const std::string& callsign, const std::string& wdInfo);
 
-    void startWork();
-    void stopWork();
+protected:
+	bool Entry();
 
-    IRCDDB_RESPONSE_TYPE getReplyMessageType();
-
-    IRCMessage * getReplyMessage();
-
-    bool findUser ( const std::string& s );
-    bool findRepeater ( const std::string& s );
-    bool findGateway ( const std::string& s );
-
-    bool sendHeard(const std::string& myCall, const std::string& myCallExt,
-            const std::string& yourCall, const std::string& rpt1,
-	    const std::string& rpt2, unsigned char flag1,
-	    unsigned char flag2, unsigned char flag3,
-	    const std::string& destination, const std::string& tx_msg,
-	    const std::string& tx_stats);
-
-    int getConnectionState();
-
-    void rptrQRG( const std::string& callsign, double txFrequency, double duplexShift,
-	double range, double agl );
-
-    void rptrQTH( const std::string& callsign, double latitude, double longitude, const std::string& desc1,
-                 const std::string& desc2, const std::string& infoURL );
-
-    void kickWatchdog( const std::string& callsign, const std::string& wdInfo );
-
-  protected:
-    virtual bool Entry();
-
-  private:
-    void doUpdate ( std::string& msg );
-    void doNotFound ( std::string& msg, std::string& retval );
-    std::string getIPAddress( std::string& zonerp_cs );
-    bool findServerUser();
+private:
+	void doUpdate(std::string& msg);
+	void doNotFound(std::string& msg, std::string& retval);
+	std::string getIPAddress(std::string& zonerp_cs);
+	bool findServerUser();
 	unsigned int calculateUsn(const std::string& nick);
 	std::string getLastEntryTime(int tableID);
-    IRCDDBAppPrivate * d;
+	IRCDDBAppPrivate *d;
 	time_t m_maxTime;
-	std::future<void> m_future;
-
+	std::future<bool> m_future;
 };
+

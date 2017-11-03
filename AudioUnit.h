@@ -54,7 +54,7 @@ public:
 	}
 
 private:
-	std::string     m_name;
+	std::string  m_name;
 	unsigned int m_start;
 	unsigned int m_length;
 };

@@ -17,6 +17,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <string>
 #include <libconfig.h++>
 #include "Defs.h"
 
@@ -35,11 +36,10 @@ typedef struct mod_tag {
 	STARNET_CALLSIGN_SWITCH callsignswitch;
 } TMODULE;
 
-class CSmartServerConfig {
+class CStarNetServerConfig {
 public:
-	CSmartServerConfig(const std::string &pathname);
-	
-	~CSmartServerConfig();
+	CStarNetServerConfig(const std::string &pathname);
+	~CStarNetServerConfig();
 
 	void getGateway(std::string &callsign, std::string &address) const;
 	void setGateway(const std::string &callsign, const std::string &address);

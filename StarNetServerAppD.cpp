@@ -23,21 +23,16 @@
 #include <getopt.h>
 #include <string>
 
-//#include "IcomRepeaterProtocolHandler.h"
-//#include "HBRepeaterProtocolHandler.h"
-#include "StarNetGroupServerConfig.h"
-#include "StarNetGroupServerAppD.h"
-#include "SmartGroupServerDefs.h"
+#include "StarNetServerConfig.h"
+#include "StarNetServerAppD.h"
+#include "StarNetServerDefs.h"
 #include "APRSWriter.h"
 #include "Version.h"
-//#include "Logger.h"
 #include "IRCDDBClient.h"
 #include "Utils.h"
 
 int main(int argc, char** argv)
 {
-	bool nolog = false;
-	bool daemon = false;
 	std::string cfgFile;
 	while (1) {
 		static struct option long_options[] = {
@@ -55,9 +50,6 @@ int main(int argc, char** argv)
 			break;
 
 		switch (c) {
-			case 'd':
-				daemon = true;
-				break;
 			case 'h':
 				::printf("usage: %s [-c<cfgfile>|--cfgfile=<cfgfile>]\n", argv[0]);
 				exit(0);
@@ -87,9 +79,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-CStarNetServerAppD::CStarNetServerAppD(const std::string &configFile) :
-m_configFile(configFile),
-m_thread(NULL)
+CStarNetServerAppD::CStarNetServerAppD(const std::string &configFile) : m_configFile(configFile), m_thread(NULL)
 {
 }
 
@@ -118,7 +108,7 @@ bool CStarNetServerAppD::createThread()
 	std::string CallSign, address;
 	config.getGateway(CallSign, address);
 
-	while (7 > CallSing.size())
+	while (7 > CallSign.size())
 		CallSign.push_back(' ');
 	CallSign.push_back('G');
 
@@ -132,7 +122,7 @@ bool CStarNetServerAppD::createThread()
 	config.getIrcDDB(hostname, username, password);
 	CUtils::lprint("ircDDB host set to %s, username set to %s", hostname.c_str(), username.c_str());
 
-	if (!hostname.IsEmpty() && !username.IsEmpty()) {
+	if (hostname.size() && username.size()) {
 		CIRCDDB* ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_") + LOG_BASE_NAME + std::string("-") + VERSION, address); 
 		bool res = ircDDB->open();
 		if (!res) {
@@ -161,26 +151,25 @@ bool CStarNetServerAppD::createThread()
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch, reflector);
-			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s"),
+			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s",
 				callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
-				SCS_GROUP_CALLSIGN==module[i].callsignswitch ? "Group" : "User", module[i].txmsgswitch ? "true" : "false", reflector.c_str());
+				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false", reflector.c_str());
 #else
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch);
-			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s"),
+			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s",
 				callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
-				SCS_GROUP_CALLSIGN==module[i].callsignswitch ? "Group" : "User", module[i].txmsgswitch ? "true" : "false");
+				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false");
 #endif
 		}
 	}
 
 	bool remoteEnabled;
-	str::string remotePassword;
+	std::string remotePassword;
 	unsigned int remotePort;
 	config.getRemote(remoteEnabled, remotePassword, remotePort);
 	CUtils::lprint("Remote enabled set to %d, port set to %u", int(remoteEnabled), remotePort);
 	m_thread->setRemote(remoteEnabled, remotePassword, remotePort);
 
-	m_thread->setLog(logEnabled);
 	m_thread->setAddress(address);
 	m_thread->setCallsign(CallSign);
 

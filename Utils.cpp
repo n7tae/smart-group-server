@@ -25,6 +25,7 @@
 #include <cctype>
 #include <iterator>
 #include <cstring>
+#include <sstream>
 #include "Utils.h"
 
 void CUtils::dump(const char* title, const bool* data, unsigned int length)
@@ -420,5 +421,21 @@ std::string CUtils::getCurrentTime(void)
 	tm = gmtime_r(&now, &tm_buf);
 	strftime(buffer, 25, "%Y-%m-%d %H:%M:%S", tm);
 	return std::string(buffer);
+}
+
+std::vector<std::string> CUtils::stringTokenizer(const std::string &s)
+{
+	std::stringstream ss(s);
+	std::istream_iterator<std::string> it(ss);
+	std::istream_iterator<std::string> end;
+	std::vector<std::string> result(it, end);
+	return result;
+}
+
+time_t CUtils::parseTime(const std::string str)
+{
+	struct tm stm;
+	strptime(str.c_str(), "%Y-%m-%d %H:%M:%S", &stm);
+	return mktime(&stm);
 }
 
