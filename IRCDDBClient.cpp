@@ -32,8 +32,8 @@ struct CIRCDDBClientPrivate
     IRCDDBApp *app;
 };
 
-CIRCDDBClient::CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password,  const std::string& versionInfo, const std::string& localAddr  )
-	: d(new CIRCDDBClientPrivate)
+CIRCDDBClient::CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo,
+	const std::string& localAddr) : d(new CIRCDDBClientPrivate)
 {
 	std::string update_channel("#dstar");
 

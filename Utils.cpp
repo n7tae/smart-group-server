@@ -290,7 +290,7 @@ void CUtils::lprint(const char *fmt,...)
 	vsnprintf(buf + strlen(buf), BFSZ - strlen(buf) -1, fmt, args);
 	va_end(args);
 
-	printf("%s", buf);
+	printf("%s\n", buf);
 	return;
 }
 

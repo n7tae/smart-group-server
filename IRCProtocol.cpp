@@ -63,6 +63,7 @@ IRCProtocol::IRCProtocol(IRCApplication * app, const std::string& callsign, cons
 	timer = 0;
 
 	chooseNewNick();
+	CUtils::lprint("IRCProtocol created");
 }
 
 IRCProtocol::~IRCProtocol()

@@ -76,7 +76,7 @@ m_remote(NULL)
 #if defined(DCS_LINK)
 	CDCSHandler::initialise(MAX_DCS_LINKS);
 #endif
-
+	CUtils::lprint("StarNetServerThread created");
 }
 
 CStarNetServerThread::~CStarNetServerThread()
@@ -92,7 +92,7 @@ CStarNetServerThread::~CStarNetServerThread()
 #if defined(DCS_LINK)
 	CDCSHandler::finalise();
 #endif
-
+	CUtils::lprint("StarNetServerThread destroyed");
 }
 
 void CStarNetServerThread::run()

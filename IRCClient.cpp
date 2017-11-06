@@ -53,6 +53,7 @@ IRCClient::IRCClient(IRCApplication *app, const std::string& update_channel, con
 	recvQ = NULL;
 	sendQ = NULL;
 	recv = NULL;
+	 CUtils::lprint("IRCClient created");
 }
 
 IRCClient::~IRCClient()

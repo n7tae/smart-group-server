@@ -108,8 +108,7 @@ bool CStarNetServerAppD::createThread()
 	std::string CallSign, address;
 	config.getGateway(CallSign, address);
 
-	while (7 > CallSign.size())
-		CallSign.push_back(' ');
+	CallSign.resize(7, ' ');
 	CallSign.push_back('G');
 
 	CUtils::lprint("Gateway callsign set to %s, local address set to %s", CallSign.c_str(), address.c_str());
@@ -123,7 +122,7 @@ bool CStarNetServerAppD::createThread()
 	CUtils::lprint("ircDDB host set to %s, username set to %s", hostname.c_str(), username.c_str());
 
 	if (hostname.size() && username.size()) {
-		CIRCDDB* ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_") + LOG_BASE_NAME + std::string("-") + VERSION, address); 
+		CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_") + LOG_BASE_NAME + std::string("-") + VERSION, address); 
 		bool res = ircDDB->open();
 		if (!res) {
 			CUtils::lprint("Cannot initialise the ircDDB protocol handler");
@@ -133,7 +132,7 @@ bool CStarNetServerAppD::createThread()
 		m_thread->setIRC(ircDDB);
 	}
 
-	for (unsigned int i=1U; i<=MAX_STARNETS; i++) {
+	for (unsigned int i=0; i<MAX_STARNETS; i++) {
 		std::string band, callsign, logoff, info, permanent, reflector;
 		unsigned int usertimeout, grouptimeout;
 		STARNET_CALLSIGN_SWITCH callsignswitch;
@@ -152,12 +151,12 @@ bool CStarNetServerAppD::createThread()
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch, reflector);
 			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s",
-				callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
+				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
 				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false", reflector.c_str());
 #else
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch);
 			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s",
-				callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
+				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
 				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false");
 #endif
 		}

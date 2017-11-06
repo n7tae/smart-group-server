@@ -54,24 +54,31 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		return;
 	CUtils::ToUpper(m_ircddbUsername);
 	get_value(cfg, "ircddb.password", m_ircddbPassword, 1, 30, "");
-	CUtils::lprint("IRCDDB: calsign='%s' address='%s' host='%s' user='%s' password='%s'", m_callsign, m_address, m_ircddbHostname, m_ircddbUsername, m_ircddbPassword);
+	CUtils::lprint("IRCDDB: calsign='%s' address='%s' host='%s' user='%s' password='%s'", m_callsign.c_str(), m_address.c_str(), m_ircddbHostname.c_str(),
+																									m_ircddbUsername.c_str(), m_ircddbPassword.c_str());
 
 	// module parameters
-	for (int i=1; i<=15; i++) {
+	for (int i=0; i<15; i++) {
 		char key[32];
 		std::string basename, subscribe, unsubscribe;
-		sprintf(key, "module.%d.basename", i);
-		if (! get_value(cfg, key, basename, 1, 7, ""))
-			basename.empty();
-		else {
-			CUtils::ToUpper(basename);
-			if (! isalnum(basename[0])) {
-				CUtils::lprint("Malformed basename for module %d", i);
+		snprintf(key, 32, "module.[%d].basename", i);
+		if (get_value(cfg, key, basename, 1, 7, "")) {
+			bool isokay = true;
+			for (std::string::iterator it=basename.begin(); it!=basename.end(); it++) {
+				if (! isalnum(*it)) {
+					isokay = false;
+					break;
+				}
+			}
+			if (isokay)
+				CUtils::ToUpper(basename);
+			else {
+				CUtils::lprint("Malformed basename for module %d: '%s'", i, basename.c_str());
 				basename.empty();
 			}
 		}
 		
-		sprintf(key, "module.%d.band", i);
+		sprintf(key, "module.[%d].band", i);
 		get_value(cfg, key, module[i].band, 1, 1, "A");
 		CUtils::ToUpper(module[i].band);
 		if (! isalpha(module[i].band[0])) {
@@ -79,14 +86,14 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 			basename.empty();
 		}
 		
-		sprintf(key, "module.%d,subscribe", i);
+		sprintf(key, "module.[%d].subscribe", i);
 		get_value(cfg, key, subscribe, 1, 1, "A");
 		CUtils::ToUpper(subscribe);
 		if (subscribe[0] != ' ' && ('A' > subscribe[0] || subscribe[0] > 'Z')) {
 			CUtils::lprint("subscribe suffix not space or letter");
 			basename.empty();
 		}
-		sprintf(key, "module.%d.unsubscribe", i);
+		sprintf(key, "module.[%d].unsubscribe", i);
 		get_value(cfg, key, unsubscribe, 1, 1, "T");
 		CUtils::ToUpper(unsubscribe);
 		if ('A' > unsubscribe[0] || unsubscribe[0] > 'Z') {
@@ -95,7 +102,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		}
 		if (! subscribe.compare(unsubscribe)) {
 			// subscribe and unsubscribe suffix needs to be different
-			CUtils::lprint("subscribe and unsubscribe for %s are identical", basename);
+			CUtils::lprint("subscribe and unsubscribe for %s are identical", basename.c_str());
 			basename.empty();
 		}
 		if (0 == basename.size()) {
@@ -104,36 +111,35 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		}
 
 		// pad basename with spaces
-		while (basename.size() < 7)
-			basename.push_back(' ');
+		basename.resize(7, ' ');
 		module[i].callsign = basename + subscribe;
 		module[i].logoff = basename + unsubscribe;
 		
-		sprintf(key, "module.%d.info", i);
+		sprintf(key, "module.[%d].info", i);
 		get_value(cfg, key, module[i].info, 0, 20, "");
 
-		sprintf(key, "module.%d.permanent", i);
+		sprintf(key, "module.[%d].permanent", i);
 		get_value(cfg, key, module[i].permanent, 0, 8, "");
 		CUtils::ToUpper(module[i].permanent);
 
 		int ivalue;
-		sprintf(key, "module.%d.usertimout", i);
+		sprintf(key, "module.[%d].usertimout", i);
 		get_value(cfg, key, ivalue, 0, 300, 300);
 		module[i].usertimeout = (unsigned int)ivalue;
 	
-		sprintf(key, "module.%d.grouptimeout", i);
+		sprintf(key, "module.[%d].grouptimeout", i);
 		get_value(cfg, key, ivalue, 0, 300, 300);
 		module[i].grouptimeout = (unsigned int)ivalue;
 
 		bool bvalue;
-		sprintf(key, "module.%d.callsignswitch", i);
+		sprintf(key, "module.[%d].callsignswitch", i);
 		get_value(cfg, key, bvalue, true);
 		module[i].callsignswitch = bvalue ? SCS_GROUP_CALLSIGN : SCS_USER_CALLSIGN;
 
-		sprintf(key, "module.%d.txmsgswitch", i);
+		sprintf(key, "module.[%d].txmsgswitch", i);
 		get_value(cfg, key, module[i].txmsgswitch, true);
 
-		sprintf(key, "module.%d.reflector", i);
+		sprintf(key, "module.[%d].reflector", i);
 		if (! get_value(cfg, key, basename, 8, 8, "")) {
 			CUtils::lprint("reflector %d must be undefined or exactly 8 chars!", i);
 			basename.empty();
@@ -147,9 +153,9 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 				module[i].reflector.empty();
 		}
 		CUtils::lprint("Module %d: callsign='%s' unsubscribe='%s' info='%s' permanent='%s' usertimeout=%d grouptimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'",
-			i, module[i].callsign, module[i].logoff, module[i].info, module[i].permanent, module[i].usertimeout, module[i].grouptimeout,
+			i, module[i].callsign.c_str(), module[i].logoff.c_str(), module[i].info.c_str(), module[i].permanent.c_str(), module[i].usertimeout, module[i].grouptimeout,
 			SCS_GROUP_CALLSIGN==module[i].callsignswitch ? "Group" : "User",
-			module[i].txmsgswitch ? "true" : "false", module[i].reflector);
+			module[i].txmsgswitch ? "true" : "false", module[i].reflector.c_str());
 	}
 
 	// remote control
@@ -164,7 +170,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		m_x = (unsigned int)ivalue;
 		get_value(cfg, "remote.windowY", ivalue, 0, 2000, 0);
 		m_y = (unsigned int)ivalue;
-		CUtils::lprint("Remote enabled: password='%s', port=%d, logEnabled=%s windowX=%d windowY=%d", m_remotePassword, m_remotePort, m_logEnabled?"true":"false", m_x, m_y);
+		CUtils::lprint("Remote enabled: password='%s', port=%d, logEnabled=%s windowX=%d windowY=%d", m_remotePassword.c_str(), m_remotePort, m_logEnabled?"true":"false", m_x, m_y);
 	} else {
 		m_remotePort = m_x = m_y = 0U;
 		m_remotePassword.empty();
@@ -184,7 +190,7 @@ bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, int &v
 			value = default_value;
 	} else
 		value = default_value;
-	CUtils::lprint("%s = [%u]\n", path, value);
+//	CUtils::lprint("%s = [%u]", path, value);
 	return true;
 }
 
@@ -192,7 +198,7 @@ bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, bool &
 {
 	if (! cfg.lookupValue(path, value))
 		value = default_value;
-	CUtils::lprint("%s = [%s]\n", path, value ? "true" : "false");
+//	CUtils::lprint("%s = [%s]", path, value ? "true" : "false");
 	return true;
 }
 
@@ -206,7 +212,7 @@ bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, std::s
 		}
 	} else
 		value = default_value;
-	CUtils::lprint("%s = [%s]\n", path, value.c_str());
+//	CUtils::lprint("%s = [%s]", path, value.c_str());
 	return true;
 }
 

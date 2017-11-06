@@ -141,6 +141,7 @@ IRCDDBApp::IRCDDBApp(const std::string& u_chan) :
 	d->myNick = std::string("none");
 	d->updateChannel = u_chan;
 	d->terminateThread = false;
+	CUtils::lprint("IRCDDBApp created, update channel is %s", d->updateChannel.c_str());
 }
 
 IRCDDBApp::~IRCDDBApp()
