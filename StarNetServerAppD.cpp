@@ -26,7 +26,7 @@
 #include "StarNetServerConfig.h"
 #include "StarNetServerAppD.h"
 #include "StarNetServerDefs.h"
-#include "APRSWriter.h"
+//#include "APRSWriter.h"
 #include "Version.h"
 #include "IRCDDBClient.h"
 #include "Utils.h"

@@ -41,7 +41,7 @@
 #include "VersionUnit.h"
 #include "CCSHandler.h"
 #include "StatusData.h"
-#include "APRSWriter.h"
+//#include "APRSWriter.h"
 #include "HeardData.h"
 #include "AudioUnit.h"
 #include "EchoUnit.h"
@@ -68,7 +68,7 @@ public:
 	static void setDPlusEnabled(bool enabled);
 	static void setDCSEnabled(bool enabled);
 	static void setHeaderLogger(CHeaderLogger* logger);
-	static void setAPRSWriter(CAPRSWriter* writer);
+	//static void setAPRSWriter(CAPRSWriter* writer);
 	static void setInfoEnabled(bool enabled);
 	static void setEchoEnabled(bool enabled);
 	static void setDTMFEnabled(bool enabled);
@@ -160,7 +160,7 @@ private:
 
 	static CHeaderLogger*   m_headerLogger;
 
-	static CAPRSWriter*     m_aprsWriter;
+	//static CAPRSWriter*     m_aprsWriter;
 
 	static CCallsignList*   m_whiteList;
 	static CCallsignList*   m_blackList;

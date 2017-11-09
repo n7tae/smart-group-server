@@ -59,7 +59,7 @@ bool                      CRepeaterHandler::m_dtmfEnabled = true;
 
 CHeaderLogger*            CRepeaterHandler::m_headerLogger = NULL;
 
-CAPRSWriter*              CRepeaterHandler::m_aprsWriter  = NULL;
+//CAPRSWriter*              CRepeaterHandler::m_aprsWriter  = NULL;
 
 CCallsignList*            CRepeaterHandler::m_restrictList = NULL;
 
@@ -332,10 +332,10 @@ void CRepeaterHandler::setHeaderLogger(CHeaderLogger* logger)
 	m_headerLogger = logger;
 }
 
-void CRepeaterHandler::setAPRSWriter(CAPRSWriter* writer)
-{
-	m_aprsWriter = writer;
-}
+//void CRepeaterHandler::setAPRSWriter(CAPRSWriter* writer)
+//{
+//	m_aprsWriter = writer;
+//}
 
 void CRepeaterHandler::setLocalAddress(const std::string& address)
 {
@@ -403,10 +403,10 @@ void CRepeaterHandler::finalise()
 		m_repeaters[i] = NULL;
 	}
 
-	if (m_aprsWriter != NULL) {
-		m_aprsWriter->close();
-		delete m_aprsWriter;
-	}
+//	if (m_aprsWriter != NULL) {
+//		m_aprsWriter->close();
+//		delete m_aprsWriter;
+//	}
 
 	delete[] m_repeaters;
 }
@@ -593,8 +593,8 @@ void CRepeaterHandler::processRepeater(CHeaderData& header)
 	m_text.clear();
 
 	// Reset the APRS Writer if it's enabled
-	if (m_aprsWriter != NULL)
-		m_aprsWriter->reset(m_rptCallsign);
+//	if (m_aprsWriter != NULL)
+//		m_aprsWriter->reset(m_rptCallsign);
 
 	// Write to Header.log if it's enabled
 	if (m_headerLogger != NULL)
@@ -776,8 +776,8 @@ void CRepeaterHandler::processRepeater(CAMBEData& data)
 	if (m_drats != NULL)
 		m_drats->writeData(data);
 
-	if (m_aprsWriter != NULL)
-		m_aprsWriter->writeData(m_rptCallsign, data);
+//	if (m_aprsWriter != NULL)
+//		m_aprsWriter->writeData(m_rptCallsign, data);
 
 	if (0==m_text.size() && !data.isEnd()) {
 		m_textCollector.writeData(data);
