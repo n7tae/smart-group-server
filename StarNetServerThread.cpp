@@ -17,7 +17,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
  
-#include <unistd.h>
+#include <thread>
+#include <chrono>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <netdb.h>
@@ -97,9 +98,10 @@ CStarNetServerThread::~CStarNetServerThread()
 
 void CStarNetServerThread::run()
 {
+	bool ret;
 #if defined(DEXTRA_LINK)
 	m_dextraPool = new CDExtraProtocolHandlerPool(MAX_DEXTRA_LINKS, DEXTRA_PORT, m_address);
-	bool ret = m_dextraPool->open();
+	ret = m_dextraPool->open();
 	if (!ret) {
 		CUtils::lprint("Could not open the DExtra protocol pool");
 		delete m_dextraPool;
@@ -128,13 +130,13 @@ void CStarNetServerThread::run()
 	// Wait here until we have the essentials to run
 #if defined(DEXTRA_LINK)
 	while (!m_killed && (m_g2Handler == NULL || m_dextraPool == NULL || m_irc == NULL || 0==m_callsign.size()))
-		usleep(500000);
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #elif defined(DCS_LINK)
 	while (!m_killed && (m_g2Handler == NULL || m_dcsPool == NULL || m_irc == NULL || 0==m_callsign.size()))
-		usleep(500000);
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #else
 	while (!m_killed && (m_g2Handler == NULL || m_irc == NULL || 0==m_callsign.size()))
-		usleep(500000);
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #endif
 
 	if (m_killed)
@@ -215,6 +217,7 @@ void CStarNetServerThread::run()
 			time_t now;
 			time(&now);
 			unsigned long ms = (unsigned long)(1000.0 * difftime(now, start));
+//CUtils::lprint("StarNetServerThread::run: ms=%u", ms);
 			time(&start);
 
 			m_statusTimer.clock(ms);
@@ -227,8 +230,7 @@ void CStarNetServerThread::run()
 #if defined(DCS_LINK)
 			CDCSHandler::clock(ms);
 #endif
-
-			usleep(1000*TIME_PER_TIC_MS);
+			std::this_thread::sleep_for(std::chrono::milliseconds(TIME_PER_TIC_MS));
 		}
 	}
 	catch (std::exception& e) {
@@ -561,7 +563,7 @@ void CStarNetServerThread::loadReflectors(const std::string fname)
 	hostfile.getline(line, 256);
 	int count=0, tries=0;
 	while (hostfile.good()) {
-		const char *space = " /t/r";
+		const char *space = " \t\r";
 		char *first = strtok(line, space);
 		if (first) {
 			if ('#' != first[0]) {

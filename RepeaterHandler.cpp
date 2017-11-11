@@ -208,12 +208,13 @@ m_heardTimer(1000U, 0U, 100U)		// 100ms
 	m_version   = new CVersionUnit(this, callsign);
 
 	if (dratsEnabled) {
-		m_drats = new CDRATSServer(m_localAddress, port, callsign, this);
-		bool ret = m_drats->open();
-		if (!ret) {
-			delete m_drats;
-			m_drats = NULL;
-		}
+		CUtils::lprint("RepeaterHandler: DRATS is not available!");
+//		m_drats = new CDRATSServer(m_localAddress, port, callsign, this);
+//		bool ret = m_drats->open();
+//		if (!ret) {
+//			delete m_drats;
+//			m_drats = NULL;
+//		}
 	}
 }
 

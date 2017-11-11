@@ -26,8 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 IRCReceiver::IRCReceiver(int sock, IRCMessageQueue *q)
 {
-  this->sock = sock;
-  recvQ = q;
+  m_sock = sock;
+  m_recvQ = q;
 }
 
 IRCReceiver::~IRCReceiver()
@@ -36,19 +36,19 @@ IRCReceiver::~IRCReceiver()
 
 void IRCReceiver::startWork()
 {
-	terminateThread = false;
+	m_terminateThread = false;
 
 	m_future = std::async(std::launch::async, &IRCReceiver::Entry, this);
 }
 
 void IRCReceiver::stopWork()
 {
-	terminateThread = true;
+	m_terminateThread = true;
 
 	m_future.get();
 }
 
-static int doRead(int sock, char * buf, int buf_size)
+static int doRead(int sock, char *buf, int buf_size)
 {
 	struct timeval tv;
 	tv.tv_sec = 1;
@@ -95,11 +95,11 @@ bool IRCReceiver::Entry()
 	IRCMessage *m = new IRCMessage();
 	int i;
 	int state = 0;
-	while (!terminateThread) {
+	while (!m_terminateThread) {
 		char buf[200];
-		int r = doRead( sock, buf, sizeof buf );
+		int r = doRead(m_sock, buf, sizeof buf);
 		if (r < 0) {
-			recvQ -> signalEOF();
+			m_recvQ -> signalEOF();
 			delete m;  // delete unfinished IRCMessage
 			break;
 		}
@@ -109,7 +109,7 @@ bool IRCReceiver::Entry()
 
 			if (b > 0) {
 				if (b == 10) {
-					recvQ -> putMessage(m);
+					m_recvQ -> putMessage(m);
 					m = new IRCMessage();
 					state = 0;
 				} else if (b == 13) {

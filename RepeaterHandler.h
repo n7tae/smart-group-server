@@ -36,7 +36,7 @@
 #include "CacheManager.h"
 #include "HeaderLogger.h"
 #include "CallsignList.h"
-#include "DRATSServer.h"
+//#include "DRATSServer.h"
 #include "CCSCallback.h"
 #include "VersionUnit.h"
 #include "CCSHandler.h"
@@ -253,7 +253,7 @@ private:
 	CVersionUnit*             m_version;
 
 	// D-RATS handler
-	CDRATSServer*             m_drats;
+//	CDRATSServer*             m_drats;
 
 	// DTMF commands
 	CDTMF                     m_dtmf;

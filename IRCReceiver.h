@@ -38,9 +38,9 @@ protected:
 	bool Entry();
 
 private:
-	bool terminateThread;
-	int sock;
-	IRCMessageQueue *recvQ;
+	bool m_terminateThread;
+	int m_sock;
+	IRCMessageQueue *m_recvQ;
 	std::future<bool> m_future;
 };
 

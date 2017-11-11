@@ -19,7 +19,8 @@
 
 #include <cassert>
 #include <cstring>
-#include <unistd.h>
+#include <thread>
+#include <chrono>
 
 #include "DPlusAuthenticator.h"
 #include "UDPReaderWriter.h"
@@ -89,7 +90,7 @@ bool CDPlusAuthenticator::Entry()
 				m_timer.start();
 			}
 
-			sleep(1);
+			std::this_thread::sleep_for(std::chrono::seconds(1));
 
 			m_timer.clock();
 			m_pollTimer.clock();

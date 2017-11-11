@@ -20,7 +20,7 @@
 #include <cassert>
 #include <cstring>
 #include <chrono>
-#include <unistd.h>
+#include <thread>
 
 #include "DStarDefines.h"
 #include "DRATSServer.h"
@@ -322,7 +322,7 @@ bool CDRATSServer::Entry()
 			}
 
 			// 50ms
-			usleep(50000);
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		}
 
 		if (m_socket != NULL)

@@ -20,6 +20,8 @@
 #include <cerrno>
 #include <cassert>
 #include <cstring>
+#include <thread>
+#include <chrono>
 #include <unistd.h>
 
 #include "TCPReaderWriterServer.h"
@@ -119,7 +121,7 @@ bool CTCPReaderWriterServer::Entry()
 					break;
 			}
 
-			usleep(1000000);
+			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
 
 		if (m_client != NULL) {

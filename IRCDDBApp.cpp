@@ -26,8 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <mutex>
 #include <regex>
 #include <cstdio>
-
-#include <unistd.h>
+#include <thread>
+#include <chrono>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -888,7 +888,7 @@ bool IRCDDBApp::Entry()
 	while (!d->terminateThread) {
 		if (d->timer > 0)
 			d->timer--;
-
+CUtils::lprint("IRCDDBApp::Entry(): d->timer=%d state=%d", d->timer, d->state);
 		switch(d->state) {
 			case 0:		// wait for network to start
 				if (getSendQ())
@@ -1042,7 +1042,7 @@ bool IRCDDBApp::Entry()
 				  d->initReady = false;
 				  break;
 		}
-		sleep(1);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 	return 0;
 }

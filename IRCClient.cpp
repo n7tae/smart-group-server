@@ -22,10 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <unistd.h>
+#include <thread>
+#include <chrono>
 #include <cstring>
 
 #include "IRCClient.h"
@@ -75,7 +77,7 @@ void IRCClient::stopWork()
 	m_future.get();
 }
 
-int IRCClient::Entry ()
+int IRCClient::Entry()
 {
 	int state = 0;
 	int timer = 0;
@@ -98,7 +100,7 @@ int IRCClient::Entry ()
 	while (true) {
 		if (timer > 0)
 			timer--;
-
+//CUtils::lprint("IRCClient::Entry: state=%d timer=%d", state, timer);
 		switch (state) {
 			case 0:
 				if (terminateThread) {
@@ -127,7 +129,7 @@ int IRCClient::Entry ()
 				}
 
 				if (timer == 0) {
-					sock = socket( PF_INET, SOCK_STREAM, IPPROTO_TCP);
+					sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 					if (sock < 0) {
 						CUtils::lprint("IRCClient::Entry: socket");
@@ -304,7 +306,7 @@ int IRCClient::Entry ()
 					proto->setNetworkReady(false);
 					recv->stopWork();
 
-					sleep(2);
+					std::this_thread::sleep_for(std::chrono::seconds(2));
 
 					delete recv;
 					delete recvQ;
@@ -321,7 +323,7 @@ int IRCClient::Entry ()
 				}
 				break;
 		}
-		usleep(500000);
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 	return 0;
 }

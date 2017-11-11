@@ -329,7 +329,7 @@ void CUtils::ReplaceChar(std::string &str, char from, char to)
 	}
 }
 
-int CUtils::getAllIPV4Addresses(const char * name, unsigned short port, unsigned int * num, struct sockaddr_in * addr, unsigned int max_addr)
+int CUtils::getAllIPV4Addresses(const char *name, unsigned short port, unsigned int *num, struct sockaddr_in *addr, unsigned int max_addr)
 {
 
 	struct addrinfo hints;
@@ -339,7 +339,7 @@ int CUtils::getAllIPV4Addresses(const char * name, unsigned short port, unsigned
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
-	int r = getaddrinfo( name, NULL, &hints, &res );
+	int r = getaddrinfo(name, NULL, &hints, &res);
 
 	if (r == 0) {
 		struct addrinfo * rp;
@@ -354,7 +354,7 @@ int CUtils::getAllIPV4Addresses(const char * name, unsigned short port, unsigned
 			if (numAddr > max_addr)
 				numAddr = max_addr;
 
-			int * shuffle = new int[numAddr];
+			int *shuffle = new int[numAddr];
 
 			unsigned int i;
 
