@@ -3,7 +3,7 @@ CIRCDDBClient - ircDDB client library in C++
 
 Copyright (C) 2010-2011   Michael Dirska, DL1BFF (dl1bff@mdx.de)
 Copyright (C) 2011,2012   Jonathan Naylor, G4KLX
-Copyright (c) 2017 by Thomas A. Early N7TAE
+Copyright (c) 2017 by Thomas A. Early
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdio>
-
 #include "IRCDDBClient.h"
 #include "IRCClient.h"
 #include "IRCDDBApp.h"
@@ -28,17 +26,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 struct CIRCDDBClientPrivate
 {
-    IRCClient *client;
-    IRCDDBApp *app;
+	IRCClient *client;
+	IRCDDBApp *app;
 };
 
-CIRCDDBClient::CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo,
-	const std::string& localAddr) : d(new CIRCDDBClientPrivate)
+CIRCDDBClient::CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo, const std::string& localAddr ) : d(new CIRCDDBClientPrivate)
 {
 	std::string update_channel("#dstar");
-
 	d->app = new IRCDDBApp(update_channel);
-
 	d->client = new IRCClient(d->app, update_channel, hostName, port, callsign, password, versionInfo, localAddr);
 }
 
@@ -49,9 +44,11 @@ CIRCDDBClient::~CIRCDDBClient()
 	delete d;
 }
 
-// A false return implies a network error, or unable to log in
+
+	// A false return implies a network error, or unable to log in
 bool CIRCDDBClient::open()
 {
+	CUtils::lprint("start client and app");
 	d->client->startWork();
 	d->app->startWork();
 	return true;
@@ -85,7 +82,7 @@ void CIRCDDBClient::kickWatchdog(const std::string& callsign, const std::string&
 
 // Send heard data, a false return implies a network error
 bool CIRCDDBClient::sendHeard( const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,
-	  const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3 )
+									const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3 )
 {
 	if (myCall.size() != 8) {
 		CUtils::lprint("CIRCDDBClient::sendHeard:myCall: len != 8");
@@ -111,13 +108,14 @@ bool CIRCDDBClient::sendHeard( const std::string& myCall, const std::string& myC
 		CUtils::lprint("CIRCDDBClient::sendHeard:rpt2: len != 8");
 		return false;
 	}
-	return d->app->sendHeard( myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, std::string("        "), std::string(""), std::string(""));
+
+	return d->app->sendHeard(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, std::string("        "), std::string(""), std::string(""));
 }
 
 
 // Send heard data, a false return implies a network error
-bool CIRCDDBClient::sendHeardWithTXMsg( const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,
-	  const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message)
+bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,
+	const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message)
 {
 	if (myCall.size() != 8) {
 		CUtils::lprint("CIRCDDBClient::sendHeard:myCall: len != 8");
@@ -144,29 +142,26 @@ bool CIRCDDBClient::sendHeardWithTXMsg( const std::string& myCall, const std::st
 		return false;
 	}
 
-	std::string dest = network_destination;
+	std::string dest(network_destination);
+	if (0 == dest.size())
+		dest = std::string("        ");
 
-	if (dest.size() == 0)
-		dest = "        ";
-
-	if (dest.size() != 8) {
+	if (8 != dest.size()) {
 		CUtils::lprint("CIRCDDBClient::sendHeard:network_destination: len != 8");
 		return false;
 	}
 
 	std::string msg;
-
-	if (tx_message.size() == 20) {
+	if (20 == tx_message.size()) {
 		for (unsigned int i=0; i < tx_message.size(); i++) {
 			char ch = tx_message.at(i);
-
-			if (ch>32 && ch<127)
+			if ((ch > 32) && (ch < 127))
 				msg.push_back(ch);
 			else
 				msg.push_back('_');
 		}
 	}
-	return d->app->sendHeard( myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, dest, msg, std::string(""));
+	return d->app->sendHeard(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, dest, msg, std::string(""));
 }
 
 
@@ -178,84 +173,94 @@ bool CIRCDDBClient::sendHeardWithTXStats( const std::string& myCall, const std::
 		CUtils::lprint("CIRCDDBClient::sendHeard:num_dv_frames not in range 1-65535");
 		return false;
 	}
+	
 	if (num_dv_silent_frames > num_dv_frames) {
 		CUtils::lprint("CIRCDDBClient::sendHeard:num_dv_silent_frames > num_dv_frames");
 		return false;
 	}
-	if (num_bit_errors > (4*num_dv_frames)) {	// max 4 bit errors per frame
+	
+	if (num_bit_errors > (4*num_dv_frames)) { // max 4 bit errors per frame
 		CUtils::lprint("CIRCDDBClient::sendHeard:num_bit_errors > (4*num_dv_frames)");
 		return false;
 	}
+	
 	if (myCall.size() != 8) {
 		CUtils::lprint("CIRCDDBClient::sendHeard:myCall: len != 8");
 		return false;
 	}
+	
 	if (myCallExt.size() != 4) {
 		CUtils::lprint("CIRCDDBClient::sendHeard:myCallExt: len != 4");
 		return false;
 	}
+	
 	if (yourCall.size() != 8) {
 		CUtils::lprint("CIRCDDBClient::sendHeard:yourCall: len != 8");
 		return false;
 	}
+	
 	if (rpt1.size() != 8) {
 		CUtils::lprint("CIRCDDBClient::sendHeard:rpt1: len != 8");
 		return false;
 	}
+	
 	if (rpt2.size() != 8) {
 		CUtils::lprint("CIRCDDBClient::sendHeard:rpt2: len != 8");
 		return false;
 	}
 
-	char sstr[8];	// stats
-	snprintf(sstr, 8, "%04x", num_dv_frames);
-	std::string stats(sstr);
+	char str[10];
+	snprintf(str, 10, "%04x", num_dv_frames);
+	std::string stats(str);
+
 	if (num_dv_silent_frames >= 0) {
-		snprintf(sstr, 8, "%02x", (num_dv_silent_frames * 100) / num_dv_frames);
-		stats.append(sstr);
+		snprintf(str, 10, "%02x", (num_dv_silent_frames * 100) / num_dv_frames);
+		stats.append(str);
+
 		if (num_bit_errors >= 0) {
-			snprintf(sstr, 8, "%02x", (num_bit_errors * 125) / (num_dv_frames * 3));
-			stats.append(sstr);
+			snprintf(str, 10, "%02x", (num_bit_errors * 125) / (num_dv_frames * 3));
+			stats.append(str);
 		}
 	}
-	stats.resize(20, '_');  // stats string should have 20 chars
+	stats.resize(20, '_');
 
-	return d->app->sendHeard( myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, std::string("        "), std::string(""), stats);
+	return d->app->sendHeard(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, std::string("        "), std::string(""), stats);
 }
 
 // Send query for a gateway/reflector, a false return implies a network error
 bool CIRCDDBClient::findGateway(const std::string& gatewayCallsign)
 {
-	if (gatewayCallsign.size() != 8) {
+	if (8 != gatewayCallsign.size()) {
 		CUtils::lprint("CIRCDDBClient::findGateway: len != 8");
 		return false;
 	}
-	std::string cs(gatewayCallsign);
-	CUtils::ToUpper(cs);
-	return d->app->findGateway(cs);
+	std::string gw(gatewayCallsign);
+	CUtils::ToUpper(gw);
+	return d->app->findGateway(gw);
 }
+
 
 bool CIRCDDBClient::findRepeater(const std::string& repeaterCallsign)
 {
-	if (repeaterCallsign.size() != 8) {
+	if (8 != repeaterCallsign.size()) {
 		CUtils::lprint("CIRCDDBClient::findRepeater: len != 8");
 		return false;
 	}
-	std::string rcs(repeaterCallsign);
-	CUtils::ToUpper(rcs);
-	return d->app->findRepeater(rcs);
+	std::string rptr(repeaterCallsign);
+	CUtils::ToUpper(rptr);
+	return d->app->findRepeater(rptr);
 }
 
 // Send query for a user, a false return implies a network error
 bool CIRCDDBClient::findUser(const std::string& userCallsign)
 {
-	if (userCallsign.size() != 8) {
+	if (8 != userCallsign.size()) {
 		CUtils::lprint("CIRCDDBClient::findUser: len != 8");
 		return false;
 	}
-	std::string ucs(userCallsign);
-	CUtils::ToUpper(ucs);
-	return d->app->findUser(ucs);
+	std::string usr(userCallsign);
+	CUtils::ToUpper(usr);
+	return d->app->findUser(usr);
 }
 
 // The following functions are for processing received messages
@@ -278,7 +283,6 @@ bool CIRCDDBClient::receiveRepeater(std::string& repeaterCallsign, std::string& 
 	}
 
 	IRCMessage *m = d->app->getReplyMessage();
-
 	if (m == NULL) {
 		CUtils::lprint("CIRCDDBClient::receiveRepeater: no message");
 		return false;
@@ -290,11 +294,12 @@ bool CIRCDDBClient::receiveRepeater(std::string& repeaterCallsign, std::string& 
 		return false;
 	}
 
-	if (m->getParamCount() != 3) {
-	CUtils::lprint("CIRCDDBClient::receiveRepeater: unexpected number of message parameters");
+	if (3 != m->getParamCount()) {
+		CUtils::lprint("CIRCDDBClient::receiveRepeater: unexpected number of message parameters");
 		delete m;
 		return false;
 	}
+
 	repeaterCallsign = m->getParam(0);
 	gatewayCallsign = m->getParam(1);
 	address = m->getParam(2);
@@ -314,19 +319,22 @@ bool CIRCDDBClient::receiveGateway(std::string& gatewayCallsign, std::string& ad
 	}
 
 	IRCMessage *m = d->app->getReplyMessage();
+
 	if (m == NULL) {
 		CUtils::lprint("CIRCDDBClient::receiveGateway: no message");
 		return false;
 	}
+
 	if (m->getCommand().compare("IDRT_GATEWAY")) {
 		CUtils::lprint("CIRCDDBClient::receiveGateway: wrong message type");
 		delete m;
-		return false;
+	return false;
 	}
-	if (m->getParamCount() != 2) {
+
+	if (2 != m->getParamCount()) {
 		CUtils::lprint("CIRCDDBClient::receiveGateway: unexpected number of message parameters");
 		delete m;
-		return false;
+	return false;
 	}
 
 	gatewayCallsign = m->getParam(0);
@@ -339,7 +347,7 @@ bool CIRCDDBClient::receiveGateway(std::string& gatewayCallsign, std::string& ad
 // A false return implies a network error
 bool CIRCDDBClient::receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address)
 {
-	std::string dummy;
+	std::string dummy("");
 	return receiveUser(userCallsign, repeaterCallsign, gatewayCallsign, address, dummy);
 }
 
@@ -352,7 +360,7 @@ bool CIRCDDBClient::receiveUser(std::string& userCallsign, std::string& repeater
 		return false;
 	}
 
-	IRCMessage *m = d->app->getReplyMessage();
+	IRCMessage * m = d->app->getReplyMessage();
 
 	if (m == NULL) {
 		CUtils::lprint("CIRCDDBClient::receiveUser: no message");
@@ -365,11 +373,12 @@ bool CIRCDDBClient::receiveUser(std::string& userCallsign, std::string& repeater
 		return false;
 	}
 
-	if (m->getParamCount() != 5) {
+	if (5 != m->getParamCount()) {
 		CUtils::lprint("CIRCDDBClient::receiveUser: unexpected number of message parameters");
 		delete m;
 		return false;
 	}
+
 	userCallsign = m->getParam(0);
 	repeaterCallsign = m->getParam(1);
 	gatewayCallsign = m->getParam(2);
@@ -381,7 +390,7 @@ bool CIRCDDBClient::receiveUser(std::string& userCallsign, std::string& repeater
 
 void CIRCDDBClient::close()		// Implictely kills any threads in the IRC code
 {
-	d->client->stopWork();
-	d->app->stopWork();
+	d->client -> stopWork();
+	d->app -> stopWork();
 }
 

@@ -20,6 +20,7 @@
  #include <cassert>
  #include <cstdio>
  #include <cstring>
+#include <vector>
 
 #include "SlowDataEncoder.h"
 #include "RepeaterHandler.h"
@@ -28,8 +29,6 @@
 #include "DStarDefines.h"
 #include "DCSHandler.h"			// DCS_LINK
 #include "Utils.h"
-
-#include <vector>
 
 const unsigned int MESSAGE_DELAY = 4U;
 
@@ -452,7 +451,7 @@ void CStarNetHandler::process(CHeaderData &header)
 {
 	std::string my   = header.getMyCall1();
 	std::string your = header.getYourCall();
-
+//CUtils::lprint("CStarNetHandler::Process(CHeaderData) my=%s ur=%s", my.c_str(), your.c_str());
 	unsigned int id = header.getId();
 
 	CStarNetUser* user = m_users[my];
@@ -466,14 +465,12 @@ void CStarNetHandler::process(CHeaderData &header)
 		// This is a normal message for logging in/relaying
 		if (user == NULL) {
 			// This is a new user, add them to the list
-			if (m_logFile) {
+			{
 				time_t timeNow = ::time(NULL);
 				struct tm* tm = ::gmtime(&timeNow);
 
-				fprintf(m_logFile, "%04d-%02d-%02d %02d:%02d:%02d: Adding %s to StarNet group %s\n",
-					tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-					my.c_str(), m_groupCallsign.c_str());
-				fflush(m_logFile);
+				CUtils::lprint("%04d-%02d-%02d %02d:%02d:%02d: Adding %s to StarNet group %s\n", tm->tm_year + 1900, tm->tm_mon + 1,
+						tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, my.c_str(), m_groupCallsign.c_str());
 			}
 
 			// Start the StarNet group timer if not already running
@@ -636,14 +633,13 @@ void CStarNetHandler::process(CAMBEData &data)
 				std::string TEMP(text.substr(0,6));
 				CUtils::ToUpper(TEMP);
 				if (0 == TEMP.compare("LOGOFF")) {
-					if (m_logFile) {
+					{
 						time_t timeNow = ::time(NULL);
 						struct tm* tm = ::gmtime(&timeNow);
 
-						fprintf(m_logFile, "%04d-%02d-%02d %02d:%02d:%02d: Removing %s from StarNet group %s, logged off\n",
+						CUtils::lprint("%04d-%02d-%02d %02d:%02d:%02d: Removing %s from StarNet group %s, logged off\n",
 							tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
 							user->getCallsign().c_str(), m_groupCallsign.c_str());
-						fflush(m_logFile);
 					}
 
 					tx->setLogoff();
@@ -953,12 +949,10 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		m_repeaters.clear();
 	}
 #endif
-
 	m_announceTimer.clock(ms);
 	if (m_announceTimer.hasExpired()) {
 		m_irc->sendHeardWithTXMsg(m_groupCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
-
-		if (m_offCallsign.size() && !m_offCallsign.compare("        "))
+		if (m_offCallsign.size() && m_offCallsign.compare("        "))
 			m_irc->sendHeardWithTXMsg(m_offCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
 
 		m_announceTimer.start(60U * 60U);		// 1 hour

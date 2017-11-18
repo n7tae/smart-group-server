@@ -1,9 +1,8 @@
 /*
-
 CIRCDDB - ircDDB client library in C++
 
 Copyright (C) 2010   Michael Dirska, DL1BFF (dl1bff@mdx.de)
-Copyright (c) 2017 Thomas A. Early N7TAE
+Copyright (c) 2017 by Thomas A. Early N7TAE
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,7 +16,6 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 */
 
 #pragma once
@@ -25,47 +23,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <vector>
 
-
 class IRCMessage
 {
-  public:
+public:
+	IRCMessage();
+	IRCMessage(const std::string& toNick, const std::string& msg);
+	IRCMessage(const std::string& command);
+	~IRCMessage();
 
-    IRCMessage();
+	std::string prefix;
+	std::string command;
+	std::vector<std::string> params;
 
-    IRCMessage( const std::string& toNick, const std::string& msg );
+	int numParams;
+	std::string& getPrefixNick();
+	std::string& getPrefixName();
+	std::string& getPrefixHost();
+	void composeMessage(std::string& output);
+	void addParam(const std::string& p);
 
-    IRCMessage( const std::string& command );
+	std::string getCommand();
+	std::string getParam(int pos);
+	int getParamCount();
 
-    ~IRCMessage();
-
-
-
-    std::string prefix;
-    std::string command;
-    std::vector<std::string> params;
-
-    int numParams;
-
-    std::string& getPrefixNick();
-    std::string& getPrefixName();
-    std::string& getPrefixHost();
-
-    void composeMessage ( std::string& output );
-
-    void addParam( const std::string& p );
-
-    std::string getCommand();
-
-    std::string getParam( int pos );
-
-    int getParamCount();
-
-  private:
-
-    void parsePrefix();
-
-    std::vector<std::string> prefixComponents;
-    bool prefixParsed;
-
+private:
+	bool parsePrefix();
+	std::vector<std::string> prefixComponents;
+	bool prefixParsed;
 };
-

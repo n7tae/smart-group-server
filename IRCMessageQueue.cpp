@@ -1,8 +1,10 @@
 /*
-
 CIRCDDB - ircDDB client library in C++
 
+Based on code by:
 Copyright (C) 2010   Michael Dirska, DL1BFF (dl1bff@mdx.de)
+
+Completely rewritten by:
 Copyright (c) 2017 by Thomas A. Early N7TAE
 
 This program is free software: you can redistribute it and/or modify
@@ -17,120 +19,66 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 */
 
 #include "IRCMessageQueue.h"
 
-
 IRCMessageQueue::IRCMessageQueue()
 {
-  eof = false;
-  first = NULL;
-  last = NULL;
-
+	m_eof = false;
 }
 
 IRCMessageQueue::~IRCMessageQueue()
 {
-  while (messageAvailable()) {
-    IRCMessage * m = getMessage();
-
-    delete m;
-  }
+	accessMutex.lock();
+	while (! m_queue.empty()) {
+		delete m_queue.front();
+		m_queue.pop();
+	}
+	accessMutex.unlock();
 }
-
 
 bool IRCMessageQueue::isEOF()
 {
-  return eof;
+	return m_eof;
 }
-
 
 void IRCMessageQueue::signalEOF()
 {
-  eof = true;
+	m_eof = true;
 }
-
 
 bool IRCMessageQueue::messageAvailable()
 {
   accessMutex.lock();
-
-  IRCMessageQueueItem *mqi = first;
-
+  bool retv = ! m_queue.empty();
   accessMutex.unlock();
-
-  return (mqi != NULL);
+  return retv;
 }
 
-
-IRCMessage * IRCMessageQueue::peekFirst()
+IRCMessage *IRCMessageQueue::peekFirst()
 {
-  accessMutex.lock();
-
-  IRCMessageQueueItem * k = first;
-
-  accessMutex.unlock();
-
-  if ( k == NULL ) {
-    return NULL;
-  }
-
-  return k->msg;
+	accessMutex.lock();
+	IRCMessage *msg = m_queue.empty() ? NULL : m_queue.front();
+	accessMutex.unlock();
+	return msg;
 }
 
-
-IRCMessage * IRCMessageQueue::getMessage()
+IRCMessage *IRCMessageQueue::getMessage()
 {
-  accessMutex.lock();
-
-  IRCMessageQueueItem * k;
-
-  if (first == NULL) {
-	  accessMutex.unlock();
-	  return NULL;
-  }
-
-  k = first;
-
-  first = k -> next;
-
-  if (k -> next == NULL) {
-	  last = NULL;
-  } else {
-	  k -> next -> prev = NULL;
-  }
-
-
-  IRCMessage * msg = k -> msg;
-
-  delete k;
-
-  accessMutex.unlock();
-
-  return msg;
+	accessMutex.lock();
+	IRCMessage *msg = m_queue.empty() ? NULL : m_queue.front();
+	if (msg)
+		m_queue.pop();
+	accessMutex.unlock();
+	return msg;
 }
 
-
-void IRCMessageQueue::putMessage( IRCMessage * m )
+void IRCMessageQueue::putMessage(IRCMessage *m)
 {
-  accessMutex.lock();
-
-  IRCMessageQueueItem * k = new IRCMessageQueueItem(m);
-
-  k -> prev = last;
-  k -> next = NULL;
-
-  if (last == NULL) {
-	  first = k;
-  } else {
-	  last -> next = k;
-  }
-
-  last = k;
-
-  accessMutex.unlock();
+	accessMutex.lock();
+	m_queue.push(m);
+	accessMutex.unlock();
 }
 
 

@@ -4,7 +4,7 @@ CIRCDDB - ircDDB client library in C++
 
 Copyright (C) 2010-2011   Michael Dirska, DL1BFF (dl1bff@mdx.de)
 Copyright (C) 2011,2012   Jonathan Naylor, G4KLX
-Copyright (c) 2017 by Thomas A. Early N7TAE
+Copyright (c) 2017 by Thomas A Early N7TAE
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -50,8 +50,7 @@ public:
 	//   desc1, desc2   20-character description of QTH
 	//   infoURL      URL of a web page with information about the repeater
 
-	virtual void rptrQTH(const std::string& callsign, double latitude, double longitude, const std::string& desc1,
-		const std::string& desc2, const std::string& infoURL) = 0;
+	virtual void rptrQTH(const std::string& callsign, double latitude, double longitude, const std::string& desc1, const std::string& desc2, const std::string& infoURL) = 0;
 
 
 
@@ -87,10 +86,7 @@ public:
 	//  10 = some network error occured, next state is "0" (new connection attempt)
 
 	// Send heard data, a false return implies a network error
-	virtual bool sendHeard(const std::string& myCall, const std::string& myCallExt,
-		const std::string& yourCall, const std::string& rpt1,
-		const std::string& rpt2, unsigned char flag1,
-		unsigned char flag2, unsigned char flag3) = 0;
+	virtual bool sendHeard(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3) = 0;
 
 
 	// same as sendHeard with two new fields:
@@ -98,12 +94,7 @@ public:
 	//	    or reflector, where this transmission is relayed to.
 	//   tx_message:  20-char TX message or empty string, if the user did not
 	//       send a TX message
-	virtual bool sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt,
-		const std::string& yourCall, const std::string& rpt1,
-		const std::string& rpt2, unsigned char flag1,
-		unsigned char flag2, unsigned char flag3,
-		const std::string& network_destination,
-		const std::string& tx_message) = 0;
+	virtual bool sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message) = 0;
 
 	// this method should be called at the end of a transmission
 	//  num_dv_frames: number of DV frames sent out (96 bit frames, 20ms)
@@ -115,13 +106,7 @@ public:
 	//      So, the overall bit error rate is calculated like this:
 	//      BER = num_bit_errors / (num_dv_frames * 24)
 	//      Set num_bit_errors = -1, if the error information is not available.
-	virtual bool sendHeardWithTXStats(const std::string& myCall, const std::string& myCallExt,
-		const std::string& yourCall, const std::string& rpt1,
-		const std::string& rpt2, unsigned char flag1,
-		unsigned char flag2, unsigned char flag3,
-		int num_dv_frames,
-		int num_dv_silent_frames,
-		int num_bit_errors) = 0;
+	virtual bool sendHeardWithTXStats(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors) = 0;
 
 	// The following three functions don't block waiting for a reply, they just send the data
 
@@ -151,12 +136,8 @@ public:
 	// A false return implies a network error
 	virtual bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address) = 0;
 
-	virtual bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address,
-		std::string& timeStamp) = 0;
+	virtual bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address, std::string& timeStamp) = 0;
 
 	virtual void close() = 0;		// Implictely kills any threads in the IRC code
 
 };
-
-//WX_DEFINE_ARRAY_PTR(CIRCDDB*, CIRCDDB_Array);
-

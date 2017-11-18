@@ -1,9 +1,9 @@
 /*
+
 CIRCDDB - ircDDB client library in C++
 
 Copyright (C) 2010-2011   Michael Dirska, DL1BFF (dl1bff@mdx.de)
 Copyright (C) 2011,2012   Jonathan Naylor, G4KLX
-Copyright (c) 2017 by Thomas A. Early N7TAE
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 */
 
 
@@ -28,16 +29,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 struct CIRCDDBPrivate;
 
-class CIRCDDBClient : public CIRCDDB
-{
+class CIRCDDBClient : public CIRCDDB{
 public:
-	CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password,
-	    const std::string& versionInfo, const std::string& localAddr = std::string(""));
+	CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo,
+		const std::string& localAddr = std::string(""));
 	~CIRCDDBClient();
 
 	// A false return implies a network error, or unable to log in
 	bool open();
-
 
 	// rptrQTH can be called multiple times if necessary
 	//   callsign     The callsign of the repeater
@@ -45,7 +44,7 @@ public:
 	//   longitude    WGS84 position of antenna in degrees, positive value -> EAST
 	//   desc1, desc2   20-character description of QTH
 	//   infoURL      URL of a web page with information about the repeater
-	void rptrQTH( const std::string& callsign, double latitude, double longitude, const std::string& desc1, const std::string& desc2, const std::string& infoURL );
+	void rptrQTH( const std::string& callsign, double latitude, double longitude, const std::string& desc1, const std::string& desc2, const std::string& infoURL);
 
 	// rptrQRG can be called multiple times if necessary
 	//  callsign      callsign of the repeater
@@ -74,18 +73,14 @@ public:
 	//  10 = some network error occured, next state is "0" (new connection attempt)
 
 	// Send heard data, a false return implies a network error
-	bool sendHeard(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,
-		  const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3 );
-
+	bool sendHeard(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3);
 
 	// same as sendHeard with two new fields:
 	//   network_destination:  empty string or 8-char call sign of the repeater
 	//	    or reflector, where this transmission is relayed to.
 	//   tx_message:  20-char TX message or empty string, if the user did not
 	//       send a TX message
-	bool sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,
-		  const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination,
-		  const std::string& tx_message );
+	bool sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message);
 
 	// this method should be called at the end of a transmission
 	//  num_dv_frames: number of DV frames sent out (96 bit frames, 20ms)
@@ -97,9 +92,7 @@ public:
 	//      So, the overall bit error rate is calculated like this:
 	//      BER = num_bit_errors / (num_dv_frames * 24)
 	//      Set num_bit_errors = -1, if the error information is not available.
-	bool sendHeardWithTXStats(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,
-		  const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames,
-		  int num_bit_errors );
+	bool sendHeardWithTXStats(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors);
 
 	// The following three functions don't block waiting for a reply, they just send the data
 
@@ -129,11 +122,12 @@ public:
 	// A false return implies a network error
 	bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address);
 
-	bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address, std::string& timeStamp );
+	bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address, std::string& timeStamp);
 
 	void close();		// Implictely kills any threads in the IRC code
 
 private:
-	struct CIRCDDBClientPrivate *const d;
+	struct CIRCDDBClientPrivate * const d;
 };
+
 

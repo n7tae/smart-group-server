@@ -145,9 +145,9 @@ bool CStarNetServerAppD::createThread()
 #endif
 
 		if (callsign.size() && isalnum(callsign[0])) {
-			std::string repeater = callsign;
-			repeater[7] = 'G';
-
+			std::string repeater(CallSign);
+			repeater.resize(7, ' ');
+			repeater.push_back(band[0]);
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch, reflector);
 			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s",

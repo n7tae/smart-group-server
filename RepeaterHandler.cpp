@@ -128,7 +128,7 @@ m_msgNeeded(false),
 m_wxAudio(NULL),
 m_wxNeeded(false),
 m_version(NULL),
-m_drats(NULL),
+//m_drats(NULL),
 m_dtmf(),
 m_pollTimer(1000U, 900U),			// 15 minutes
 m_ccsHandler(NULL),
@@ -226,8 +226,8 @@ CRepeaterHandler::~CRepeaterHandler()
 	delete m_wxAudio;
 	delete m_version;
 
-	if (m_drats != NULL)
-		m_drats->close();
+//	if (m_drats != NULL)
+//		m_drats->close();
 }
 
 void CRepeaterHandler::initialise(unsigned int maxRepeaters)
@@ -575,8 +575,8 @@ void CRepeaterHandler::processRepeater(CHeaderData& header)
 	// The Icom heard timer
 	m_heardTimer.stop();
 
-	if (m_drats != NULL)
-		m_drats->writeHeader(header);
+//	if (m_drats != NULL)
+//		m_drats->writeHeader(header);
 
 	// Reset the statistics
 	m_frames  = 0U;
@@ -774,8 +774,8 @@ void CRepeaterHandler::processRepeater(CAMBEData& data)
 	// CCS gets everything
 	m_ccsHandler->writeAMBE(data);
 
-	if (m_drats != NULL)
-		m_drats->writeData(data);
+//	if (m_drats != NULL)
+//		m_drats->writeData(data);
 
 //	if (m_aprsWriter != NULL)
 //		m_aprsWriter->writeData(m_rptCallsign, data);
@@ -1484,8 +1484,8 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 			if (0 == m_text.size())
 				sendHeard();
 
-			if (m_drats != NULL)
-				m_drats->writeEnd();
+//			if (m_drats != NULL)
+//				m_drats->writeEnd();
 
 			sendStats();
 

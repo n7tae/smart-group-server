@@ -16,44 +16,41 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 */
 
 #pragma once
 
 #include <string>
-#include <vector>
+#include <array>
 
 #include "IRCMessageQueue.h"
 #include "IRCApplication.h"
 
-
 class IRCProtocol
 {
-  public:
-    IRCProtocol(IRCApplication * app, const std::string& callsign, const std::string& password, const std::string& channel, const std::string& versionInfo );
-    ~IRCProtocol();
+public:
+	IRCProtocol (IRCApplication * app, const std::string& callsign, const std::string& password, const std::string& channel, const std::string& versionInfo);
+	~IRCProtocol();
 
-    void setNetworkReady(bool state);
+	void setNetworkReady(bool state);
+	bool processQueues(IRCMessageQueue *recvQ, IRCMessageQueue *sendQ);
 
-    bool processQueues(IRCMessageQueue *recvQ, IRCMessageQueue *sendQ);
+private:
+	void chooseNewNick();
 
-  private:
-    void chooseNewNick();
+	std::array<std::string, 4> m_nicks;
+	std::string m_password;
+	std::string m_channel;
+	std::string m_name;
+	std::string m_currentNick;
+	std::string m_versionInfo;
+	std::string m_debugChannel;
 
-    std::vector<std::string> nicks;
-    std::string password;
-    std::string channel;
-    std::string name;
-    std::string currentNick;
-    std::string versionInfo;
+	int m_state;
+	int m_timer;
+	int m_pingTimer;
 
-    int state;
-    int timer;
-    int pingTimer;
-
-    std::string debugChannel;
-
-    IRCApplication *app;
-
+	IRCApplication *m_app;
 };
 

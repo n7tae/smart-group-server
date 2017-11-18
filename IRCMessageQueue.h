@@ -1,8 +1,10 @@
 /*
-
 CIRCDDB - ircDDB client library in C++
 
+Based on original code by:
 Copyright (C) 2010   Michael Dirska, DL1BFF (dl1bff@mdx.de)
+
+Completely rewritten by:
 Copyright (c) 2017 by Thomas A. Early N7TAE
 
 This program is free software: you can redistribute it and/or modify
@@ -17,61 +19,31 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 */
 
 #pragma once
 
 #include <mutex>
+#include <queue>
 
 #include "IRCMessage.h"
 
-class IRCMessageQueueItem
-{
-  public:
-    IRCMessageQueueItem( IRCMessage * m )
-    {
-      msg = m;
-    }
-
-    ~IRCMessageQueueItem()
-    {
-    }
-    
-    IRCMessage * msg;
-
-    IRCMessageQueueItem * prev;
-    IRCMessageQueueItem * next;
-};
-
-
 class IRCMessageQueue
 {
-  public:
-    IRCMessageQueue();
+public:
+	IRCMessageQueue();
+	~IRCMessageQueue();
 
-    ~IRCMessageQueue();
+	bool isEOF();
+	void signalEOF();
+	bool messageAvailable();
+	IRCMessage *getMessage();
+	IRCMessage *peekFirst();
+	void putMessage(IRCMessage *m);
 
-    bool isEOF();
-
-    void signalEOF();
-
-    bool messageAvailable();
-
-    IRCMessage * getMessage();
-
-    IRCMessage * peekFirst();
-
-    void putMessage ( IRCMessage * m );
-
-  private:
-
-    bool eof;
-
-    IRCMessageQueueItem * first;
-    IRCMessageQueueItem * last;
-
-    std::mutex accessMutex;
-    
+private:
+	bool m_eof;
+	std::mutex accessMutex;
+	std::queue<IRCMessage *> m_queue;
 };
 

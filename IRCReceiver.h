@@ -21,26 +21,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <string>
 #include <future>
 
 #include "IRCMessageQueue.h"
 
-class IRCReceiver
+class IRCReceiver 
 {
 public:
-	IRCReceiver(int sock, IRCMessageQueue * q);
-	virtual ~IRCReceiver();
-	virtual void startWork();
-	virtual void stopWork();
+	IRCReceiver(int sock, IRCMessageQueue *q);
+	~IRCReceiver();
+
+	void startWork();
+	void stopWork();
 
 protected:
-	bool Entry();
+	void Entry();
 
 private:
 	bool m_terminateThread;
 	int m_sock;
 	IRCMessageQueue *m_recvQ;
-	std::future<bool> m_future;
+	std::future<void> m_future;
 };
-

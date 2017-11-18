@@ -1,5 +1,4 @@
 /*
-
 CIRCDDB - ircDDB client library in C++
 
 Copyright (C) 2010-2011   Michael Dirska, DL1BFF (dl1bff@mdx.de)
@@ -17,33 +16,31 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 */
 
 #include "IRCMessage.h"
+#include "Utils.h"
 
-
-
-IRCMessage::IRCMessage ()
+IRCMessage::IRCMessage()
 {
-  numParams = 0;
-  prefixParsed = false;
+	numParams = 0;
+	prefixParsed = false;
 }
 
-IRCMessage::IRCMessage ( const std::string& toNick, const std::string& msg )
+IRCMessage::IRCMessage(const std::string& toNick, const std::string& msg)
 {
-  command = "PRIVMSG";
-  numParams = 2;
-  params.push_back( toNick );
-  params.push_back( msg );
-  prefixParsed = false;
+	command.assign("PRIVMSG");
+	numParams = 2;
+	params.push_back(toNick);
+	params.push_back(msg);
+	prefixParsed = false;
 }
 
-IRCMessage::IRCMessage ( const std::string& cmd )
+IRCMessage::IRCMessage(const std::string& cmd)
 {
-  command = cmd;
-  numParams = 0;
-  prefixParsed = false;
+	command = cmd;
+	numParams = 0;
+	prefixParsed = false;
 }
 
 IRCMessage::~IRCMessage()
@@ -51,115 +48,84 @@ IRCMessage::~IRCMessage()
 }
 
 
-void IRCMessage::addParam( const std::string& p )
+void IRCMessage::addParam(const std::string& p)
 {
-  params.push_back( p );
-  numParams = params.size();
+	params.push_back(p);
+	numParams = params.size();
 }
 
 int IRCMessage::getParamCount()
 {
-  return params.size();
+	return params.size();
 }
 
-std::string IRCMessage::getParam( int pos )
+std::string IRCMessage::getParam(int pos)
 {
-  return params[pos];
+	return params[pos];
 }
 
 std::string IRCMessage::getCommand()
 {
-  return command;
+	return command;
 }
 
 	
-void IRCMessage::parsePrefix()
+bool IRCMessage::parsePrefix()
 {
-  unsigned int i;
+	std::string::size_type p1 = prefix.find('!');
+	if (std::string::npos == p1)
+		return false;
+	std::string::size_type p2 = prefix.find('@');
+	if (std::string::npos == p2)
+		return false;
 
-  for (i=0; i < 3; i++) {
-    prefixComponents.push_back("");
-  }
-
-  int state = 0;
-  
-  for (i=0; i < prefix.size(); i++) {
-    char c = prefix.at(i);
-			
-    switch (c)
-    {
-    case '!': 
-	    state = 1; // next is name
-	    break;
-	    
-    case '@':
-	    state = 2; // next is host
-	    break;
-	    
-    default:
-	    prefixComponents[state].push_back(c);
-	    break;
-    }
-  }
-
-  prefixParsed = true;
+	prefixComponents.push_back(prefix.substr(0, p1));
+	prefixComponents.push_back(prefix.substr(p1+1, p2-p1-1));
+	prefixComponents.push_back(prefix.substr(p2 + 1));
+	return true;
 }
 
 std::string& IRCMessage::getPrefixNick()
 {
-  if (!prefixParsed)
-  {
-    parsePrefix();
-  }
-  
-  return prefixComponents[0];
+	if (!prefixParsed)
+		prefixParsed = parsePrefix();
+
+	return prefixParsed ? prefixComponents[0] : prefix;
 }
 
 std::string& IRCMessage::getPrefixName()
 {
-  if (!prefixParsed)
-  {
-    parsePrefix();
-  }
+	if (!prefixParsed)
+		prefixParsed = parsePrefix();
   
-  return prefixComponents[1];
+	return prefixParsed ? prefixComponents[1] : prefix;
 }
 
 std::string& IRCMessage::getPrefixHost()
 {
-  if (!prefixParsed)
-  {
-    parsePrefix();
-  }
+	if (!prefixParsed)
+		prefixParsed = parsePrefix();
   
-  return prefixComponents[2];
+	return prefixParsed ? prefixComponents[2] : prefix;
 }
 
-void IRCMessage::composeMessage ( std::string& output )
+void IRCMessage::composeMessage(std::string& output)
 {
-  std::string o;
+	std::string o;
 
-  if (prefix.size() > 0)
-  {
-    o = std::string(":") + prefix + std::string(" ");
-  }
+	if (prefix.size() > 0)
+		o = std::string(":") + prefix + std::string(" ");
 
-  o.append(command);
+	o.append(command);
 
-  for (int i=0; i < numParams; i++)
-  {
-    if (i == (numParams - 1))
-    {
-      o.append(std::string(" :") + params[i]);
-    }
-    else
-    {
-      o.append(std::string(" ") + params[i]);
-    }
-  }
+	for (int i=0; i < numParams; i++) {
+		if (i == (numParams - 1))
+			o.append(std::string(" :") + params[i]);
+		else
+			o.append(std::string(" ") + params[i]);
+	}
 
-  o.append("\r\n");
+	o.append(std::string("\r\n"));
 
-  output = o;
+	output = o;
 }
-
