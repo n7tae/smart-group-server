@@ -41,7 +41,6 @@ CCacheManager      *CStarNetHandler::m_cache = NULL;
 std::string         CStarNetHandler::m_gateway;
 
 std::string         CStarNetHandler::m_name;
-FILE               *CStarNetHandler::m_logFile = NULL;
 
 
 CStarNetUser::CStarNetUser(const std::string &callsign, unsigned int timeout) :
@@ -248,26 +247,6 @@ void CStarNetHandler::setGateway(const std::string& gateway)
 	m_gateway = gateway;
 }
 
-void CStarNetHandler::setLogging(bool enable, const std::string& dir)
-{
-	if (!enable)
-		return;
-
-	std::string fullName = STARNET_BASE_NAME;
-
-	if (m_name.size()) {
-		fullName.push_back('_');
-		fullName.append(m_name);
-	}
-
-	std::string fileName(dir);
-	fileName += std::string("/") + fullName + ".log";
-
-	m_logFile = fopen(fileName.c_str(), "w");
-	if (NULL == m_logFile) 
-		CUtils::lprint("Unable to open %s for writing", fileName.c_str());
-}
-
 CStarNetHandler* CStarNetHandler::findStarNet(const std::string& callsign)
 {
 	for (unsigned int i = 0U; i < m_maxStarNets; i++) {
@@ -343,11 +322,6 @@ void CStarNetHandler::finalise()
 		delete m_starNets[i];
 
 	delete[] m_starNets;
-
-	if (m_logFile) {
-		fclose(m_logFile);
-		m_logFile = NULL;
-	}
 }
 
 void CStarNetHandler::clock(unsigned int ms)
@@ -465,13 +439,7 @@ void CStarNetHandler::process(CHeaderData &header)
 		// This is a normal message for logging in/relaying
 		if (user == NULL) {
 			// This is a new user, add them to the list
-			{
-				time_t timeNow = ::time(NULL);
-				struct tm* tm = ::gmtime(&timeNow);
-
-				CUtils::lprint("%04d-%02d-%02d %02d:%02d:%02d: Adding %s to StarNet group %s\n", tm->tm_year + 1900, tm->tm_mon + 1,
-						tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, my.c_str(), m_groupCallsign.c_str());
-			}
+			CUtils::lprint("Adding %s to StarNet group %s\n", my.c_str(), m_groupCallsign.c_str());
 
 			// Start the StarNet group timer if not already running
 			if (!m_groupTimer.isRunning())
@@ -503,15 +471,7 @@ void CStarNetHandler::process(CHeaderData &header)
 		if (user == NULL)				// Not a known user, ignore
 			return;
 
-		if (m_logFile) {
-			time_t timeNow = ::time(NULL);
-			struct tm* tm = ::gmtime(&timeNow);
-
-			fprintf(m_logFile, "%04d-%02d-%02d %02d:%02d:%02d: Removing %s from StarNet group %s, logged off\n",
-				tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-				user->getCallsign().c_str(), m_groupCallsign.c_str());
-			fflush(m_logFile);
-		}
+		CUtils::lprint("Removing %s from StarNet group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 		// Remove the user from the user list
 		m_users.erase(my);
@@ -633,14 +593,7 @@ void CStarNetHandler::process(CAMBEData &data)
 				std::string TEMP(text.substr(0,6));
 				CUtils::ToUpper(TEMP);
 				if (0 == TEMP.compare("LOGOFF")) {
-					{
-						time_t timeNow = ::time(NULL);
-						struct tm* tm = ::gmtime(&timeNow);
-
-						CUtils::lprint("%04d-%02d-%02d %02d:%02d:%02d: Removing %s from StarNet group %s, logged off\n",
-							tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-							user->getCallsign().c_str(), m_groupCallsign.c_str());
-					}
+					CUtils::lprint("Removing %s from StarNet group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 					tx->setLogoff();
 
@@ -710,21 +663,11 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 	if (0 == callsign.compare("ALL     ")) {
 		for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
 			CStarNetUser* user = it->second;
-
-			if (user && m_logFile) {
-				time_t timeNow = ::time(NULL);
-				struct tm* tm = ::gmtime(&timeNow);
-
-				fprintf(m_logFile, "%04d-%02d-%02d %02d:%02d:%02d: Removing %s from StarNet group %s, logged off by remote control\n",
-					tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-					user->getCallsign().c_str(), m_groupCallsign.c_str());
+			if (user) {
+				CUtils::lprint("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+				delete user;
 			}
-
-			delete user;
 		}
-
-		if (m_logFile)
-			fflush(m_logFile);
 
 		for (std::map<unsigned int, CStarNetId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it)
 			delete it->second;
@@ -746,16 +689,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 			CUtils::CUtils::lprint("Invalid callsign asked to logoff");
 			return false;
 		}
-
-		if (m_logFile) {
-			time_t timeNow = ::time(NULL);
-			struct tm* tm = ::gmtime(&timeNow);
-
-			fprintf(m_logFile, "%04d-%02d-%02d %02d:%02d:%02d: Removing %s from StarNet group %s, logged off by remote control\n",
-				tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-				user->getCallsign().c_str(), m_groupCallsign.c_str());
-			fflush(m_logFile);
-		}
+		CUtils::lprint("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 		// Find any associated id structure associated with this use, and the logged off user is the
 		// currently relayed one, remove his id.
@@ -1042,16 +976,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 				if (m_permanent.find(user->getCallsign()) != m_permanent.end()) {
 					permanent.push_back(user);
 				} else {
-					if (m_logFile) {
-						time_t timeNow = ::time(NULL);
-						struct tm* tm = ::gmtime(&timeNow);
-
-						fprintf(m_logFile, "%04d-%02d-%02d %02d:%02d:%02d: Removing %s from StarNet group %s, group timeout\n",
-							tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-							user->getCallsign().c_str(), m_groupCallsign.c_str());
-						fflush(m_logFile);
-					}
-
+					CUtils::lprint("Removing %s from StarNet group %s, group timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 					delete user;
 				}
 			}
@@ -1073,15 +998,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 	for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
 		CStarNetUser* user = it->second;
 		if (user && user->hasExpired()) {
-			if (m_logFile) {
-				time_t timeNow = ::time(NULL);
-				struct tm* tm = ::gmtime(&timeNow);
-
-				fprintf(m_logFile, "%04d-%02d-%02d %02d:%02d:%02d: Removing %s from StarNet group %s, user timeout\n",
-					tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-					user->getCallsign().c_str(), m_groupCallsign.c_str());
-				fflush(m_logFile);
-			}
+			CUtils::lprint("Removing %s from StarNet group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 			delete user;
 			m_users.erase(it);

@@ -119,7 +119,6 @@ public:
 	static void setIRC(CIRCDDB* irc);
 	static void setCache(CCacheManager* cache);
 	static void setGateway(const std::string& gateway);
-	static void setLogging(bool enable, const std::string& dir);
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	static void link();
@@ -177,7 +176,6 @@ private:
 	static std::string         m_gateway;
 
 	static std::string         m_name;
-	static FILE*            m_logFile;
 
 	// Group info
 	std::string    m_groupCallsign;

@@ -99,6 +99,7 @@ void IRCReceiver::Entry()
 			delete m;  // delete unfinished IRCMessage
 			break;
 		}
+
 		for (int i=0; i < r; i++) {
 			char b = buf[i];
 			if (b > 0) {

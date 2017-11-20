@@ -182,7 +182,6 @@ void CStarNetServerThread::run()
 	CStarNetHandler::setGateway(m_callsign);
 	CStarNetHandler::setG2Handler(m_g2Handler);
 	CStarNetHandler::setIRC(m_irc);
-	CStarNetHandler::setLogging(m_logEnabled, m_logDir);
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	CStarNetHandler::link();
 #endif
@@ -579,16 +578,13 @@ void CStarNetServerThread::loadReflectors(const std::string fname)
 					struct hostent *he = gethostbyname(second);
 					if (he) {
 						count++;
-						char straddr[16];
-						unsigned char *puc = (unsigned char *)&he->h_addr_list[0];
-						snprintf(straddr, 16, "%u.%u.%u.%u", puc[0], puc[1], puc[2], puc[3]);
-						std::string address(straddr);
+						std::string address(inet_ntoa(*(struct in_addr*)(he->h_addr_list[0])));
 #if defined(DEXTRA_LINK)
 						m_cache.updateGateway(name, address, DP_DEXTRA, third?1:0, true);
 #else
 						m_cache.updateGateway(name, address, DP_DCS, third?1:0, true);
 #endif
-						CUtils::lprint("reflector:%s, address:%s lock:%s", name.c_str(), address.c_str(), third?"true":"false");
+//						CUtils::lprint("reflector:%s, address:%s lock:%s", name.c_str(), address.c_str(), third?"true":"false");
 					}
 				}
 			}

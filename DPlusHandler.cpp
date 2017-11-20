@@ -507,7 +507,7 @@ void CDPlusHandler::gatewayUpdate(const std::string& gateway, const std::string&
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		CDPlusHandler* reflector = m_reflectors[i];
 		if (reflector != NULL) {
-			if (reflector->m_reflector.size() && 0 == reflector->m_reflector.substr(0, LONG_CALLSIGN_LENGTH - 1U).compare(gatewayBase)) {
+			if (reflector->m_reflector.size() && 0==reflector->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, gatewayBase)) {
 				if (address.size()) {
 					// A new address, change the value
 					CUtils::lprint("Changing IP address of D-Plus gateway or reflector %s to %s", gatewayBase.c_str(), address.c_str());

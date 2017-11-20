@@ -264,14 +264,13 @@ void CDExtraHandler::process(const CPollData& poll)
 	std::string reflector = poll.getData1();
 	in_addr   yourAddress = poll.getYourAddress();
 	unsigned int yourPort = poll.getYourPort();
-
 	// Check to see if we already have a link
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		if (m_reflectors[i] != NULL) {
-			if (0==m_reflectors[i]->m_reflector.substr(LONG_CALLSIGN_LENGTH - 1U).compare(reflector.substr(LONG_CALLSIGN_LENGTH - 1U)) &&
-				m_reflectors[i]->m_yourAddress.s_addr == yourAddress.s_addr &&
-				m_reflectors[i]->m_yourPort           == yourPort &&
-				m_reflectors[i]->m_linkState          == DEXTRA_LINKED) {
+			if (0==m_reflectors[i]->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, reflector, 0, LONG_CALLSIGN_LENGTH-1) &&
+			m_reflectors[i]->m_yourAddress.s_addr == yourAddress.s_addr &&
+			m_reflectors[i]->m_yourPort           == yourPort &&
+			m_reflectors[i]->m_linkState          == DEXTRA_LINKED) {
 				m_reflectors[i]->m_pollInactivityTimer.start();
 				found = true;
 			}
@@ -537,7 +536,7 @@ void CDExtraHandler::gatewayUpdate(const std::string& reflector, const std::stri
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		CDExtraHandler* reflector = m_reflectors[i];
 		if (reflector != NULL) {
-			if (0==reflector->m_reflector.substr(0, LONG_CALLSIGN_LENGTH - 1U).compare(gateway)) {
+			if (0==reflector->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, gateway)) {
 				if (address.size()) {
 					// A new address, change the value
 					CUtils::lprint("Changing IP address of DExtra gateway or reflector %s to %s", reflector->m_reflector.c_str(), address.c_str());
