@@ -32,7 +32,6 @@
 
 #include "RepeaterHandler.h"
 #include "DDHandler.h"
-#include "Defs.h"
 #include "Utils.h"
 
 const unsigned int ETHERNET_ADDRESS_LENGTH = 6U;
@@ -343,7 +342,7 @@ void CDDHandler::finalise()
 
 void CDDHandler::writeStatus(const CEthernet& ethernet)
 {
-	std::string fullName = DDMODE_BASE_NAME;
+	std::string fullName("DDMode");
 
 	if (m_name.size()) {
 		fullName.append("_");

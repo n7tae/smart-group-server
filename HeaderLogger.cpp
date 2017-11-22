@@ -39,7 +39,7 @@ CHeaderLogger::~CHeaderLogger()
 
 bool CHeaderLogger::open()
 {
-	std::string fullName = HEADERS_BASE_NAME;
+	std::string fullName("Headers");
 
 	if (m_name.size()) {
 		fullName.append("_");
