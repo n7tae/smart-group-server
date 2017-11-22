@@ -33,8 +33,6 @@ CDExtraProtocolHandler*     CDExtraHandler::m_incoming = NULL;
 
 bool                        CDExtraHandler::m_stateChange = false;
 
-CHeaderLogger*              CDExtraHandler::m_headerLogger = NULL;
-
 CCallsignList*              CDExtraHandler::m_whiteList = NULL;
 CCallsignList*              CDExtraHandler::m_blackList = NULL;
 
@@ -150,11 +148,6 @@ void CDExtraHandler::setDExtraProtocolHandlerPool(CDExtraProtocolHandlerPool* po
 	assert(pool != NULL);
 
 	m_pool = pool;
-}
-
-void CDExtraHandler::setHeaderLogger(CHeaderLogger* logger)
-{
-	m_headerLogger = logger;
 }
 
 void CDExtraHandler::setMaxDongles(unsigned int maxDongles)
@@ -617,10 +610,6 @@ void CDExtraHandler::processInt(CHeaderData& header)
 				if (m_dExtraId != 0x00U)
 					return;
 
-				// Write to Header.log if it's enabled
-				if (m_headerLogger != NULL)
-					m_headerLogger->write("DExtra", header);
-
 				m_dExtraId  = id;
 				m_dExtraSeq = 0x00U;
 				m_inactivityTimer.start();
@@ -644,10 +633,6 @@ void CDExtraHandler::processInt(CHeaderData& header)
 				// If we're already processing, ignore the new header
 				if (m_dExtraId != 0x00U)
 					return;
-
-				// Write to Header.log if it's enabled
-				if (m_headerLogger != NULL)
-					m_headerLogger->write("DExtra", header);
 
 				m_dExtraId  = id;
 				m_dExtraSeq = 0x00U;
@@ -673,10 +658,6 @@ void CDExtraHandler::processInt(CHeaderData& header)
 				// If we're already processing, ignore the new header
 				if (m_dExtraId != 0x00U)
 					return;
-
-				// Write to Header.log if it's enabled
-				if (m_headerLogger != NULL)
-					m_headerLogger->write("DExtra", header);
 
 				m_dExtraId  = id;
 				m_dExtraSeq = 0x00U;

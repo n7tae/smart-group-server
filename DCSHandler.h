@@ -25,7 +25,6 @@
 #include "DCSProtocolHandlerPool.h"
 #include "ReflectorCallback.h"
 #include "DStarDefines.h"
-#include "HeaderLogger.h"
 #include "CallsignList.h"
 #include "ConnectData.h"
 #include "AMBEData.h"
@@ -45,7 +44,6 @@ public:
 
 	static void setDCSProtocolHandlerPool(CDCSProtocolHandlerPool* pool);
 	static void setDCSProtocolIncoming(CDCSProtocolHandler* handler);
-	static void setHeaderLogger(CHeaderLogger* logger);
 	static void setGatewayType(GATEWAY_TYPE type);
 
 	static void link(IReflectorCallback* handler, const std::string& repeater, const std::string& reflector, const in_addr& address);
@@ -96,8 +94,6 @@ private:
 	static bool                     m_stateChange;
 
 	static GATEWAY_TYPE             m_gatewayType;
-
-	static CHeaderLogger*           m_headerLogger;
 
 	static CCallsignList*           m_whiteList;
 	static CCallsignList*           m_blackList;

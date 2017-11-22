@@ -35,7 +35,6 @@ CDPlusProtocolHandler*     CDPlusHandler::m_incoming = NULL;
 bool                       CDPlusHandler::m_stateChange = false;
 
 CDPlusAuthenticator*       CDPlusHandler::m_authenticator = NULL;
-CHeaderLogger*             CDPlusHandler::m_headerLogger = NULL;
 
 CCallsignList*             CDPlusHandler::m_whiteList = NULL;
 CCallsignList*             CDPlusHandler::m_blackList = NULL;
@@ -159,11 +158,6 @@ void CDPlusHandler::setDPlusProtocolIncoming(CDPlusProtocolHandler* handler)
 void CDPlusHandler::setDPlusLogin(const std::string& dplusLogin)
 {
 	m_dplusLogin = dplusLogin;
-}
-
-void CDPlusHandler::setHeaderLogger(CHeaderLogger* logger)
-{
-	m_headerLogger = logger;
 }
 
 void CDPlusHandler::setMaxDongles(unsigned int maxDongles)
@@ -588,10 +582,6 @@ void CDPlusHandler::processInt(CHeaderData& header)
 				if (m_dPlusId != 0x00U)
 					return;
 
-				// Write to Header.log if it's enabled
-				if (m_headerLogger != NULL)
-					m_headerLogger->write("DPlus", header);
-
 				m_dPlusId  = id;
 				m_dPlusSeq = 0x00U;
 				m_inactivityTimer.start();
@@ -617,10 +607,6 @@ void CDPlusHandler::processInt(CHeaderData& header)
 
 				if (m_dPlusId != 0x00U)
 					return;
-
-				// Write to Header.log if it's enabled
-				if (m_headerLogger != NULL)
-					m_headerLogger->write("DPlus", header);
 
 				m_dPlusId  = id;
 				m_dPlusSeq = 0x00U;

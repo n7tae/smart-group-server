@@ -34,7 +34,7 @@
 #include "StarNetHandler.h"
 #include "TextCollector.h"
 #include "CacheManager.h"
-#include "HeaderLogger.h"
+//#include "HeaderLogger.h"
 #include "CallsignList.h"
 //#include "DRATSServer.h"
 #include "CCSCallback.h"
@@ -67,8 +67,8 @@ public:
 	static void setDExtraEnabled(bool enabled);
 	static void setDPlusEnabled(bool enabled);
 	static void setDCSEnabled(bool enabled);
-	static void setHeaderLogger(CHeaderLogger* logger);
-	//static void setAPRSWriter(CAPRSWriter* writer);
+//	static void setHeaderLogger(CHeaderLogger* logger);
+//	static void setAPRSWriter(CAPRSWriter* writer);
 	static void setInfoEnabled(bool enabled);
 	static void setEchoEnabled(bool enabled);
 	static void setDTMFEnabled(bool enabled);
@@ -158,9 +158,8 @@ private:
 	static bool      m_echoEnabled;
 	static bool      m_dtmfEnabled;
 
-	static CHeaderLogger*   m_headerLogger;
-
-	//static CAPRSWriter*     m_aprsWriter;
+//	static CHeaderLogger*   m_headerLogger;
+//	static CAPRSWriter*     m_aprsWriter;
 
 	static CCallsignList*   m_whiteList;
 	static CCallsignList*   m_blackList;

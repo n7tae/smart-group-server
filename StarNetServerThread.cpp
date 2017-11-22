@@ -146,15 +146,15 @@ void CStarNetServerThread::run()
 
 	CUtils::lprint("Starting the StarNet Server thread");
 
-	CHeaderLogger* headerLogger = NULL;
-	if (m_logEnabled) {
-		headerLogger = new CHeaderLogger(m_logDir);
-		bool ret = headerLogger->open();
-		if (!ret) {
-			delete headerLogger;
-			headerLogger = NULL;
-		}
-	}
+//	CHeaderLogger* headerLogger = NULL;
+//	if (m_logEnabled) {
+//		headerLogger = new CHeaderLogger(m_logDir);
+//		bool ret = headerLogger->open();
+//		if (!ret) {
+//			delete headerLogger;
+//			headerLogger = NULL;
+//		}
+//	}
 
 #if defined(DEXTRA_LINK)
 	loadReflectors(DEXTRA_HOSTS_FILE_NAME);
@@ -165,12 +165,10 @@ void CStarNetServerThread::run()
 #endif
 
 	CG2Handler::setG2ProtocolHandler(m_g2Handler);
-	CG2Handler::setHeaderLogger(headerLogger);
 
 #if defined(DEXTRA_LINK)
 	CDExtraHandler::setCallsign(m_callsign);
 	CDExtraHandler::setDExtraProtocolHandlerPool(m_dextraPool);
-	CDExtraHandler::setHeaderLogger(headerLogger);
 #endif
 #if defined(DCS_LINK)
 	CDCSHandler::setDCSProtocolHandlerPool(m_dcsPool);
@@ -268,10 +266,10 @@ void CStarNetServerThread::run()
 		delete m_remote;
 	}
 
-	if (headerLogger != NULL) {
-		headerLogger->close();
-		delete headerLogger;
-	}
+//	if (headerLogger != NULL) {
+//		headerLogger->close();
+//		delete headerLogger;
+//	}
 }
 
 void CStarNetServerThread::kill()

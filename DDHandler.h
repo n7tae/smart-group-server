@@ -21,7 +21,6 @@
 
 #include <string>
 
-#include "HeaderLogger.h"
 #include "DDData.h"
 #include "IRCDDB.h"
 #include "Timer.h"
@@ -44,7 +43,6 @@ public:
 	static void initialise(unsigned int maxRoutes, const std::string& name);
 
 	static void setLogging(bool enabled, const std::string& dir);
-	static void setHeaderLogger(CHeaderLogger* logger);
 	static void setIRC(CIRCDDB* irc);
 
 	static void process(CDDData& data);
@@ -57,7 +55,6 @@ public:
 
 private:
 	static CIRCDDB*       m_irc;
-	static CHeaderLogger* m_headerLogger;
 	static int            m_fd;
 	static unsigned int   m_maxRoutes;
 	static CEthernet**    m_list;

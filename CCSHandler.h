@@ -27,7 +27,6 @@
 
 #include "CCSProtocolHandler.h"
 #include "DStarDefines.h"
-#include "HeaderLogger.h"
 #include "ConnectData.h"
 #include "CCSCallback.h"
 #include "AMBEData.h"
@@ -70,8 +69,6 @@ public:
 
 	static void clock(unsigned int ms);
 
-	static void setHeaderLogger(CHeaderLogger* logger);
-
 	static void setLocalAddress(const std::string& address);
 
 	static void setHost(const std::string& host);
@@ -97,7 +94,6 @@ private:
 	static unsigned int   m_count;
 
 	static std::string    m_localAddress;
-	static CHeaderLogger* m_headerLogger;
 
 	static std::string    m_ccsHost;
 

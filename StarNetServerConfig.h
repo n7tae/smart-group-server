@@ -58,8 +58,8 @@ public:
 	void getRemote(bool &enabled, std::string &password, unsigned int &port) const;
 	void setRemote(bool enabled, const std::string &password, unsigned int port);
 
-	void getMiscellaneous(bool &enabled) const;
-	void setMiscellaneous(bool enabled);
+	//void getMiscellaneous(bool &enabled) const;
+	//void setMiscellaneous(bool enabled);
 
 	void getPosition(int &x, int &y) const;
 	void setPosition(int x, int y);
@@ -80,7 +80,7 @@ private:
 	bool m_remoteEnabled;
 	std::string m_remotePassword;
 	unsigned int m_remotePort;
-	bool m_logEnabled;
+//	bool m_logEnabled;
 	int m_x;
 	int m_y;
 };

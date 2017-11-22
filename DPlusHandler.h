@@ -28,7 +28,6 @@
 #include "ReflectorCallback.h"
 #include "CacheManager.h"
 #include "DStarDefines.h"
-#include "HeaderLogger.h"
 #include "CallsignList.h"
 #include "ConnectData.h"
 #include "HeaderData.h"
@@ -51,7 +50,6 @@ public:
 	static void setDPlusProtocolHandlerPool(CDPlusProtocolHandlerPool* pool);
 	static void setDPlusProtocolIncoming(CDPlusProtocolHandler* handler);
 	static void setDPlusLogin(const std::string& dplusLogin);
-	static void setHeaderLogger(CHeaderLogger* logger);
 	static void setMaxDongles(unsigned int maxDongles);
 
 	static void startAuthenticator(const std::string& address, CCacheManager* cache);
@@ -110,7 +108,6 @@ private:
 
 	static bool                       m_stateChange;
 
-	static CHeaderLogger*             m_headerLogger;
 	static CDPlusAuthenticator*       m_authenticator;
 
 	static CCallsignList*             m_whiteList;

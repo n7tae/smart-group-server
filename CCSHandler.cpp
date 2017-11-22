@@ -30,7 +30,6 @@ CCCSHandler**    CCCSHandler::m_handlers = NULL;
 unsigned int     CCCSHandler::m_count = 0U;
 
 std::string      CCCSHandler::m_localAddress;
-CHeaderLogger*   CCCSHandler::m_headerLogger = NULL;
 
 std::string      CCCSHandler::m_ccsHost;
 
@@ -54,11 +53,6 @@ void CCCSHandler::initialise(unsigned int count)
 void CCCSHandler::setLocalAddress(const std::string& address)
 {
 	m_localAddress = address;
-}
-
-void CCCSHandler::setHeaderLogger(CHeaderLogger* logger)
-{
-	m_headerLogger = logger;
 }
 
 void CCCSHandler::setHost(const std::string& host)
@@ -282,10 +276,6 @@ void CCCSHandler::process(CAMBEData& data)
 	m_inactivityTimer.start();
 
 	if (m_id != id) {
-		// Write to Header.log if it's enabled
-		if (m_headerLogger != NULL)
-			m_headerLogger->write("CCS", header);
-
 		header.setCQCQCQ();
 		m_handler->process(header, DIR_INCOMING, AS_CCS);
 

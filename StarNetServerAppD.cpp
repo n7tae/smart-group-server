@@ -113,9 +113,9 @@ bool CStarNetServerAppD::createThread()
 
 	CUtils::lprint("Gateway callsign set to %s, local address set to %s", CallSign.c_str(), address.c_str());
 
-	bool logEnabled;
-	config.getMiscellaneous(logEnabled);
-	CUtils::lprint("Log enabled set to %s", logEnabled ? "true" : "false");
+	//bool logEnabled;
+	//config.getMiscellaneous(logEnabled);
+	//CUtils::lprint("Log enabled set to %s", logEnabled ? "true" : "false");
 
 	std::string hostname, username, password;
 	config.getIrcDDB(hostname, username, password);

@@ -33,8 +33,6 @@ bool                     CDCSHandler::m_stateChange = false;
 
 GATEWAY_TYPE             CDCSHandler::m_gatewayType  = GT_REPEATER;
 
-CHeaderLogger*           CDCSHandler::m_headerLogger = NULL;
-
 CCallsignList*           CDCSHandler::m_whiteList = NULL;
 CCallsignList*           CDCSHandler::m_blackList = NULL;
 
@@ -113,11 +111,6 @@ void CDCSHandler::setDCSProtocolIncoming(CDCSProtocolHandler* handler)
 	assert(handler != NULL);
 
 	m_incoming = handler;
-}
-
-void CDCSHandler::setHeaderLogger(CHeaderLogger* logger)
-{
-	m_headerLogger = logger;
 }
 
 void CDCSHandler::setGatewayType(GATEWAY_TYPE type)
@@ -534,10 +527,6 @@ void CDCSHandler::processInt(CAMBEData& data)
 				return;
 
 			if (m_dcsId == 0x00U) {		// && seqNo == 0U) {
-				// Write to Header.log if it's enabled
-				if (m_headerLogger != NULL)
-					m_headerLogger->write("DCS", header);
-
 				m_dcsId  = id;
 				m_dcsSeq = 0x00U;
 				m_inactivityTimer.start();
@@ -580,10 +569,6 @@ void CDCSHandler::processInt(CAMBEData& data)
 				return;
 
 			if (m_dcsId == 0x00U) {		// && seqNo == 0U) {
-				// Write to Header.log if it's enabled
-				if (m_headerLogger != NULL)
-					m_headerLogger->write("DCS", header);
-
 				m_dcsId  = id;
 				m_dcsSeq = 0x00U;
 				m_inactivityTimer.start();

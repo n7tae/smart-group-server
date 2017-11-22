@@ -24,7 +24,6 @@
 #include "G2ProtocolHandler.h"
 #include "RepeaterHandler.h"
 #include "DStarDefines.h"
-#include "HeaderLogger.h"
 #include "HeaderData.h"
 #include "AMBEData.h"
 #include "Timer.h"
@@ -34,7 +33,6 @@ public:
 	static void initialise(unsigned int maxRoutes);
 
 	static void setG2ProtocolHandler(CG2ProtocolHandler* handler);
-	static void setHeaderLogger(CHeaderLogger* logger);
 
 	static void process(CHeaderData& header);
 	static void process(CAMBEData& header);
@@ -54,8 +52,6 @@ private:
 	static CG2Handler**        m_routes;
 
 	static CG2ProtocolHandler* m_handler;
-
-	static CHeaderLogger*      m_headerLogger;
 
 	CRepeaterHandler* m_repeater;
 	in_addr           m_address;

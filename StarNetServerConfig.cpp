@@ -165,16 +165,14 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		int ivalue;
 		get_value(cfg, "remote.port", ivalue, 1000, 65000, 32156);
 		m_remotePort = (unsigned int)ivalue;
-		get_value(cfg, "remote.logEnabled", m_logEnabled, false);
 		get_value(cfg, "remote.windowX", ivalue, 0, 2000, 0);
 		m_x = (unsigned int)ivalue;
 		get_value(cfg, "remote.windowY", ivalue, 0, 2000, 0);
 		m_y = (unsigned int)ivalue;
-		CUtils::lprint("Remote enabled: password='%s', port=%d, logEnabled=%s windowX=%d windowY=%d", m_remotePassword.c_str(), m_remotePort, m_logEnabled?"true":"false", m_x, m_y);
+		CUtils::lprint("Remote enabled: password='%s', port=%d, windowX=%d windowY=%d", m_remotePassword.c_str(), m_remotePort, m_x, m_y);
 	} else {
 		m_remotePort = m_x = m_y = 0U;
 		m_remotePassword.empty();
-		m_logEnabled = false;
 		CUtils::lprint("Remote disabled");
 	}
 }
@@ -300,15 +298,15 @@ void CStarNetServerConfig::setRemote(bool enabled, const std::string& password, 
 	m_remotePort     = port;
 }
 
-void CStarNetServerConfig::getMiscellaneous(bool& enabled) const
-{
-	enabled = m_logEnabled;
-}
+//void CStarNetServerConfig::getMiscellaneous(bool& enabled) const
+//{
+	//enabled = m_logEnabled;
+//}
 
-void CStarNetServerConfig::setMiscellaneous(bool enabled)
-{
-	m_logEnabled = enabled;
-}
+//void CStarNetServerConfig::setMiscellaneous(bool enabled)
+//{
+	//m_logEnabled = enabled;
+//}
 
 void CStarNetServerConfig::getPosition(int& x, int& y) const
 {

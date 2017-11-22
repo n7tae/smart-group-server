@@ -47,7 +47,6 @@ const unsigned char TOALL_MULTICAST_ADDRESS[] = {0x01U, 0x00U, 0x5EU, 0x00U, 0x0
 const unsigned char DX_MULTICAST_ADDRESS[] = {0x01U, 0x00U, 0x5EU, 0x00U, 0x00U, 0x23U};
 
 CIRCDDB*       CDDHandler::m_irc          = NULL;
-CHeaderLogger* CDDHandler::m_headerLogger = NULL;
 int            CDDHandler::m_fd           = -1;
 unsigned int   CDDHandler::m_maxRoutes    = 0U;
 CEthernet**    CDDHandler::m_list         = NULL;
@@ -154,11 +153,6 @@ void CDDHandler::setLogging(bool enabled, const std::string& dir)
 	m_logEnabled = enabled;
 }
 
-void CDDHandler::setHeaderLogger(CHeaderLogger* logger)
-{
-	m_headerLogger = logger;
-}
-
 void CDDHandler::setIRC(CIRCDDB* irc)
 {
 	assert(irc != NULL);
@@ -182,10 +176,6 @@ void CDDHandler::process(CDDData& data)
 	std::string rptCall2   = data.getRptCall2();
 
 	if (!m_timer.isRunning() || m_timer.hasExpired()) {
-		// Write to Header.log if it's enabled
-		if (m_headerLogger != NULL)
-			m_headerLogger->write("Repeater", data);
-
 		if (m_irc != NULL) {
 			m_irc->sendHeardWithTXMsg(myCall1, myCall2, yourCall, rptCall1, rptCall2, flag1, flag2, flag3, std::string(""), "Digital Data        ");
 			m_irc->sendHeardWithTXStats(myCall1, myCall2, yourCall, rptCall1, rptCall2, flag1, flag2, flag3, 1, 0, -1);

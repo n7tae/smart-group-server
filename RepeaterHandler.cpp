@@ -57,8 +57,7 @@ bool                      CRepeaterHandler::m_infoEnabled = true;
 bool                      CRepeaterHandler::m_echoEnabled = true;
 bool                      CRepeaterHandler::m_dtmfEnabled = true;
 
-CHeaderLogger*            CRepeaterHandler::m_headerLogger = NULL;
-
+//CHeaderLogger*            CRepeaterHandler::m_headerLogger = NULL;
 //CAPRSWriter*              CRepeaterHandler::m_aprsWriter  = NULL;
 
 CCallsignList*            CRepeaterHandler::m_restrictList = NULL;
@@ -328,10 +327,10 @@ void CRepeaterHandler::setDTMFEnabled(bool enabled)
 	m_dtmfEnabled = enabled;
 }
 
-void CRepeaterHandler::setHeaderLogger(CHeaderLogger* logger)
-{
-	m_headerLogger = logger;
-}
+//void CRepeaterHandler::setHeaderLogger(CHeaderLogger* logger)
+//{
+//	m_headerLogger = logger;
+//}
 
 //void CRepeaterHandler::setAPRSWriter(CAPRSWriter* writer)
 //{
@@ -598,8 +597,8 @@ void CRepeaterHandler::processRepeater(CHeaderData& header)
 //		m_aprsWriter->reset(m_rptCallsign);
 
 	// Write to Header.log if it's enabled
-	if (m_headerLogger != NULL)
-		m_headerLogger->write("Repeater", header);
+//	if (m_headerLogger != NULL)
+//		m_headerLogger->write("Repeater", header);
 
 	// Reset the DTMF decoder
 	m_dtmf.reset();
