@@ -760,27 +760,27 @@ void CHeaderData::setFlags(unsigned char flag1, unsigned char flag2, unsigned ch
 
 std::string CHeaderData::getMyCall1() const
 {
-	return std::string((const char*)m_myCall1);
+	return std::string((const char*)m_myCall1, LONG_CALLSIGN_LENGTH);
 }
 
 std::string CHeaderData::getMyCall2() const
 {
-	return std::string((const char*)m_myCall2);
+	return std::string((const char*)m_myCall2, SHORT_CALLSIGN_LENGTH);
 }
 
 std::string CHeaderData::getYourCall() const
 {
-	return std::string((const char*)m_yourCall);
+	return std::string((const char*)m_yourCall, LONG_CALLSIGN_LENGTH);
 }
 
 std::string CHeaderData::getRptCall1() const
 {
-	return std::string((const char*)m_rptCall1);
+	return std::string((const char*)m_rptCall1, LONG_CALLSIGN_LENGTH);
 }
 
 std::string CHeaderData::getRptCall2() const
 {
-	return std::string((const char*)m_rptCall2);
+	return std::string((const char*)m_rptCall2, LONG_CALLSIGN_LENGTH);
 }
 
 void CHeaderData::setFlag1(unsigned char flag)
