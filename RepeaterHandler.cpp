@@ -1569,12 +1569,12 @@ void CRepeaterHandler::linkUp(DSTAR_PROTOCOL protocol, const std::string& callsi
 		triggerInfo();
 	}
 
-	if (protocol == DP_DPLUS && m_linkStatus == LS_LINKING_DPLUS) {
-		CUtils::lprint("D-Plus link to %s established", callsign.c_str());
-		m_linkStatus = LS_LINKED_DPLUS;
-		writeLinkedTo(callsign);
-		triggerInfo();
-	}
+//	if (protocol == DP_DPLUS && m_linkStatus == LS_LINKING_DPLUS) {
+//		CUtils::lprint("D-Plus link to %s established", callsign.c_str());
+//		m_linkStatus = LS_LINKED_DPLUS;
+//		writeLinkedTo(callsign);
+//		triggerInfo();
+//	}
 
 	if (protocol == DP_DCS && m_linkStatus == LS_LINKING_DCS) {
 		CUtils::lprint("DCS link to %s established", callsign.c_str());
@@ -1610,9 +1610,9 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 			case DP_DEXTRA:
 				CUtils::lprint("DExtra link to %s has failed", callsign.c_str());
 				break;
-			case DP_DPLUS:
-				CUtils::lprint("D-Plus link to %s has failed", callsign.c_str());
-				break;
+//			case DP_DPLUS:
+//				CUtils::lprint("D-Plus link to %s has failed", callsign.c_str());
+//				break;
 			default:
 				break;
 		}
@@ -1629,13 +1629,13 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 			triggerInfo();
 		}
 
-		if (protocol == DP_DPLUS && 0==callsign.compare(m_linkRepeater)) {
-			CUtils::lprint("D-Plus link to %s has failed", m_linkRepeater.c_str());
-			m_linkRepeater.clear();
-			m_linkStatus = LS_NONE;
-			writeNotLinked();
-			triggerInfo();
-		}
+//		if (protocol == DP_DPLUS && 0==callsign.compare(m_linkRepeater)) {
+//			CUtils::lprint("D-Plus link to %s has failed", m_linkRepeater.c_str());
+//			m_linkRepeater.clear();
+//			m_linkStatus = LS_NONE;
+//			writeNotLinked();
+//			triggerInfo();
+//		}
 
 		if (protocol == DP_DCS && 0==callsign.compare(m_linkRepeater)) {
 			if (m_linkStatus == LS_LINKED_DCS || m_linkStatus == LS_LINKING_DCS)
@@ -1668,22 +1668,22 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 		}
 	}
 
-	if (protocol == DP_DPLUS) {
-		switch (m_linkStatus) {
-			case LS_LINKED_DPLUS:
-				CUtils::lprint("D-Plus link to %s has failed, relinking", m_linkRepeater.c_str());
-				m_linkStatus = LS_LINKING_DPLUS;
-				writeLinkingTo(m_linkRepeater);
-				triggerInfo();
-				return true;
+//	if (protocol == DP_DPLUS) {
+//		switch (m_linkStatus) {
+//			case LS_LINKED_DPLUS:
+//				CUtils::lprint("D-Plus link to %s has failed, relinking", m_linkRepeater.c_str());
+//				m_linkStatus = LS_LINKING_DPLUS;
+//				writeLinkingTo(m_linkRepeater);
+//				triggerInfo();
+//				return true;
 
-			case LS_LINKING_DPLUS:
-				return true;
+//			case LS_LINKING_DPLUS:
+//				return true;
 
-			default:
-				return false;
-		}
-	}
+//			default:
+//				return false;
+//		}
+//	}
 
 	if (protocol == DP_DCS) {
 		switch (m_linkStatus) {
@@ -1723,13 +1723,13 @@ void CRepeaterHandler::linkRefused(DSTAR_PROTOCOL protocol, const std::string& c
 		triggerInfo();
 	}
 
-	if (protocol == DP_DPLUS && 0==callsign.compare(m_linkRepeater)) {
-		CUtils::lprint("D-Plus link to %s was refused", m_linkRepeater.c_str());
-		m_linkRepeater.clear();
-		m_linkStatus = LS_NONE;
-		writeIsBusy(callsign);
-		triggerInfo();
-	}
+//	if (protocol == DP_DPLUS && 0==callsign.compare(m_linkRepeater)) {
+//		CUtils::lprint("D-Plus link to %s was refused", m_linkRepeater.c_str());
+//		m_linkRepeater.clear();
+//		m_linkStatus = LS_NONE;
+//		writeIsBusy(callsign);
+//		triggerInfo();
+//	}
 
 	if (protocol == DP_DCS && 0==callsign.compare(m_linkRepeater)) {
 		if (m_linkStatus == LS_LINKED_DCS || m_linkStatus == LS_LINKING_DCS)
@@ -2873,7 +2873,7 @@ void CRepeaterHandler::sendHeard(const std::string& text)
 
 	if (m_g2Status == G2_OK) {
 		destination = m_g2Repeater;
-	} else if (m_g2Status == G2_NONE && (m_linkStatus == LS_LINKED_DPLUS || m_linkStatus == LS_LINKED_DEXTRA || m_linkStatus == LS_LINKED_DCS)) {
+	} else if (m_g2Status == G2_NONE && (/*m_linkStatus == LS_LINKED_DPLUS ||*/ m_linkStatus == LS_LINKED_DEXTRA || m_linkStatus == LS_LINKED_DCS)) {
 		if (0==m_linkRepeater.compare(0, 3, "REF") || 0==m_linkRepeater.compare(0, 3, "XRF") || 0==m_linkRepeater.compare(0, 3, "DCS"))
 			destination = m_linkRepeater;
 	}
@@ -2891,7 +2891,7 @@ void CRepeaterHandler::suspendLinks()
 {
 	if (m_linkStatus == LS_LINKING_DCS      || m_linkStatus == LS_LINKED_DCS    ||
         m_linkStatus == LS_LINKING_DEXTRA   || m_linkStatus == LS_LINKED_DEXTRA ||
-	    m_linkStatus == LS_LINKING_DPLUS    || m_linkStatus == LS_LINKED_DPLUS  ||
+//	    m_linkStatus == LS_LINKING_DPLUS    || m_linkStatus == LS_LINKED_DPLUS  ||
 		m_linkStatus == LS_LINKING_LOOPBACK || m_linkStatus == LS_LINKED_LOOPBACK) {
 		m_lastReflector = m_linkRepeater;
 		CUtils::Trim(m_lastReflector);
