@@ -335,8 +335,8 @@ bool CAudioUnit::readAMBE(const std::string& name)
 	
 	if (stat(fileName.c_str(), &sbuf)) {
 		CUtils::lprint("File %s not readable", fileName.c_str());
-		fileName.assign(DATA_DIR);
-		fileName.push_back('/');
+		fileName.assign(CFG_DIR);
+		fileName.append("/data/");
 		fileName += name;
 		if (stat(fileName.c_str(), &sbuf)) {
 			CUtils::lprint("File %s not readable", fileName.c_str());
@@ -402,8 +402,8 @@ bool CAudioUnit::readIndex(const std::string& name)
 	
 	if (stat(fileName.c_str(), &sbuf)) {
 		CUtils::lprint("File %s not readable", fileName.c_str());
-		fileName.assign(DATA_DIR);
-		fileName.push_back('/');
+		fileName.assign(CFG_DIR);
+		fileName.append("/data/");
 		fileName += name;
 		if (stat(fileName.c_str(), &sbuf)) {
 			CUtils::lprint("File %s not readable", fileName.c_str());

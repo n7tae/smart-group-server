@@ -44,15 +44,20 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		return;
 	}
 
-	if (! get_value(cfg, "ircddb.callsign", m_callsign, 3, 8, "ABXCDE"))
+	if (! get_value(cfg, "ircddb.callsign", m_callsign, 3, 8, ""))
+		return;
+	if (0 == m_callsign.size())
 		return;
 	CUtils::ToUpper(m_callsign);
 	get_value(cfg, "ircddb.address", m_address, 0, 20, "");
 	if (! get_value(cfg, "ircddb.hostname", m_ircddbHostname, 5, 30, "rr.openquad.net"))
 		return;
-	if (! get_value(cfg, "ircddb.username", m_ircddbUsername, 3, 8, "ABXCDE"))
+	if (! get_value(cfg, "ircddb.username", m_ircddbUsername, 3, 8, ""))
 		return;
-	CUtils::ToUpper(m_ircddbUsername);
+	if (0 == m_ircddbUsername.size())
+		m_ircddbUsername = m_callsign;
+	else
+		CUtils::ToUpper(m_ircddbUsername);
 	get_value(cfg, "ircddb.password", m_ircddbPassword, 1, 30, "");
 	CUtils::lprint("IRCDDB: calsign='%s' address='%s' host='%s' user='%s' password='%s'", m_callsign.c_str(), m_address.c_str(), m_ircddbHostname.c_str(),
 																									m_ircddbUsername.c_str(), m_ircddbPassword.c_str());

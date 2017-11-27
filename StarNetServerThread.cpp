@@ -542,11 +542,8 @@ void CStarNetServerThread::processG2()
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 void CStarNetServerThread::loadReflectors(const std::string fname)
 {
-	const char *directory = getenv("HOME");
-	if (! directory)
-		directory = DATA_DIR;
-	std::string filepath(directory);
-	filepath += "/" + fname;
+	std::string filepath(CFG_DIR);
+	filepath += std::string("/") + fname;
 
 	struct stat sbuf;
 	if (stat(filepath.c_str(), &sbuf)) {

@@ -4,7 +4,7 @@
 BINDIR=/usr/local/bin
 CFGDIR=/usr/local/etc
 
-CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DDATA_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
+CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
 #CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DDATA_DIR=\"$(CFGDIR)\"
 LDFLAGS=-L/usr/lib -lconfig++
 
