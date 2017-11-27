@@ -24,14 +24,14 @@ start() {
       echo "smargroupserver already running"
    else
        echo -n "Starting smartgroupserver"
-       start-stop-daemon --exec $SGS_EXE --start -- --cfgfile=$SGS_CFG > $SGS_LOG 2>&1  &
+       start-stop-daemon --start --exec $SGS_EXE -- --cfgfile=$SGS_CFG > $SGS_LOG 2>&1  &
        log_end_msg $?
    fi
 
 }
 
 stop() {
-   start-stop-daemon --exec $SGS_EXE --retry 5 -K
+   start-stop-daemon --stop --exec $SGS_EXE --retry 5
 }
 
 
