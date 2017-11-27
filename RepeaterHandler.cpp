@@ -24,7 +24,7 @@
 
 #include "RepeaterHandler.h"
 #include "DExtraHandler.h"
-#include "DPlusHandler.h"
+//#include "DPlusHandler.h"
 #include "DStarDefines.h"
 #include "DCSHandler.h"
 #include "CCSHandler.h"
@@ -1254,21 +1254,21 @@ void CRepeaterHandler::resolveRepeaterInt(const std::string& repeater, const std
 			// Repeater found
 			in_addr addr;
 			switch (protocol) {
-				case DP_DPLUS:
-					if (m_dplusEnabled) {
-						m_linkGateway = gateway;
-						addr.s_addr = ::inet_addr(address.c_str());
-						CDPlusHandler::link(this, m_rptCallsign, m_linkRepeater, addr);
-						m_linkStatus = LS_LINKING_DPLUS;
-					} else {
-						CUtils::lprint("Require D-Plus for linking to %s, but D-Plus is disabled", repeater.c_str());
-						m_linkStatus = LS_NONE;
-						m_linkRepeater.clear();
-						m_linkGateway.clear();
-						writeNotLinked();
-						triggerInfo();
-					}
-					break;
+//				case DP_DPLUS:
+//					if (m_dplusEnabled) {
+//						m_linkGateway = gateway;
+//						addr.s_addr = ::inet_addr(address.c_str());
+//						CDPlusHandler::link(this, m_rptCallsign, m_linkRepeater, addr);
+//						m_linkStatus = LS_LINKING_DPLUS;
+//					} else {
+//						CUtils::lprint("Require D-Plus for linking to %s, but D-Plus is disabled", repeater.c_str());
+//						m_linkStatus = LS_NONE;
+//						m_linkRepeater.clear();
+//						m_linkGateway.clear();
+//						writeNotLinked();
+//						triggerInfo();
+//					}
+//					break;
 
 				case DP_DCS:
 					if (m_dcsEnabled) {
@@ -1343,7 +1343,7 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 			CUtils::lprint("Reconnect timer has expired, unlinking %s from %s", m_rptCallsign.c_str(), m_linkRepeater.c_str());
 
 			CDExtraHandler::unlink(this);
-			CDPlusHandler::unlink(this);
+//			CDPlusHandler::unlink(this);
 			CDCSHandler::unlink(this);
 
 			m_linkStatus = LS_NONE;
@@ -1398,19 +1398,19 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 							triggerInfo();
 							break;
 
-						case LS_LINKING_DPLUS:
-							m_linkRepeater = m_linkStartup;
-							CDPlusHandler::relink(this, m_linkRepeater);
-							writeLinkingTo(m_linkRepeater);
-							triggerInfo();
-							break;
+//						case LS_LINKING_DPLUS:
+//							m_linkRepeater = m_linkStartup;
+//							CDPlusHandler::relink(this, m_linkRepeater);
+//							writeLinkingTo(m_linkRepeater);
+//							triggerInfo();
+//							break;
 
-						case LS_LINKED_DPLUS:
-							m_linkRepeater = m_linkStartup;
-							CDPlusHandler::relink(this, m_linkRepeater);
-							writeLinkedTo(m_linkRepeater);
-							triggerInfo();
-							break;
+//						case LS_LINKED_DPLUS:
+//							m_linkRepeater = m_linkStartup;
+//							CDPlusHandler::relink(this, m_linkRepeater);
+//							writeLinkedTo(m_linkRepeater);
+//							triggerInfo();
+//							break;
 
 						default:
 							break;
@@ -1421,7 +1421,7 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 			}
 
 			CDExtraHandler::unlink(this);
-			CDPlusHandler::unlink(this);
+//			CDPlusHandler::unlink(this);
 			CDCSHandler::unlink(this);
 
 			linkInt(m_linkStartup);
@@ -1806,7 +1806,7 @@ void CRepeaterHandler::link(RECONNECT reconnect, const std::string& reflector)
 		CUtils::lprint("Unlinking %s from %s", m_rptCallsign.c_str(), m_linkRepeater.c_str());
 
 		CDExtraHandler::unlink(this);
-		CDPlusHandler::unlink(this);
+//		CDPlusHandler::unlink(this);
 		CDCSHandler::unlink(this);
 
 		m_linkStatus = LS_NONE;
@@ -1861,19 +1861,19 @@ void CRepeaterHandler::link(RECONNECT reconnect, const std::string& reflector)
 					triggerInfo();
 					break;
 
-				case LS_LINKING_DPLUS:
-					m_linkRepeater = reflector;
-					CDPlusHandler::relink(this, m_linkRepeater);
-					writeLinkingTo(m_linkRepeater);
-					triggerInfo();
-					break;
+//				case LS_LINKING_DPLUS:
+//					m_linkRepeater = reflector;
+//					CDPlusHandler::relink(this, m_linkRepeater);
+//					writeLinkingTo(m_linkRepeater);
+//					triggerInfo();
+//					break;
 
-				case LS_LINKED_DPLUS:
-					m_linkRepeater = reflector;
-					CDPlusHandler::relink(this, m_linkRepeater);
-					writeLinkedTo(m_linkRepeater);
-					triggerInfo();
-					break;
+//				case LS_LINKED_DPLUS:
+//					m_linkRepeater = reflector;
+//					CDPlusHandler::relink(this, m_linkRepeater);
+//					writeLinkedTo(m_linkRepeater);
+//					triggerInfo();
+//					break;
 
 				default:
 					break;
@@ -1884,7 +1884,7 @@ void CRepeaterHandler::link(RECONNECT reconnect, const std::string& reflector)
 	}
 
 	CDExtraHandler::unlink(this);
-	CDPlusHandler::unlink(this);
+//	CDPlusHandler::unlink(this);
 	CDCSHandler::unlink(this);
 
 	linkInt(m_linkStartup);
@@ -1903,9 +1903,9 @@ void CRepeaterHandler::unlink(PROTOCOL protocol, const std::string& reflector)
 	}
 
 	switch (protocol) {
-		case PROTO_DPLUS:
-			CDPlusHandler::unlink(this, reflector, false);
-			break;
+//		case PROTO_DPLUS:
+//			CDPlusHandler::unlink(this, reflector, false);
+//			break;
 
 		case PROTO_DEXTRA:
 			CDExtraHandler::unlink(this, reflector, false);
@@ -2053,7 +2053,7 @@ void CRepeaterHandler::reflectorCommandHandler(const std::string& callsign, cons
 		CUtils::lprint("Unlink command issued via %s by %s", type.c_str(), user.c_str());
 
 		CDExtraHandler::unlink(this);
-		CDPlusHandler::unlink(this);
+//		CDPlusHandler::unlink(this);
 		CDCSHandler::unlink(this);
 
 		m_linkStatus = LS_NONE;
@@ -2131,19 +2131,19 @@ void CRepeaterHandler::reflectorCommandHandler(const std::string& callsign, cons
 						triggerInfo();
 						break;
 
-					case LS_LINKING_DPLUS:
-						m_linkRepeater = reflector;
-						CDPlusHandler::relink(this, m_linkRepeater);
-						writeLinkingTo(m_linkRepeater);
-						triggerInfo();
-						break;
+//					case LS_LINKING_DPLUS:
+//						m_linkRepeater = reflector;
+//						CDPlusHandler::relink(this, m_linkRepeater);
+//						writeLinkingTo(m_linkRepeater);
+//						triggerInfo();
+//						break;
 
-					case LS_LINKED_DPLUS:
-						m_linkRepeater = reflector;
-						CDPlusHandler::relink(this, m_linkRepeater);
-						writeLinkedTo(m_linkRepeater);
-						triggerInfo();
-						break;
+//					case LS_LINKED_DPLUS:
+//						m_linkRepeater = reflector;
+//						CDPlusHandler::relink(this, m_linkRepeater);
+//						writeLinkedTo(m_linkRepeater);
+//						triggerInfo();
+//						break;
 
 					default:
 						break;
@@ -2154,7 +2154,7 @@ void CRepeaterHandler::reflectorCommandHandler(const std::string& callsign, cons
 		}
 
 		CDExtraHandler::unlink(this);
-		CDPlusHandler::unlink(this);
+//		CDPlusHandler::unlink(this);
 		CDCSHandler::unlink(this);
 
 		linkInt(reflector);
@@ -2179,19 +2179,19 @@ void CRepeaterHandler::linkInt(const std::string& callsign)
 		m_linkGateway = data->getGateway();
 
 		switch (data->getProtocol()) {
-			case DP_DPLUS:
-				if (m_dplusEnabled) {
-					m_linkStatus = LS_LINKING_DPLUS;
-					CDPlusHandler::link(this, m_rptCallsign, m_linkRepeater, data->getAddress());
-					writeLinkingTo(m_linkRepeater);
-					triggerInfo();
-				} else {
-					CUtils::lprint("Require D-Plus for linking to %s, but D-Plus is disabled", callsign.c_str());
-					m_linkStatus = LS_NONE;
-					writeNotLinked();
-					triggerInfo();
-				}
-				break;
+//			case DP_DPLUS:
+//				if (m_dplusEnabled) {
+//					m_linkStatus = LS_LINKING_DPLUS;
+//					CDPlusHandler::link(this, m_rptCallsign, m_linkRepeater, data->getAddress());
+//					writeLinkingTo(m_linkRepeater);
+//					triggerInfo();
+//				} else {
+//					CUtils::lprint("Require D-Plus for linking to %s, but D-Plus is disabled", callsign.c_str());
+//					m_linkStatus = LS_NONE;
+//					writeNotLinked();
+//					triggerInfo();
+//				}
+//				break;
 
 			case DP_DCS:
 				if (m_dcsEnabled) {
@@ -2253,7 +2253,7 @@ void CRepeaterHandler::sendToOutgoing(const CHeaderData& header)
 	temp.setFlags(0x00U, 0x00U, 0x00U);
 
 	// Outgoing DPlus links change the RPT1 and RPT2 values in the DPlus handler
-	CDPlusHandler::writeHeader(this, temp, DIR_OUTGOING);
+//	CDPlusHandler::writeHeader(this, temp, DIR_OUTGOING);
 
 	// Outgoing DExtra links have the currently linked repeater/gateway
 	// as the RPT1 and RPT2 values
@@ -2272,7 +2272,7 @@ void CRepeaterHandler::sendToOutgoing(const CAMBEData& data)
 
 	CDExtraHandler::writeAMBE(this, temp, DIR_OUTGOING);
 
-	CDPlusHandler::writeAMBE(this, temp, DIR_OUTGOING);
+//	CDPlusHandler::writeAMBE(this, temp, DIR_OUTGOING);
 
 	CDCSHandler::writeAMBE(this, temp, DIR_OUTGOING);
 }
@@ -2285,8 +2285,8 @@ void CRepeaterHandler::sendToIncoming(const CHeaderData& header)
 	temp.setFlags(0x00U, 0x00U, 0x00U);
 
 	// Incoming DPlus links
-	temp.setRepeaters(m_rptCallsign, m_gateway);
-	CDPlusHandler::writeHeader(this, temp, DIR_INCOMING);
+//	temp.setRepeaters(m_rptCallsign, m_gateway);
+//	CDPlusHandler::writeHeader(this, temp, DIR_INCOMING);
 
 	// Incoming DExtra links have RPT1 and RPT2 swapped
 	temp.setRepeaters(m_gwyCallsign, m_rptCallsign);
@@ -2303,7 +2303,7 @@ void CRepeaterHandler::sendToIncoming(const CAMBEData& data)
 
 	CDExtraHandler::writeAMBE(this, temp, DIR_INCOMING);
 
-	CDPlusHandler::writeAMBE(this, temp, DIR_INCOMING);
+//	CDPlusHandler::writeAMBE(this, temp, DIR_INCOMING);
 
 	CDCSHandler::writeAMBE(this, temp, DIR_INCOMING);
 }
@@ -2344,19 +2344,19 @@ void CRepeaterHandler::startupInt()
 
 			DSTAR_PROTOCOL protocol = data->getProtocol();
 			switch (protocol) {
-				case DP_DPLUS:
-					if (m_dplusEnabled) {
-						m_linkStatus = LS_LINKING_DPLUS;
-						CDPlusHandler::link(this, m_rptCallsign, m_linkRepeater, data->getAddress());
-						writeLinkingTo(m_linkRepeater);
-						triggerInfo();
-					} else {
-						CUtils::lprint("Require D-Plus for linking to %s, but D-Plus is disabled", m_linkRepeater.c_str());
-						m_linkStatus = LS_NONE;
-						writeNotLinked();
-						triggerInfo();
-					}
-					break;
+//				case DP_DPLUS:
+//					if (m_dplusEnabled) {
+//						m_linkStatus = LS_LINKING_DPLUS;
+//						CDPlusHandler::link(this, m_rptCallsign, m_linkRepeater, data->getAddress());
+//						writeLinkingTo(m_linkRepeater);
+//						triggerInfo();
+//					} else {
+//						CUtils::lprint("Require D-Plus for linking to %s, but D-Plus is disabled", m_linkRepeater.c_str());
+//						m_linkStatus = LS_NONE;
+//						writeNotLinked();
+//						triggerInfo();
+//					}
+//					break;
 
 				case DP_DCS:
 					if (m_dcsEnabled) {
@@ -2897,7 +2897,7 @@ void CRepeaterHandler::suspendLinks()
 		CUtils::Trim(m_lastReflector);
 	}
 
-	CDPlusHandler::unlink(this);
+//	CDPlusHandler::unlink(this);
 	CDExtraHandler::unlink(this);
 	CDCSHandler::unlink(this);
 

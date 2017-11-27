@@ -25,7 +25,7 @@
 #include "StarNetHandler.h"
 #include "RemoteHandler.h"
 #include "DExtraHandler.h"
-#include "DPlusHandler.h"
+//#include "DPlusHandler.h"
 #include "DStarDefines.h"
 #include "DCSHandler.h"
 #include "Utils.h"
@@ -152,7 +152,7 @@ void CRemoteHandler::sendRepeater(const std::string& callsign)
 	CRemoteRepeaterData* data = repeater->getInfo();
 	if (data != NULL) {
 		CDExtraHandler::getInfo(repeater, *data);
-		CDPlusHandler::getInfo(repeater, *data);
+//		CDPlusHandler::getInfo(repeater, *data);
 		CDCSHandler::getInfo(repeater, *data);
 		CCCSHandler::getInfo(repeater, *data);
 
