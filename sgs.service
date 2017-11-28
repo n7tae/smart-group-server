@@ -1,0 +1,7 @@
+[Unit]
+Description=Smart Group Server
+After=systemd-user-session.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/sgs /usr/local/etc/sgs.cfg

@@ -31,8 +31,9 @@
 
 int main(int argc, char *argv[])
 {
+	setbuf(stdout, NULL);
 	if (2 != argc) {
-		printf ("usage: %s path_to_config_file\n", argv[0]);
+		printf("usage: %s path_to_config_file\n", argv[0]);
 		exit(1);
 	}
 	std::string cfgFile(argv[1]);

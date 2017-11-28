@@ -26,22 +26,24 @@ clean:
 -include $(DEPS)
 
 # install and uninstall need root priviledges
-install : smartgroupserver
+install : sgs
 	/usr/bin/wget ftp://dschost1.w6kd.com/DExtra_Hosts.txt
 	/bin/mv DExtra_Hosts.txt $(CFGDIR)
 	/usr/bin/wget ftp://dschost1.w6kd.com/DCS_Hosts.txt
 	/bin/mv DCS_Hosts.txt $(CFGDIR)
-	/bin/cp -f smartgroupserver $(BINDIR)
-	/bin/cp -f smartgroupserver.cfg $(CFGDIR)
-	/bin/cp -f service.smartgroupserver /etc/init.d/smartgroupserver
-	/usr/sbin/update-rc.d smartgroupserver defaults
-	/usr/sbin/update-rc.d smartgroupserver enable
+	/bin/cp -f sgs $(BINDIR)
+	/bin/cp -f sgs.cfg $(CFGDIR)
+	/bin/cp -f sgs.service /lib/systemd/system
+	systemctl enable sgs.service
+	systemctl daemon-reload
+	systemctl start sgs.service
 
 uninstall :
-	/usr/sbin/service smartgrouppserver stop
-	/bin/rm -f /etc/init.d/smartgroupserver
-	/usr/sbin/update-rc.d smartgroupserver remove
-	/bin/rm -f $(BINDIR)/smartgroupserver
-	/bin/rm -f $(CFGDIR)/smartgroupserver.cfg
+	systemctl stop sgs.service
+	systemctl disable sgs.service
+	/bin/rm -f /lib/systemd/system/sgs.service
+	systemctl daemon-reload
+	/bin/rm -f $(BINDIR)/sgs
+	/bin/rm -f $(CFGDIR)/sgs.cfg
 	/bin/rm -f $(CFGDIR)/DExtra_Hosts.txt
 	/bin/rm -f $(CFGDIR)/DCS_Hosts.txt
