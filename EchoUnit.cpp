@@ -72,7 +72,7 @@ void CEchoUnit::writeData(const CAMBEData& data)
 	}
 
 	if (data.isEnd()) {
-		CUtils::lprint("Received %.1f secs of audio from %s for echoing", float(m_in) / float(DSTAR_FRAMES_PER_SEC), m_header->getMyCall1().c_str());
+		printf("Received %.1f secs of audio from %s for echoing\n", float(m_in) / float(DSTAR_FRAMES_PER_SEC), m_header->getMyCall1().c_str());
 
 		m_timer.start();
 		m_status = ES_WAIT;
@@ -84,7 +84,7 @@ void CEchoUnit::end()
 	if (m_status != ES_RECEIVE)
 		return;
 
-	CUtils::lprint("Received %.1f secs of audio from %s for echoing", float(m_in) / float(DSTAR_FRAMES_PER_SEC), m_header->getMyCall1().c_str());
+	printf("Received %.1f secs of audio from %s for echoing\n", float(m_in) / float(DSTAR_FRAMES_PER_SEC), m_header->getMyCall1().c_str());
 
 	m_timer.start();
 	m_status = ES_WAIT;

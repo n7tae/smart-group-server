@@ -46,7 +46,7 @@ m_out(0U)
 	char vstr[32];
 	snprintf(vstr, 32, "ircDDB GW - %s", VERSION.substr(0, 8).c_str());
 
-	CUtils::lprint("Version text set to \"%s\"", vstr);
+	printf("Version text set to \"%s\"\n", vstr);
 
 	CSlowDataEncoder encoder;
 	encoder.setTextData(std::string(vstr));

@@ -104,7 +104,7 @@ void CDDHandler::initialise(unsigned int maxRoutes, const std::string& name)
 
 	m_fd = open("/dev/net/tun", O_RDWR);
 	if (m_fd < 0) {
-		CUtils::lprint("Cannot open /dev/net/tun");
+		printf("Cannot open /dev/net/tun\n");
 		return;
 	}
 
@@ -115,18 +115,18 @@ void CDDHandler::initialise(unsigned int maxRoutes, const std::string& name)
 	strcpy(ifr1.ifr_name, "tap%d");
 
 	if (ioctl(m_fd, TUNSETIFF, (void *)&ifr1) < 0) {
-		CUtils::lprint("TUNSETIFF ioctl failed, closing the tap device");
+		printf("TUNSETIFF ioctl failed, closing the tap device\n");
 		close(m_fd);
 		m_fd = -1;
 		return;
 	}
 
 	std::string device = std::string(ifr1.ifr_name);
-	CUtils::lprint("DD mode Tap interface created on %s", device.c_str());
+	printf("DD mode Tap interface created on %s\n", device.c_str());
 
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0) {
-		CUtils::lprint("Unable to open the config socket, closing the tap device");
+		printf("Unable to open the config socket, closing the tap device\n");
 		close(m_fd);
 		m_fd = -1;
 		return;
@@ -138,7 +138,7 @@ void CDDHandler::initialise(unsigned int maxRoutes, const std::string& name)
 
 	ifr2.ifr_flags = IFF_UP | IFF_BROADCAST | IFF_MULTICAST;
 	if (ioctl(fd, SIOCSIFFLAGS, (void *)&ifr2) < 0) {
-		CUtils::lprint("SIOCSIFFLAGS ioctl failed, closing the tap device");
+		printf("SIOCSIFFLAGS ioctl failed, closing the tap device\n");
 		close(m_fd);
 		m_fd = -1;
 		return;
@@ -203,7 +203,7 @@ void CDDHandler::process(CDDData& data)
 	}
 
 	if (!found) {
-		CUtils::lprint("Adding DD user %s with ethernet address %02X:%02X:%02X:%02X:%02X:%02X", myCall1.c_str(),
+		printf("Adding DD user %s with ethernet address %02X:%02X:%02X:%02X:%02X:%02X\n", myCall1.c_str(),
 			address[0], address[1], address[2], address[3], address[4], address[5]);
 
 		CEthernet* ethernet = new CEthernet(address, myCall1);
@@ -220,7 +220,7 @@ void CDDHandler::process(CDDData& data)
 		}
 
 		if (!found) {
-			CUtils::lprint("No space to add new DD ethernet address");
+			printf("No space to add new DD ethernet address\n");
 			delete ethernet;
 			return;
 		}
@@ -230,7 +230,7 @@ void CDDHandler::process(CDDData& data)
 
 	ssize_t len = ::write(m_fd, (char*)m_buffer, length);
 	if (len != ssize_t(length))
-		CUtils::lprint("Error returned from write()");
+		printf("Error returned from write()\n");
 }
 
 CDDData* CDDHandler::read()
@@ -251,7 +251,7 @@ CDDData* CDDHandler::read()
 
 	int ret = ::select(m_fd + 1, &readFds, NULL, NULL, &tv);
 	if (ret < 0) {
-		CUtils::lprint("Error returned from select()");
+		printf("Error returned from select()\n");
 		return NULL;
 	}
 
@@ -263,7 +263,7 @@ CDDData* CDDHandler::read()
 
 	ssize_t len = ::read(m_fd, (char*)m_buffer, BUFFER_LENGTH);
 	if (len <= 0) {
-		CUtils::lprint("Error returned from read()");
+		printf("Error returned from read()\n");
 		return NULL;
 	}
 
@@ -288,17 +288,17 @@ CDDData* CDDHandler::read()
 	}
 
 	if (ethernet == NULL) {
-		CUtils::lprint("Cannot find the ethernet address of %02X:%02X:%02X:%02X:%02X:%02X in the ethernet list", address[0], address[1], address[2], address[3], address[4], address[5]);
+		printf("Cannot find the ethernet address of %02X:%02X:%02X:%02X:%02X:%02X in the ethernet list\n", address[0], address[1], address[2], address[3], address[4], address[5]);
 		return NULL;
 	}
 
 	CRepeaterHandler* handler = CRepeaterHandler::findDDRepeater();
 	if (handler == NULL) {
-		CUtils::lprint("Incoming DD data to unknown repeater");
+		printf("Incoming DD data to unknown repeater\n");
 		return NULL;
 	}
 
-	// CUtils::lprint("Mapping ethernet address %02X:%02X:%02X:%02X:%02X:%02X to user %s",
+	// printf("Mapping ethernet address %02X:%02X:%02X:%02X:%02X:%02X to user %s\n",
 	//				address[0], address[1], address[2], address[3], address[4], address[5],
 	//				ethernet->getCallsign().c_str());
 
@@ -345,7 +345,7 @@ void CDDHandler::writeStatus(const CEthernet& ethernet)
 
 	FILE *file = fopen(fileName.c_str(), "at");
 	if (NULL == file) {
-		CUtils::lprint("Unable to open %s for writing", fileName.c_str());
+		printf("Unable to open %s for writing\n", fileName.c_str());
 		return;
 	}
 

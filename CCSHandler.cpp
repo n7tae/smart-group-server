@@ -248,10 +248,10 @@ void CCCSHandler::process(CAMBEData& data)
 
 		m_handler->ccsLinkMade(m_yourCall, m_direction);
 
-		CUtils::lprint("CCS: New incoming link to %s from %s @ %s", m_local.c_str(), m_yourCall.c_str(), m_rptCall1.c_str());
+		printf("CCS: New incoming link to %s from %s @ %s\n", m_local.c_str(), m_yourCall.c_str(), m_rptCall1.c_str());
 	} else {
 		if (m_yourCall.compare(myCall1) && m_rptCall1.compare(rptCall1)) {
-			CUtils::lprint("CCS: Rejecting new incoming CCS link from %s @ %s to %s", myCall1.c_str(), rptCall1.c_str(), yourCall.c_str());
+			printf("CCS: Rejecting new incoming CCS link from %s @ %s to %s\n", myCall1.c_str(), rptCall1.c_str(), yourCall.c_str());
 
 			CCCSData data(yourCall, myCall1, CT_TERMINATE);
 			data.setDestination(m_ccsAddress, CCS_PORT);
@@ -267,7 +267,7 @@ void CCCSHandler::process(CAMBEData& data)
 
 		// Allow for the fact that the distant repeater may change during the QSO
 		if (0==m_yourCall.compare(myCall1) && m_rptCall1.compare(rptCall1)) {
-			CUtils::lprint("CCS: %s has moved from repeater %s to %s", m_yourCall.c_str(), m_rptCall1.c_str(), rptCall1.c_str());
+			printf("CCS: %s has moved from repeater %s to %s\n", m_yourCall.c_str(), m_rptCall1.c_str(), rptCall1.c_str());
 			m_rptCall1 = rptCall1;
 		}
 	}
@@ -295,7 +295,7 @@ void CCCSHandler::process(CCCSData& data)
 	switch (type) {
 		case CT_TERMINATE:
 			if (m_state == CS_ACTIVE) {
-				CUtils::lprint("CCS: Link between %s and %s has been terminated", data.getLocal().c_str(), data.getRemote().c_str());
+				printf("CCS: Link between %s and %s has been terminated\n", data.getLocal().c_str(), data.getRemote().c_str());
 				m_stateChange = true;
 				m_state       = CS_CONNECTED;
 				m_inactivityTimer.stop();
@@ -304,7 +304,7 @@ void CCCSHandler::process(CCCSData& data)
 			break;
 
 		case CT_DTMFNOTFOUND:
-			CUtils::lprint("CCS: Cannot map %s to a callsign", m_yourCall.c_str());
+			printf("CCS: Cannot map %s to a callsign\n", m_yourCall.c_str());
 			m_stateChange = true;
 			m_state       = CS_CONNECTED;
 			m_inactivityTimer.stop();
@@ -312,7 +312,7 @@ void CCCSHandler::process(CCCSData& data)
 			break;
 
 		case CT_DTMFFOUND:
-			CUtils::lprint("CCS: Mapped %s to %s, added to the cache", m_yourCall.c_str(), data.getRemote().c_str());
+			printf("CCS: Mapped %s to %s, added to the cache\n", m_yourCall.c_str(), data.getRemote().c_str());
 			addToCache(m_yourCall, data.getRemote());
 			m_stateChange = true;
 			m_yourCall = data.getRemote();
@@ -335,7 +335,7 @@ void CCCSHandler::process(CConnectData& connect)
 	CD_TYPE type = connect.getType();
 
 	if (type == CT_ACK && m_state == CS_CONNECTING) {
-		CUtils::lprint("CCS: %s connected to server %s", m_callsign.c_str(), m_ccsHost.c_str());
+		printf("CCS: %s connected to server %s\n", m_callsign.c_str(), m_ccsHost.c_str());
 
 		m_announceTimer.start();
 		m_pollInactivityTimer.start();
@@ -353,7 +353,7 @@ void CCCSHandler::process(CConnectData& connect)
 	}
 
 	if (type == CT_NAK && m_state == CS_CONNECTING) {
-		CUtils::lprint("CCS: Connection refused for %s", m_callsign.c_str());
+		printf("CCS: Connection refused for %s\n", m_callsign.c_str());
 		m_tryTimer.stop();
 		m_state = CS_DISABLED;
 		return;
@@ -369,7 +369,7 @@ bool CCCSHandler::connect()
 	// Can we resolve the CCS server address?
 	m_ccsAddress = CUDPReaderWriter::lookup(m_ccsHost);
 	if (m_ccsAddress.s_addr == INADDR_NONE) {
-		CUtils::lprint("CCS: Unable to find the IP address for %s", m_ccsHost.c_str());
+		printf("CCS: Unable to find the IP address for %s\n", m_ccsHost.c_str());
 		return false;
 	}
 
@@ -377,7 +377,7 @@ bool CCCSHandler::connect()
 	if (!res)
 		return false;
 
-	CUtils::lprint("CCS: Opening UDP port %u for %s", m_protocol.getPort(), m_callsign.c_str());
+	printf("CCS: Opening UDP port %u for %s\n", m_protocol.getPort(), m_callsign.c_str());
 
 	m_waitTimer.start();
 
@@ -412,12 +412,12 @@ void CCCSHandler::startLink(const std::string& dtmf, const std::string& user, co
 
 	std::string callsign = findInCache(dtmf);
 	if (callsign.size()) {
-		CUtils::lprint("CCS: New outgoing link to %s/%s via %s by %s", dtmf.c_str(), callsign.c_str(), type.c_str(), user.c_str());
+		printf("CCS: New outgoing link to %s/%s via %s by %s\n", dtmf.c_str(), callsign.c_str(), type.c_str(), user.c_str());
 		m_handler->ccsLinkMade(callsign, m_direction);
 		m_yourCall = callsign;
 		m_rptCall1 = callsign;
 	} else {
-		CUtils::lprint("CCS: New outgoing link to %s via %s by %s", dtmf.c_str(), type.c_str(), user.c_str());
+		printf("CCS: New outgoing link to %s via %s by %s\n", dtmf.c_str(), type.c_str(), user.c_str());
 		m_yourCall = dtmf;
 		m_yourCall.resize(LONG_CALLSIGN_LENGTH, ' ');
 		m_rptCall1.clear();
@@ -439,7 +439,7 @@ void CCCSHandler::stopLink(const std::string& user, const std::string& type)
 		return;
 
 	if (user.size() && type.size())
-		CUtils::lprint("CCS: Link to %s from %s has been terminated via %s by %s", m_yourCall.c_str(), m_local.c_str(), type.c_str(), user.c_str());
+		printf("CCS: Link to %s from %s has been terminated via %s by %s\n", m_yourCall.c_str(), m_local.c_str(), type.c_str(), user.c_str());
 
 	CCCSData data(m_local, m_yourCall, CT_TERMINATE);
 	data.setDestination(m_ccsAddress, CCS_PORT);
@@ -465,7 +465,7 @@ void CCCSHandler::unlink(const std::string& callsign)
 	if (m_yourCall.compare(callsign))
 		return;
 
-	CUtils::lprint("CCS: Link to %s from %s has been terminated by command", m_yourCall.c_str(), m_local.c_str());
+	printf("CCS: Link to %s from %s has been terminated by command\n", m_yourCall.c_str(), m_local.c_str());
 
 	CCCSData data(m_local, m_yourCall, CT_TERMINATE);
 	data.setDestination(m_ccsAddress, CCS_PORT);
@@ -535,7 +535,7 @@ void CCCSHandler::clockInt(unsigned int ms)
 	m_tryTimer.clock(ms);
 
 	if (m_pollInactivityTimer.isRunning() && m_pollInactivityTimer.hasExpired()) {
-		CUtils::lprint("CCS: Connection has failed (poll inactivity) for %s, reconnecting", m_callsign.c_str());
+		printf("CCS: Connection has failed (poll inactivity) for %s, reconnecting\n", m_callsign.c_str());
 
 		m_announceTimer.stop();
 		m_pollInactivityTimer.stop();
@@ -574,7 +574,7 @@ void CCCSHandler::clockInt(unsigned int ms)
 	}
 
 	if (m_inactivityTimer.isRunning() && m_inactivityTimer.hasExpired()) {
-		CUtils::lprint("CCS: Activity timeout on link for %s", m_callsign.c_str(), m_callsign.c_str());
+		printf("CCS: Activity timeout on link for %s\n", m_callsign.c_str());
 
 		CCCSData data(m_local, m_yourCall, CT_TERMINATE);
 		data.setDestination(m_ccsAddress, CCS_PORT);

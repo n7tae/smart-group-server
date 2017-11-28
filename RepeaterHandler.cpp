@@ -207,7 +207,7 @@ m_heardTimer(1000U, 0U, 100U)		// 100ms
 	m_version   = new CVersionUnit(this, callsign);
 
 	if (dratsEnabled) {
-		CUtils::lprint("RepeaterHandler: DRATS is not available!");
+		printf("RepeaterHandler: DRATS is not available!\n");
 //		m_drats = new CDRATSServer(m_localAddress, port, callsign, this);
 //		bool ret = m_drats->open();
 //		if (!ret) {
@@ -261,7 +261,7 @@ void CRepeaterHandler::add(const std::string& callsign, const std::string& band,
 		}
 	}
 
-	CUtils::lprint("Cannot add repeater with callsign %s, no space", callsign.c_str());
+	printf("Cannot add repeater with callsign %s, no space\n", callsign.c_str());
 
 	delete repeater;
 }
@@ -555,12 +555,12 @@ void CRepeaterHandler::processRepeater(CHeaderData& header)
 			m_band1 = band1;
 			m_band2 = band2;
 			m_band3 = band3;
-			CUtils::lprint("Repeater %s registered with bands %u %u %u", m_rptCall1.c_str(), m_band1, m_band2, m_band3);
+			printf("Repeater %s registered with bands %u %u %u\n", m_rptCall1.c_str(), m_band1, m_band2, m_band3);
 		}
 	}
 
 	if (m_flag1 == 0x01) {
-		CUtils::lprint("Received a busy message from repeater %s", m_rptCall1.c_str());
+		printf("Received a busy message from repeater %s\n", m_rptCall1.c_str());
 		return;
 	}
 
@@ -645,13 +645,13 @@ void CRepeaterHandler::processRepeater(CHeaderData& header)
 	if (m_rptCall2.compare(m_gwyCallsign) && m_rptCall2.compare(m_gateway)) {
 		CRepeaterHandler* repeater = findDVRepeater(m_rptCall2);
 		if (repeater != NULL) {
-			CUtils::lprint("Cross-band routing by %s from %s to %s", m_myCall1.c_str(), m_rptCallsign.c_str(), m_rptCall2.c_str());
+			printf("Cross-band routing by %s from %s to %s\n", m_myCall1.c_str(), m_rptCallsign.c_str(), m_rptCall2.c_str());
 			m_xBandRptr = repeater;
 			m_xBandRptr->process(header, DIR_INCOMING, AS_XBAND);
 			m_g2Status = G2_XBAND;
 		} else {
 			// Keep the transmission local
-			CUtils::lprint("Invalid cross-band route by %s from %s to %s", m_myCall1.c_str(), m_rptCallsign.c_str(), m_rptCall2.c_str());
+			printf("Invalid cross-band route by %s from %s to %s\n", m_myCall1.c_str(), m_rptCallsign.c_str(), m_rptCall2.c_str());
 			m_g2Status = G2_LOCAL;
 		}
 		return;
@@ -659,7 +659,7 @@ void CRepeaterHandler::processRepeater(CHeaderData& header)
 
 	m_starNet = CStarNetHandler::findStarNet(header);
 	if (m_starNet != NULL && !m_restricted) {
-		CUtils::lprint("StarNet routing by %s to %s", m_myCall1.c_str(), m_yourCall.c_str());
+		printf("StarNet routing by %s to %s\n", m_myCall1.c_str(), m_yourCall.c_str());
 		m_starNet->process(header);
 		m_g2Status = G2_STARNET;
 		return;
@@ -919,12 +919,12 @@ void CRepeaterHandler::processBusy(CHeaderData& header)
 			m_band1 = band1;
 			m_band2 = band2;
 			m_band3 = band3;
-			CUtils::lprint("Repeater %s registered with bands %u %u %u", rptCall1.c_str(), m_band1, m_band2, m_band3);
+			printf("Repeater %s registered with bands %u %u %u\n", rptCall1.c_str(), m_band1, m_band2, m_band3);
 		}
 	}
 
 	if (header.getFlag1() == 0x01) {
-		CUtils::lprint("Received a busy message from repeater %s", rptCall1.c_str());
+		printf("Received a busy message from repeater %s\n", rptCall1.c_str());
 		return;
 	}
 
@@ -1059,7 +1059,7 @@ void CRepeaterHandler::processRepeater(CDDData& data)
 
 	if (0 == m_ddCallsign.size()) {
 		m_ddCallsign = data.getYourCall();
-		CUtils::lprint("Added DD callsign %s", m_ddCallsign.c_str());
+		printf("Added DD callsign %s\n", m_ddCallsign.c_str());
 	}
 
 	CDDHandler::process(data);
@@ -1261,7 +1261,7 @@ void CRepeaterHandler::resolveRepeaterInt(const std::string& repeater, const std
 //						CDPlusHandler::link(this, m_rptCallsign, m_linkRepeater, addr);
 //						m_linkStatus = LS_LINKING_DPLUS;
 //					} else {
-//						CUtils::lprint("Require D-Plus for linking to %s, but D-Plus is disabled", repeater.c_str());
+//						printf("Require D-Plus for linking to %s, but D-Plus is disabled\n", repeater.c_str());
 //						m_linkStatus = LS_NONE;
 //						m_linkRepeater.clear();
 //						m_linkGateway.clear();
@@ -1277,7 +1277,7 @@ void CRepeaterHandler::resolveRepeaterInt(const std::string& repeater, const std
 						CDCSHandler::link(this, m_rptCallsign, m_linkRepeater, addr);
 						m_linkStatus = LS_LINKING_DCS;
 					} else {
-						CUtils::lprint("Require DCS for linking to %s, but DCS is disabled", repeater.c_str());
+						printf("Require DCS for linking to %s, but DCS is disabled\n", repeater.c_str());
 						m_linkStatus = LS_NONE;
 						m_linkRepeater.clear();
 						m_linkGateway.clear();
@@ -1300,7 +1300,7 @@ void CRepeaterHandler::resolveRepeaterInt(const std::string& repeater, const std
 						CDExtraHandler::link(this, m_rptCallsign, m_linkRepeater, addr);
 						m_linkStatus = LS_LINKING_DEXTRA;
 					} else {
-						CUtils::lprint("Require DExtra for linking to %s, but DExtra is disabled", repeater.c_str());
+						printf("Require DExtra for linking to %s, but DExtra is disabled\n", repeater.c_str());
 						m_linkStatus = LS_NONE;
 						m_linkRepeater.clear();
 						m_linkGateway.clear();
@@ -1340,7 +1340,7 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 	if (m_linkReconnectTimer.isRunning() && m_linkReconnectTimer.hasExpired()) {
 		if (m_linkStatus != LS_NONE && (0==m_linkStartup.size() || 0==m_linkStartup.compare("        "))) {
 			// Unlink if linked to something
-			CUtils::lprint("Reconnect timer has expired, unlinking %s from %s", m_rptCallsign.c_str(), m_linkRepeater.c_str());
+			printf("Reconnect timer has expired, unlinking %s from %s\n", m_rptCallsign.c_str(), m_linkRepeater.c_str());
 
 			CDExtraHandler::unlink(this);
 //			CDPlusHandler::unlink(this);
@@ -1355,7 +1355,7 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 		} else if ((m_linkStatus == LS_NONE && m_linkStartup.size() && m_linkStartup.compare("        ")) ||
 				   (m_linkStatus != LS_NONE && m_linkRepeater.compare(m_linkStartup))) {
 			// Relink if not linked or linked to the wrong reflector
-			CUtils::lprint("Reconnect timer has expired, relinking %s to %s", m_rptCallsign.c_str(), m_linkStartup.c_str());
+			printf("Reconnect timer has expired, relinking %s to %s\n", m_rptCallsign.c_str(), m_linkStartup.c_str());
 
 			// Check for just a change of letter
 			if (m_linkStatus != LS_NONE) {
@@ -1436,7 +1436,7 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 
 		if (m_g2Status == G2_USER || m_g2Status == G2_REPEATER) {
 			// User or repeater not found in time, remove G2 settings
-			CUtils::lprint("ircDDB did not reply within five seconds");
+			printf("ircDDB did not reply within five seconds\n");
 
 			m_g2Status = G2_LOCAL;
 			m_g2User.clear();
@@ -1447,7 +1447,7 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 			m_g2Header = NULL;
 		} else if (m_linkStatus == LS_PENDING_IRCDDB) {
 			// Repeater not found in time
-			CUtils::lprint("ircDDB did not reply within five seconds");
+			printf("ircDDB did not reply within five seconds\n");
 
 			m_linkStatus = LS_NONE;
 			m_linkRepeater.clear();
@@ -1457,7 +1457,7 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 			triggerInfo();
 		} else if (m_linkStatus == LS_LINKING_CCS) {
 			// CCS didn't reply in time
-			CUtils::lprint("CCS did not reply within five seconds");
+			printf("CCS did not reply within five seconds\n");
 
 			m_ccsHandler->stopLink();
 
@@ -1476,7 +1476,7 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 
 	// If the watchdog timer has expired, clean up
 	if (m_watchdogTimer.isRunning() && m_watchdogTimer.hasExpired()) {
-		CUtils::lprint("Radio watchdog timer for %s has expired", m_rptCallsign.c_str());
+		printf("Radio watchdog timer for %s has expired\n", m_rptCallsign.c_str());
 		m_watchdogTimer.stop();
 
 		if (m_repeaterId != 0x00U) {
@@ -1563,28 +1563,28 @@ void CRepeaterHandler::clockInt(unsigned int ms)
 void CRepeaterHandler::linkUp(DSTAR_PROTOCOL protocol, const std::string& callsign)
 {
 	if (protocol == DP_DEXTRA && m_linkStatus == LS_LINKING_DEXTRA) {
-		CUtils::lprint("DExtra link to %s established", callsign.c_str());
+		printf("DExtra link to %s established\n", callsign.c_str());
 		m_linkStatus = LS_LINKED_DEXTRA;
 		writeLinkedTo(callsign);
 		triggerInfo();
 	}
 
 //	if (protocol == DP_DPLUS && m_linkStatus == LS_LINKING_DPLUS) {
-//		CUtils::lprint("D-Plus link to %s established", callsign.c_str());
+//		printf("D-Plus link to %s established\n", callsign.c_str());
 //		m_linkStatus = LS_LINKED_DPLUS;
 //		writeLinkedTo(callsign);
 //		triggerInfo();
 //	}
 
 	if (protocol == DP_DCS && m_linkStatus == LS_LINKING_DCS) {
-		CUtils::lprint("DCS link to %s established", callsign.c_str());
+		printf("DCS link to %s established\n", callsign.c_str());
 		m_linkStatus = LS_LINKED_DCS;
 		writeLinkedTo(callsign);
 		triggerInfo();
 	}
 
 	if (protocol == DP_DCS && m_linkStatus == LS_LINKING_LOOPBACK) {
-		CUtils::lprint("Loopback link to %s established", callsign.c_str());
+		printf("Loopback link to %s established\n", callsign.c_str());
 		m_linkStatus = LS_LINKED_LOOPBACK;
 		writeLinkedTo(callsign);
 		triggerInfo();
@@ -1596,7 +1596,7 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 	// Is relink to another module required?
 	if (!isRecoverable && m_linkRelink) {
 		m_linkRelink = false;
-		CUtils::lprint("Relinking %s from %s to %s", m_rptCallsign.c_str(), callsign.c_str(), m_linkRepeater.c_str());
+		printf("Relinking %s from %s to %s\n", m_rptCallsign.c_str(), callsign.c_str(), m_linkRepeater.c_str());
 		linkInt(m_linkRepeater);
 		return false;
 	}
@@ -1605,13 +1605,13 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 	if (m_linkStatus == LS_NONE || m_linkRepeater.compare(callsign)) {
 		switch (protocol) {
 			case DP_DCS:
-				CUtils::lprint("DCS link to %s has failed", callsign.c_str());
+				printf("DCS link to %s has failed\n", callsign.c_str());
 				break;
 			case DP_DEXTRA:
-				CUtils::lprint("DExtra link to %s has failed", callsign.c_str());
+				printf("DExtra link to %s has failed\n", callsign.c_str());
 				break;
 //			case DP_DPLUS:
-//				CUtils::lprint("D-Plus link to %s has failed", callsign.c_str());
+//				printf("D-Plus link to %s has failed\n", callsign.c_str());
 //				break;
 			default:
 				break;
@@ -1622,7 +1622,7 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 
 	if (!isRecoverable) {
 		if (protocol == DP_DEXTRA && 0==callsign.compare(m_linkRepeater)) {
-			CUtils::lprint("DExtra link to %s has failed", m_linkRepeater.c_str());
+			printf("DExtra link to %s has failed\n", m_linkRepeater.c_str());
 			m_linkRepeater.clear();
 			m_linkStatus = LS_NONE;
 			writeNotLinked();
@@ -1630,7 +1630,7 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 		}
 
 //		if (protocol == DP_DPLUS && 0==callsign.compare(m_linkRepeater)) {
-//			CUtils::lprint("D-Plus link to %s has failed", m_linkRepeater.c_str());
+//			printf("D-Plus link to %s has failed\n", m_linkRepeater.c_str());
 //			m_linkRepeater.clear();
 //			m_linkStatus = LS_NONE;
 //			writeNotLinked();
@@ -1639,9 +1639,9 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 
 		if (protocol == DP_DCS && 0==callsign.compare(m_linkRepeater)) {
 			if (m_linkStatus == LS_LINKED_DCS || m_linkStatus == LS_LINKING_DCS)
-				CUtils::lprint("DCS link to %s has failed", m_linkRepeater.c_str());
+				printf("DCS link to %s has failed\n", m_linkRepeater.c_str());
 			else
-				CUtils::lprint("Loopback link to %s has failed", m_linkRepeater.c_str());
+				printf("Loopback link to %s has failed\n", m_linkRepeater.c_str());
 			m_linkRepeater.clear();
 			m_linkStatus = LS_NONE;
 			writeNotLinked();
@@ -1654,7 +1654,7 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 	if (protocol == DP_DEXTRA) {
 		switch (m_linkStatus) {
 			case LS_LINKED_DEXTRA:
-				CUtils::lprint("DExtra link to %s has failed, relinking", m_linkRepeater.c_str());
+				printf("DExtra link to %s has failed, relinking\n", m_linkRepeater.c_str());
 				m_linkStatus = LS_LINKING_DEXTRA;
 				writeLinkingTo(m_linkRepeater);
 				triggerInfo();
@@ -1671,7 +1671,7 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 //	if (protocol == DP_DPLUS) {
 //		switch (m_linkStatus) {
 //			case LS_LINKED_DPLUS:
-//				CUtils::lprint("D-Plus link to %s has failed, relinking", m_linkRepeater.c_str());
+//				printf("D-Plus link to %s has failed, relinking\n", m_linkRepeater.c_str());
 //				m_linkStatus = LS_LINKING_DPLUS;
 //				writeLinkingTo(m_linkRepeater);
 //				triggerInfo();
@@ -1688,14 +1688,14 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 	if (protocol == DP_DCS) {
 		switch (m_linkStatus) {
 			case LS_LINKED_DCS:
-				CUtils::lprint("DCS link to %s has failed, relinking", m_linkRepeater.c_str());
+				printf("DCS link to %s has failed, relinking\n", m_linkRepeater.c_str());
 				m_linkStatus = LS_LINKING_DCS;
 				writeLinkingTo(m_linkRepeater);
 				triggerInfo();
 				return true;
 
 			case LS_LINKED_LOOPBACK:
-				CUtils::lprint("Loopback link to %s has failed, relinking", m_linkRepeater.c_str());
+				printf("Loopback link to %s has failed, relinking\n", m_linkRepeater.c_str());
 				m_linkStatus = LS_LINKING_LOOPBACK;
 				writeLinkingTo(m_linkRepeater);
 				triggerInfo();
@@ -1716,7 +1716,7 @@ bool CRepeaterHandler::linkFailed(DSTAR_PROTOCOL protocol, const std::string& ca
 void CRepeaterHandler::linkRefused(DSTAR_PROTOCOL protocol, const std::string& callsign)
 {
 	if (protocol == DP_DEXTRA && 0==callsign.compare(m_linkRepeater)) {
-		CUtils::lprint("DExtra link to %s was refused", m_linkRepeater.c_str());
+		printf("DExtra link to %s was refused\n", m_linkRepeater.c_str());
 		m_linkRepeater.clear();
 		m_linkStatus = LS_NONE;
 		writeIsBusy(callsign);
@@ -1724,7 +1724,7 @@ void CRepeaterHandler::linkRefused(DSTAR_PROTOCOL protocol, const std::string& c
 	}
 
 //	if (protocol == DP_DPLUS && 0==callsign.compare(m_linkRepeater)) {
-//		CUtils::lprint("D-Plus link to %s was refused", m_linkRepeater.c_str());
+//		printf("D-Plus link to %s was refused\n", m_linkRepeater.c_str());
 //		m_linkRepeater.clear();
 //		m_linkStatus = LS_NONE;
 //		writeIsBusy(callsign);
@@ -1733,9 +1733,9 @@ void CRepeaterHandler::linkRefused(DSTAR_PROTOCOL protocol, const std::string& c
 
 	if (protocol == DP_DCS && 0==callsign.compare(m_linkRepeater)) {
 		if (m_linkStatus == LS_LINKED_DCS || m_linkStatus == LS_LINKING_DCS)
-			CUtils::lprint("DCS link to %s was refused", m_linkRepeater.c_str());
+			printf("DCS link to %s was refused\n", m_linkRepeater.c_str());
 		else
-			CUtils::lprint("Loopback link to %s was refused", m_linkRepeater.c_str());
+			printf("Loopback link to %s was refused\n", m_linkRepeater.c_str());
 		m_linkRepeater.clear();
 		m_linkStatus = LS_NONE;
 		writeIsBusy(callsign);
@@ -1747,7 +1747,7 @@ void CRepeaterHandler::link(RECONNECT reconnect, const std::string& reflector)
 {
 	// CCS removal
 	if (m_linkStatus == LS_LINKING_CCS || m_linkStatus == LS_LINKED_CCS) {
-		CUtils::lprint("Dropping CCS link to %s", m_linkRepeater.c_str());
+		printf("Dropping CCS link to %s\n", m_linkRepeater.c_str());
 
 		m_ccsHandler->stopLink();
 
@@ -1803,7 +1803,7 @@ void CRepeaterHandler::link(RECONNECT reconnect, const std::string& reflector)
 
 	// Handle unlinking
 	if (m_linkStatus != LS_NONE && (0==reflector.size() || 0==reflector.compare("        "))) {
-		CUtils::lprint("Unlinking %s from %s", m_rptCallsign.c_str(), m_linkRepeater.c_str());
+		printf("Unlinking %s from %s\n", m_rptCallsign.c_str(), m_linkRepeater.c_str());
 
 		CDExtraHandler::unlink(this);
 //		CDPlusHandler::unlink(this);
@@ -1818,7 +1818,7 @@ void CRepeaterHandler::link(RECONNECT reconnect, const std::string& reflector)
 		return;
 	}
 
-	CUtils::lprint("Linking %s to %s", m_rptCallsign.c_str(), reflector.c_str());
+	printf("Linking %s to %s\n", m_rptCallsign.c_str(), reflector.c_str());
 
 	// Check for just a change of letter
 	if (m_linkStatus != LS_NONE) {
@@ -1898,7 +1898,7 @@ void CRepeaterHandler::unlink(PROTOCOL protocol, const std::string& reflector)
 	}
 
 	if (m_linkReconnect == RECONNECT_FIXED && 0==m_linkRepeater.compare(reflector)) {
-		CUtils::lprint("Cannot unlink %s because it is fixed", reflector.c_str());
+		printf("Cannot unlink %s because it is fixed\n", reflector.c_str());
 		return;
 	}
 
@@ -1927,7 +1927,7 @@ void CRepeaterHandler::g2CommandHandler(const std::string& callsign, const std::
 
 	if (callsign.at(0) == '/') {
 		if (m_irc == NULL) {
-			CUtils::lprint("%s is trying to G2 route with ircDDB disabled", user.c_str());
+			printf("%s is trying to G2 route with ircDDB disabled\n", user.c_str());
 			m_g2Status = G2_LOCAL;
 			return;
 		}
@@ -1939,18 +1939,18 @@ void CRepeaterHandler::g2CommandHandler(const std::string& callsign, const std::
 		repeater.push_back(callsign.back());
 
 		if (0==repeater.compare(m_rptCallsign)) {
-			CUtils::lprint("%s is trying to G2 route to self, ignoring", user.c_str());
+			printf("%s is trying to G2 route to self, ignoring\n", user.c_str());
 			m_g2Status = G2_LOCAL;
 			return;
 		}
 
 		if (0==repeater.compare(0, 3, "REF") || 0==repeater.compare(0, 3, "XRF") || 0==repeater.compare(0, 3, "DCS")) {
-			CUtils::lprint("%s is trying to G2 route to reflector %s, ignoring", user.c_str(), repeater.c_str());
+			printf("%s is trying to G2 route to reflector %s, ignoring\n", user.c_str(), repeater.c_str());
 			m_g2Status = G2_LOCAL;
 			return;
 		}
 
-		CUtils::lprint("%s is trying to G2 route to repeater %s", user.c_str(), repeater.c_str());
+		printf("%s is trying to G2 route to repeater %s\n", user.c_str(), repeater.c_str());
 
 		m_g2Repeater = repeater;
 		m_g2User = "CQCQCQ  ";
@@ -1973,19 +1973,19 @@ void CRepeaterHandler::g2CommandHandler(const std::string& callsign, const std::
 		}
 	} else if ('L'!=callsign.back() && 'U'!=callsign.back()) {
 		if (m_irc == NULL) {
-			CUtils::lprint("%s is trying to G2 route with ircDDB disabled", user.c_str());
+			printf("%s is trying to G2 route with ircDDB disabled\n", user.c_str());
 			m_g2Status = G2_LOCAL;
 			return;
 		}
 
 		// This a callsign route
 		if (0==callsign.compare(0, 3,"REF") || 0==callsign.compare(0, 3, "XRF") || 0==callsign.compare(0, 3, "DCS")) {
-			CUtils::lprint("%s is trying to G2 route to reflector %s, ignoring", user.c_str(), callsign.c_str());
+			printf("%s is trying to G2 route to reflector %s, ignoring\n", user.c_str(), callsign.c_str());
 			m_g2Status = G2_LOCAL;
 			return;
 		}
 
-		CUtils::lprint("%s is trying to G2 route to callsign %s", user.c_str(), callsign.c_str());
+		printf("%s is trying to G2 route to callsign %s\n", user.c_str(), callsign.c_str());
 
 		CUserData* data = m_cache->findUser(callsign);
 
@@ -2050,7 +2050,7 @@ void CRepeaterHandler::reflectorCommandHandler(const std::string& callsign, cons
 		if (m_linkStatus == LS_NONE)
 			return;
 
-		CUtils::lprint("Unlink command issued via %s by %s", type.c_str(), user.c_str());
+		printf("Unlink command issued via %s by %s\n", type.c_str(), user.c_str());
 
 		CDExtraHandler::unlink(this);
 //		CDPlusHandler::unlink(this);
@@ -2083,12 +2083,12 @@ void CRepeaterHandler::reflectorCommandHandler(const std::string& callsign, cons
 
 		// We can't link to ourself
 		if (0 == reflector.compare(m_rptCallsign)) {
-			CUtils::lprint("%s is trying to link with self via %s, ignoring", user.c_str(), type.c_str());
+			printf("%s is trying to link with self via %s, ignoring\n", user.c_str(), type.c_str());
 			triggerInfo();
 			return;
 		}
 
-		CUtils::lprint("Link command from %s to %s issued via %s by %s", m_rptCallsign.c_str(), reflector.c_str(), type.c_str(), user.c_str());
+		printf("Link command from %s to %s issued via %s by %s\n", m_rptCallsign.c_str(), reflector.c_str(), type.c_str(), user.c_str());
 
 		// Check for just a change of letter
 		if (m_linkStatus != LS_NONE) {
@@ -2168,7 +2168,7 @@ void CRepeaterHandler::linkInt(const std::string& callsign)
 
 	// Are we trying to link to an unknown DExtra, D-Plus, or DCS reflector?
 	if (data == NULL && (0==callsign.compare(0, 3, "REF") || 0==callsign.compare(0, 3, "XRF") || 0==callsign.compare(0, 3U, "DCS"))) {
-		CUtils::lprint("%s is unknown, ignoring link request", callsign.c_str());
+		printf("%s is unknown, ignoring link request\n", callsign.c_str());
 		triggerInfo();
 		return;
 	}
@@ -2186,7 +2186,7 @@ void CRepeaterHandler::linkInt(const std::string& callsign)
 //					writeLinkingTo(m_linkRepeater);
 //					triggerInfo();
 //				} else {
-//					CUtils::lprint("Require D-Plus for linking to %s, but D-Plus is disabled", callsign.c_str());
+//					printf("Require D-Plus for linking to %s, but D-Plus is disabled\n", callsign.c_str());
 //					m_linkStatus = LS_NONE;
 //					writeNotLinked();
 //					triggerInfo();
@@ -2200,7 +2200,7 @@ void CRepeaterHandler::linkInt(const std::string& callsign)
 					writeLinkingTo(m_linkRepeater);
 					triggerInfo();
 				} else {
-					CUtils::lprint("Require DCS for linking to %s, but DCS is disabled", callsign.c_str());
+					printf("Require DCS for linking to %s, but DCS is disabled\n", callsign.c_str());
 					m_linkStatus = LS_NONE;
 					writeNotLinked();
 					triggerInfo();
@@ -2221,7 +2221,7 @@ void CRepeaterHandler::linkInt(const std::string& callsign)
 					writeLinkingTo(m_linkRepeater);
 					triggerInfo();
 				} else {
-					CUtils::lprint("Require DExtra for linking to %s, but DExtra is disabled", callsign.c_str());
+					printf("Require DExtra for linking to %s, but DExtra is disabled\n", callsign.c_str());
 					m_linkStatus = LS_NONE;
 					writeNotLinked();
 					triggerInfo();
@@ -2332,7 +2332,7 @@ void CRepeaterHandler::startupInt()
 
 	// Link to a startup reflector/repeater
 	if (m_linkAtStartup && m_linkStartup.size()) {
-		CUtils::lprint("Linking %s at startup to %s", m_rptCallsign.c_str(), m_linkStartup.c_str());
+		printf("Linking %s at startup to %s\n", m_rptCallsign.c_str(), m_linkStartup.c_str());
 
 		// Find the repeater to link to
 		CRepeaterData* data = m_cache->findRepeater(m_linkStartup);
@@ -2351,7 +2351,7 @@ void CRepeaterHandler::startupInt()
 //						writeLinkingTo(m_linkRepeater);
 //						triggerInfo();
 //					} else {
-//						CUtils::lprint("Require D-Plus for linking to %s, but D-Plus is disabled", m_linkRepeater.c_str());
+//						printf("Require D-Plus for linking to %s, but D-Plus is disabled\n", m_linkRepeater.c_str());
 //						m_linkStatus = LS_NONE;
 //						writeNotLinked();
 //						triggerInfo();
@@ -2365,7 +2365,7 @@ void CRepeaterHandler::startupInt()
 						writeLinkingTo(m_linkRepeater);
 						triggerInfo();
 					} else {
-						CUtils::lprint("Require DCS for linking to %s, but DCS is disabled", m_linkRepeater.c_str());
+						printf("Require DCS for linking to %s, but DCS is disabled\n", m_linkRepeater.c_str());
 						m_linkStatus = LS_NONE;
 						writeNotLinked();
 						triggerInfo();
@@ -2386,7 +2386,7 @@ void CRepeaterHandler::startupInt()
 						writeLinkingTo(m_linkRepeater);
 						triggerInfo();
 					} else {
-						CUtils::lprint("Require DExtra for linking to %s, but DExtra is disabled", m_linkRepeater.c_str());
+						printf("Require DExtra for linking to %s, but DExtra is disabled\n", m_linkRepeater.c_str());
 						m_linkStatus = LS_NONE;
 						writeNotLinked();
 						triggerInfo();

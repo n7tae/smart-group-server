@@ -225,7 +225,7 @@ void CDCSHandler::process(CPollData& poll)
 		}
 	}
 
-	CUtils::lprint("Unknown incoming DCS poll from %s", reflector.c_str());
+	printf("Unknown incoming DCS poll from %s\n", reflector.c_str());
 }
 
 void CDCSHandler::process(CConnectData& connect)
@@ -270,14 +270,14 @@ void CDCSHandler::process(CConnectData& connect)
 	// Check the validity of our repeater callsign
 	IReflectorCallback* handler = CRepeaterHandler::findDVRepeater(reflectorCallsign);
 	if (handler == NULL) {
-		CUtils::lprint("DCS connect to unknown reflector %s from %s", reflectorCallsign.c_str(), repeaterCallsign.c_str());
+		printf("DCS connect to unknown reflector %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
 		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, connect.getYourAddress(), connect.getYourPort());
 		m_incoming->writeConnect(reply);
 		return;
 	}
 
 	// A new connect packet indicates the need for a new entry
-	CUtils::lprint("New incoming DCS link to %s from %s", reflectorCallsign.c_str(), repeaterCallsign.c_str());
+	printf("New incoming DCS link to %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
 
 	CDCSHandler* dcs = new CDCSHandler(handler, repeaterCallsign, reflectorCallsign, m_incoming, yourAddress, yourPort, DIR_INCOMING);
 
@@ -297,7 +297,7 @@ void CDCSHandler::process(CConnectData& connect)
 		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, yourAddress, yourPort);
 		m_incoming->writeConnect(reply);
 
-		CUtils::lprint("No space to add new DCS link, ignoring");
+		printf("No space to add new DCS link, ignoring\n");
 		delete dcs;
 	}
 }
@@ -331,7 +331,7 @@ void CDCSHandler::link(IReflectorCallback* handler, const std::string& repeater,
 		CConnectData reply(m_gatewayType, repeater, gateway, CT_LINK1, address, DCS_PORT);
 		protoHandler->writeConnect(reply);
 	} else {
-		CUtils::lprint("No space to add new DCS link, ignoring");
+		printf("No space to add new DCS link, ignoring\n");
 		delete dcs;
 	}
 }
@@ -346,7 +346,7 @@ void CDCSHandler::unlink(IReflectorCallback* handler, const std::string& callsig
 
 			if (exclude) {
 				if (reflector->m_direction == DIR_OUTGOING && reflector->m_destination == handler && reflector->m_reflector.compare(callsign)) {
-					CUtils::lprint("Removing outgoing DCS link %s, %s", reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
+					printf("Removing outgoing DCS link %s, %s\n", reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
 
 					if (reflector->m_linkState == DCS_LINKING || reflector->m_linkState == DCS_LINKED) {
 						CConnectData connect(reflector->m_repeater, reflector->m_reflector, CT_UNLINK, reflector->m_yourAddress, reflector->m_yourPort);
@@ -361,7 +361,7 @@ void CDCSHandler::unlink(IReflectorCallback* handler, const std::string& callsig
 				}
 			} else {
 				if (reflector->m_destination == handler && 0==reflector->m_reflector.compare(callsign)) {
-					CUtils::lprint("Removing DCS link %s, %s", reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
+					printf("Removing DCS link %s, %s\n", reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
 
 					if (reflector->m_linkState == DCS_LINKING || reflector->m_linkState == DCS_LINKED) {
 						CConnectData connect(reflector->m_repeater, reflector->m_reflector, CT_UNLINK, reflector->m_yourAddress, reflector->m_yourPort);
@@ -405,7 +405,7 @@ void CDCSHandler::unlink()
 
 		if (reflector != NULL) {
 			if (reflector->m_repeater.size()) {
-				CUtils::lprint("Unlinking from DCS reflector %s", reflector->m_reflector.c_str());
+				printf("Unlinking from DCS reflector %s\n", reflector->m_reflector.c_str());
 
 				CConnectData connect(reflector->m_repeater, reflector->m_reflector, CT_UNLINK, reflector->m_yourAddress, reflector->m_yourPort);
 				reflector->m_handler->writeConnect(connect);
@@ -445,10 +445,10 @@ void CDCSHandler::gatewayUpdate(const std::string& reflector, const std::string&
 			if (0 == reflector->m_reflector.compare(0, LONG_CALLSIGN_LENGTH - 1U, gateway)) {
 				if (address.size()) {
 					// A new address, change the value
-					CUtils::lprint("Changing IP address of DCS gateway or reflector %s to %s", reflector->m_reflector.c_str(), address.c_str());
+					printf("Changing IP address of DCS gateway or reflector %s to %s\n", reflector->m_reflector.c_str(), address.c_str());
 					reflector->m_yourAddress.s_addr = ::inet_addr(address.c_str());
 				} else {
-					CUtils::lprint("IP address for DCS gateway or reflector %s has been removed", reflector->m_reflector.c_str());
+					printf("IP address for DCS gateway or reflector %s has been removed\n", reflector->m_reflector.c_str());
 
 					// No address, this probably shouldn't happen....
 					if (reflector->m_direction == DIR_OUTGOING && reflector->m_destination != NULL)
@@ -500,7 +500,7 @@ void CDCSHandler::processInt(CAMBEData& data)
 	if (m_whiteList != NULL) {
 		bool res = m_whiteList->isInList(my);
 		if (!res) {
-			CUtils::lprint("%s rejected from DCS as not found in the white list", my.c_str());
+			printf("%s rejected from DCS as not found in the white list\n", my.c_str());
 			m_dcsId = 0x00U;
 			return;
 		}
@@ -509,7 +509,7 @@ void CDCSHandler::processInt(CAMBEData& data)
 	if (m_blackList != NULL) {
 		bool res = m_blackList->isInList(my);
 		if (res) {
-			CUtils::lprint("%s rejected from DCS as found in the black list", my.c_str());
+			printf("%s rejected from DCS as found in the black list\n", my.c_str());
 			m_dcsId = 0x00U;
 			return;
 		}
@@ -621,7 +621,7 @@ bool CDCSHandler::processInt(CConnectData& connect, CD_TYPE type)
 				return false;
 
 			if (m_linkState == DCS_LINKING) {
-				CUtils::lprint("DCS ACK message received from %s", m_reflector.c_str());
+				printf("DCS ACK message received from %s\n", m_reflector.c_str());
 
 				if (m_direction == DIR_OUTGOING && m_destination != NULL)
 					m_destination->linkUp(DP_DCS, m_reflector);
@@ -638,7 +638,7 @@ bool CDCSHandler::processInt(CConnectData& connect, CD_TYPE type)
 				return false;
 
 			if (m_linkState == DCS_LINKING) {
-				CUtils::lprint("DCS NAK message received from %s", m_reflector.c_str());
+				printf("DCS NAK message received from %s\n", m_reflector.c_str());
 
 				if (m_direction == DIR_OUTGOING && m_destination != NULL)
 					m_destination->linkRefused(DP_DCS, m_reflector);
@@ -647,7 +647,7 @@ bool CDCSHandler::processInt(CConnectData& connect, CD_TYPE type)
 			}
 
 			if (m_linkState == DCS_UNLINKING) {
-				CUtils::lprint("DCS NAK message received from %s", m_reflector.c_str());
+				printf("DCS NAK message received from %s\n", m_reflector.c_str());
 
 				if (m_direction == DIR_OUTGOING && m_destination != NULL)
 					m_destination->linkFailed(DP_DCS, m_reflector, false);
@@ -662,7 +662,7 @@ bool CDCSHandler::processInt(CConnectData& connect, CD_TYPE type)
 				return false;
 
 			if (m_linkState == DCS_LINKED) {
-				CUtils::lprint("DCS disconnect message received from %s", m_reflector.c_str());
+				printf("DCS disconnect message received from %s\n", m_reflector.c_str());
 
 				if (m_direction == DIR_OUTGOING && m_destination != NULL)
 					m_destination->linkFailed(DP_DCS, m_reflector, false);
@@ -693,13 +693,13 @@ bool CDCSHandler::clockInt(unsigned int ms)
 
 		switch (m_linkState) {
 			case DCS_LINKING:
-				CUtils::lprint("DCS link to %s has failed to connect", m_reflector.c_str());
+				printf("DCS link to %s has failed to connect\n", m_reflector.c_str());
 				break;
 			case DCS_LINKED:
-				CUtils::lprint("DCS link to %s has failed (poll inactivity)", m_reflector.c_str());
+				printf("DCS link to %s has failed (poll inactivity)\n", m_reflector.c_str());
 				break;
 			case DCS_UNLINKING:
-				CUtils::lprint("DCS link to %s has failed to disconnect cleanly", m_reflector.c_str());
+				printf("DCS link to %s has failed to disconnect cleanly\n", m_reflector.c_str());
 				break;
 			default:
 				break;

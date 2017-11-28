@@ -199,7 +199,7 @@ void CStarNetHandler::add(const std::string& callsign, const std::string& logoff
 		}
 	}
 
-	CUtils::lprint("Cannot add StarNet group with callsign %s, no space", callsign.c_str());
+	printf("Cannot add StarNet group with callsign %s, no space\n", callsign.c_str());
 
 	delete starNet;
 }
@@ -215,7 +215,7 @@ void CStarNetHandler::add(const std::string& callsign, const std::string& logoff
 		}
 	}
 
-	CUtils::lprint("Cannot add StarNet group with callsign %s, no space", callsign.c_str());
+	printf("Cannot add StarNet group with callsign %s, no space\n", callsign.c_str());
 
 	delete starNet;
 }
@@ -425,7 +425,7 @@ void CStarNetHandler::process(CHeaderData &header)
 {
 	std::string my   = header.getMyCall1();
 	std::string your = header.getYourCall();
-//CUtils::lprint("CStarNetHandler::Process(CHeaderData) my=%s ur=%s", my.c_str(), your.c_str());
+//printf("CStarNetHandler::Process(CHeaderData) my=%s ur=%s\n", my.c_str(), your.c_str());
 	unsigned int id = header.getId();
 
 	CStarNetUser* user = m_users[my];
@@ -439,7 +439,7 @@ void CStarNetHandler::process(CHeaderData &header)
 		// This is a normal message for logging in/relaying
 		if (user == NULL) {
 			// This is a new user, add them to the list
-			CUtils::lprint("Adding %s to StarNet group %s\n", my.c_str(), m_groupCallsign.c_str());
+			printf("Adding %s to StarNet group %s\n", my.c_str(), m_groupCallsign.c_str());
 
 			// Start the StarNet group timer if not already running
 			if (!m_groupTimer.isRunning())
@@ -471,7 +471,7 @@ void CStarNetHandler::process(CHeaderData &header)
 		if (user == NULL)				// Not a known user, ignore
 			return;
 
-		CUtils::lprint("Removing %s from StarNet group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+		printf("Removing %s from StarNet group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 		// Remove the user from the user list
 		m_users.erase(my);
@@ -593,7 +593,7 @@ void CStarNetHandler::process(CAMBEData &data)
 				std::string TEMP(text.substr(0,6));
 				CUtils::ToUpper(TEMP);
 				if (0 == TEMP.compare("LOGOFF")) {
-					CUtils::lprint("Removing %s from StarNet group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+					printf("Removing %s from StarNet group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 					tx->setLogoff();
 
@@ -664,7 +664,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 		for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
 			CStarNetUser* user = it->second;
 			if (user) {
-				CUtils::lprint("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+				printf("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 				delete user;
 			}
 		}
@@ -686,10 +686,10 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 	} else {
 		CStarNetUser* user = m_users[callsign];
 		if (user == NULL) {
-			CUtils::CUtils::lprint("Invalid callsign asked to logoff");
+			printf("Invalid callsign asked to logoff");
 			return false;
 		}
-		CUtils::lprint("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+		printf("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 		// Find any associated id structure associated with this use, and the logged off user is the
 		// currently relayed one, remove his id.
@@ -827,12 +827,12 @@ void CStarNetHandler::linkInt()
 	if (0 == m_linkReflector.size())
 		return;
 
-	CUtils::lprint("Linking %s at startup to DExtra reflector %s", m_repeater.c_str(), m_linkReflector.c_str());
+	printf("Linking %s at startup to DExtra reflector %s", m_repeater.c_str(), m_linkReflector.c_str());
 
 	// Find the repeater to link to
 	CRepeaterData* data = m_cache->findRepeater(m_linkReflector);
 	if (data == NULL) {
-		CUtils::lprint("Cannot find the reflector in the cache, not linking");
+		printf("Cannot find the reflector in the cache, not linking");
 		return;
 	}
 
@@ -851,12 +851,12 @@ void CStarNetHandler::linkInt()
 	if (0 == m_linkReflector.size())
 		return;
 
-	CUtils::lprint("Linking %s at startup to DCS reflector %s", m_repeater.c_str(), m_linkReflector.c_str());
+	printf("Linking %s at startup to DCS reflector %s", m_repeater.c_str(), m_linkReflector.c_str());
 
 	// Find the repeater to link to
 	CRepeaterData* data = m_cache->findRepeater(m_linkReflector);
 	if (data == NULL) {
-		CUtils::CUtils::lprint("Cannot find the reflector in the cache, not linking");
+		printf("Cannot find the reflector in the cache, not linking");
 		return;
 	}
 
@@ -912,7 +912,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 					delete user;
 					user = NULL;
 				} else {
-					CUtils::CUtils::lprint("Cannot find %s in the cache", callsign.c_str());
+					printf("Cannot find %s in the cache", callsign.c_str());
 				}
 
 				delete tx;
@@ -976,7 +976,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 				if (m_permanent.find(user->getCallsign()) != m_permanent.end()) {
 					permanent.push_back(user);
 				} else {
-					CUtils::lprint("Removing %s from StarNet group %s, group timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+					printf("Removing %s from StarNet group %s, group timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 					delete user;
 				}
 			}
@@ -998,7 +998,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 	for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
 		CStarNetUser* user = it->second;
 		if (user && user->hasExpired()) {
-			CUtils::lprint("Removing %s from StarNet group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+			printf("Removing %s from StarNet group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 			delete user;
 			m_users.erase(it);
@@ -1128,7 +1128,7 @@ void CStarNetHandler::sendAck(const CUserData& user, const std::string& text) co
 #if defined(DEXTRA_LINK)
 void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string& callsign)
 {
-	CUtils::CUtils::lprint("DExtra link to %s established", callsign.c_str());
+	printf("DExtra link to %s established", callsign.c_str());
 
 	m_linkStatus = LS_LINKED_DEXTRA;
 }
@@ -1137,7 +1137,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 {
 	if (!isRecoverable) {
 		if (m_linkStatus != LS_NONE) {
-			CUtils::CUtils::lprint("DExtra link to %s has failed", callsign.c_str());
+			printf("DExtra link to %s has failed", callsign.c_str());
 			m_linkStatus = LS_NONE;
 		}
 
@@ -1145,7 +1145,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 	}
 
 	if (m_linkStatus == LS_LINKING_DEXTRA || m_linkStatus == LS_LINKED_DEXTRA) {
-		CUtils::CUtils::lprint("DExtra link to %s has failed, relinking", callsign.c_str());
+		printf("DExtra link to %s has failed, relinking", callsign.c_str());
 		m_linkStatus = LS_LINKING_DEXTRA;
 		return true;
 	}
@@ -1156,7 +1156,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string& callsign)
 {
 	if (m_linkStatus != LS_NONE) {
-		CUtils::CUtils::lprint("DExtra link to %s was refused", callsign.c_str());
+		printf("DExtra link to %s was refused", callsign.c_str());
 		m_linkStatus = LS_NONE;
 	}
 }
@@ -1170,7 +1170,7 @@ bool CStarNetHandler::singleHeader()
 #if defined(DCS_LINK)
 void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string& callsign)
 {
-	CUtils::CUtils::lprint("DCS link to %s established", callsign.c_str());
+	printf("DCS link to %s established", callsign.c_str());
 
 	m_linkStatus = LS_LINKED_DCS;
 }
@@ -1178,7 +1178,7 @@ void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string& callsign)
 void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string& callsign)
 {
 	if (m_linkStatus != LS_NONE) {
-		CUtils::CUtils::lprint("DCS link to %s was refused", callsign.c_str());
+		printf("DCS link to %s was refused", callsign.c_str());
 		m_linkStatus = LS_NONE;
 	}
 }
@@ -1187,7 +1187,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 {
 	if (!isRecoverable) {
 		if (m_linkStatus != LS_NONE) {
-			CUtils::CUtils::lprint("DCS link to %s has failed", callsign.c_str());
+			printf("DCS link to %s has failed", callsign.c_str());
 			m_linkStatus = LS_NONE;
 		}
 
@@ -1195,7 +1195,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 	}
 
 	if (m_linkStatus == LS_LINKING_DCS || m_linkStatus == LS_LINKED_DCS) {
-		CUtils::CUtils::lprint("DCS link to %s has failed, relinking", callsign.c_str());
+		printf("DCS link to %s has failed, relinking", callsign.c_str());
 		m_linkStatus = LS_LINKING_DCS;
 		return true;
 	}

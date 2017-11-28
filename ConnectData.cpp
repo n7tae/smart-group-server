@@ -255,7 +255,7 @@ bool CConnectData::setDPlusData(const unsigned char* data, unsigned int length, 
 
 		case 8U: {
 				std::string reply((const char*)(data + 4U), 4U);
-				CUtils::lprint("D-Plus reply is %.4s", reply.c_str());
+				printf("D-Plus reply is %.4s\n", reply.c_str());
 
 				if (::memcmp(data + 4U, "OKRW", 4U) == 0)
 					m_type = CT_ACK;

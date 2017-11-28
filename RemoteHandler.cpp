@@ -54,7 +54,7 @@ void CRemoteHandler::process()
 	switch (type) {
 		case RPHT_LOGOUT:
 			m_handler.setLoggedIn(false);
-			CUtils::lprint("Remote control user has logged out");
+			printf("Remote control user has logged out\n");
 			break;
 		case RPHT_LOGIN:
 			m_random = (uint32_t)rand();
@@ -63,11 +63,11 @@ void CRemoteHandler::process()
 		case RPHT_HASH: {
 				bool valid = m_handler.readHash(m_password, m_random);
 				if (valid) {
-					CUtils::lprint("Remote control user has logged in");
+					printf("Remote control user has logged in\n");
 					m_handler.setLoggedIn(true);
 					m_handler.sendACK();
 				} else {
-					CUtils::lprint("Remote control user has failed login authentication");
+					printf("Remote control user has failed login authentication\n");
 					m_handler.setLoggedIn(false);
 					m_handler.sendNAK("Invalid password");
 				}
@@ -91,9 +91,9 @@ void CRemoteHandler::process()
 				RECONNECT reconnect;
 				m_handler.readLink(callsign, reconnect, reflector);
 				if (0 == reflector.size())
-					CUtils::lprint("Remote control user has linked \"%s\" to \"None\" with reconnect %d", callsign.c_str(), int(reconnect));
+					printf("Remote control user has linked \"%s\" to \"None\" with reconnect %d\n", callsign.c_str(), int(reconnect));
 				else
-					CUtils::lprint("Remote control user has linked \"%s\" to \"%s\" with reconnect %d", callsign.c_str(), reflector.c_str(), int(reconnect));
+					printf("Remote control user has linked \"%s\" to \"%s\" with reconnect %d\n", callsign.c_str(), reflector.c_str(), int(reconnect));
 				link(callsign, reconnect, reflector, true);
 			}
 			break;
@@ -101,7 +101,7 @@ void CRemoteHandler::process()
 				std::string callsign, reflector;
 				PROTOCOL protocol;
 				m_handler.readUnlink(callsign, protocol, reflector);
-				CUtils::lprint("Remote control user has unlinked \"%s\" from \"%s\" for protocol %d", callsign.c_str(), reflector.c_str(), int(protocol));
+				printf("Remote control user has unlinked \"%s\" from \"%s\" for protocol %d\n", callsign.c_str(), reflector.c_str(), int(protocol));
 				unlink(callsign, protocol, reflector);
 			}
 			break;
@@ -110,16 +110,16 @@ void CRemoteHandler::process()
 				RECONNECT reconnect;
 				m_handler.readLinkScr(callsign, reconnect, reflector);
 				if (0 == reflector.size())
-					CUtils::lprint("Remote control user has linked \"%s\" to \"None\" with reconnect %d from localhost", callsign.c_str(), reconnect);
+					printf("Remote control user has linked \"%s\" to \"None\" with reconnect %d from localhost\n", callsign.c_str(), reconnect);
 				else
-					CUtils::lprint("Remote control user has linked \"%s\" to \"%s\" with reconnect %d from localhost", callsign.c_str(), reflector.c_str(), reconnect);
+					printf("Remote control user has linked \"%s\" to \"%s\" with reconnect %d from localhost\n", callsign.c_str(), reflector.c_str(), reconnect);
 				link(callsign, reconnect, reflector, false);
 			}
 			break;
 		case RPHT_LOGOFF: {
 				std::string callsign, user;
 				m_handler.readLogoff(callsign, user);
-				CUtils::lprint("Remote control user has logged off \"%s\" from \"%s\"", user.c_str(), callsign.c_str());
+				printf("Remote control user has logged off \"%s\" from \"%s\"\n", user.c_str(), callsign.c_str());
 				logoff(callsign, user);
 			}
 			break;

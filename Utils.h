@@ -35,7 +35,6 @@ public:
 	static void						byteToBitsRev(unsigned char byte, bool* bits);
 	static std::string				latLonToLoc(double latitude, double longitude);
 	static void						clean(std::string& str, const std::string& allowed);
-	static void						lprint(const char *fmt,...);
 	static std::string				ToUpper(std::string &str);
 	static std::string				ToLower(std::string &str);
 	static std::string				Trim(std::string &str);

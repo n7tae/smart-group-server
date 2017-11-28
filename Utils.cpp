@@ -33,7 +33,7 @@ void CUtils::dump(const char* title, const bool* data, unsigned int length)
 	assert(title != NULL);
 	assert(data != NULL);
 
-	lprint("%s", title);
+	printf("%s\n", title);
 
 	unsigned int offset = 0U;
 
@@ -67,7 +67,7 @@ void CUtils::dump(const char* title, const bool* data, unsigned int length)
 
 		output += "*'";
 
-		lprint("%04X:  %s", offset / 8U, output.c_str());
+		printf("%04X:  %s\n", offset / 8U, output.c_str());
 
 		offset += 128U;
 	}
@@ -78,7 +78,7 @@ void CUtils::dumpRev(const char* title, const bool* data, unsigned int length)
 	assert(title != NULL);
 	assert(data != NULL);
 
-	lprint("%s", title);
+	printf("%s\n", title);
 
 	unsigned int offset = 0U;
 
@@ -112,7 +112,7 @@ void CUtils::dumpRev(const char* title, const bool* data, unsigned int length)
 
 		output += "*";
 
-		lprint("%04X:  %s", offset / 8U, output.c_str());
+		printf("%04X:  %s\n", offset / 8U, output.c_str());
 
 		offset += 128U;
 	}
@@ -123,7 +123,7 @@ void CUtils::dump(const char* title, const unsigned char* data, unsigned int len
 	assert(title != NULL);
 	assert(data != NULL);
 
-	lprint("%s", title);
+	printf("%s\n", title);
 
 	unsigned int offset = 0U;
 
@@ -154,7 +154,7 @@ void CUtils::dump(const char* title, const unsigned char* data, unsigned int len
 
 		output += "*";
 
-		lprint("%04X:  %s", offset, output.c_str());
+		printf("%04X:  %s\n", offset, output.c_str());
 
 		offset += 16U;
 
@@ -271,29 +271,6 @@ void CUtils::clean(std::string &str, const std::string& allowed)
 	}
 }
 
-void CUtils::lprint(const char *fmt,...)
-{
-	time_t ltime;
-	struct tm tm;
-	const short BFSZ = 512;
-	char buf[BFSZ];
-
-	time(&ltime);
-	localtime_r(&ltime, &tm);
-
-	snprintf(buf,BFSZ - 1,"%02d/%02d/%02d %d:%02d:%02d:",
-	         tm.tm_mon+1,tm.tm_mday,tm.tm_year % 100,
-	         tm.tm_hour,tm.tm_min,tm.tm_sec);
-
-	va_list args;
-	va_start(args,fmt);
-	vsnprintf(buf + strlen(buf), BFSZ - strlen(buf) -1, fmt, args);
-	va_end(args);
-
-	printf("%s\n", buf);
-	return;
-}
-
 std::string CUtils::ToUpper(std::string &str)
 {
 	for (auto it=str.begin(); it!=str.end(); it++) {
@@ -395,7 +372,7 @@ int CUtils::getAllIPV4Addresses(const char *name, unsigned short port, unsigned 
 		return 0;
 	} else {
 		std::string e(gai_strerror(r));
-		lprint("getaddrinfo: %s", e.c_str());
+		printf("getaddrinfo: %s\n", e.c_str());
 		return 1;
 	}
 }

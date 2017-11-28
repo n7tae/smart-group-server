@@ -62,21 +62,21 @@ static int doRead(int sock, char *buf, int buf_size)
 	int res = select(sock+1, &rdset, NULL, &errset, &tv);
 
 	if (res < 0) {
-		CUtils::lprint("IRCReceiver::doRead: select");
+		printf("IRCReceiver::doRead: select\n");
 		return -1;
 	} else if (res > 0) {
 		if (FD_ISSET(sock, &errset)) {
-			CUtils::lprint("IRCReceiver::doRead: select (FD_ISSET(sock, exceptfds))");
+			printf("IRCReceiver::doRead: select (FD_ISSET(sock, exceptfds))\n");
 			return -1;
 		}
 
 		if (FD_ISSET(sock, &rdset)) {
 			res = recv(sock, buf, buf_size, 0);
 			if (res < 0) {
-				CUtils::lprint("IRCReceiver::doRead: read");
+				printf("IRCReceiver::doRead: read\n");
 				return -1;
 			} else if (res == 0) {
-				CUtils::lprint("IRCReceiver::doRead: EOF read==0");
+				printf("IRCReceiver::doRead: EOF read==0\n");
 				return -1;
 			} else
 				return res;

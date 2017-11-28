@@ -179,7 +179,7 @@ void IRCDDBApp::rptrQTH(const std::string& callsign, double latitude, double lon
 
 	d->moduleQTH[cs] = cs + std::string(" ") + pos + std::string(" ") + d1 + std::string(" ") + d2;
 
-	CUtils::lprint("QTH: %s", d->moduleQTH[cs].c_str());
+	printf("QTH: %s\n", d->moduleQTH[cs].c_str());
 
 	std::string url = infoURL;
 
@@ -189,7 +189,7 @@ void IRCDDBApp::rptrQTH(const std::string& callsign, double latitude, double lon
 
 	if (url.size()) {
 		d->moduleURL[cs] = cs + std::string(" ") + url;
-		CUtils::lprint("URL: %s", d->moduleURL[cs].c_str());
+		printf("URL: %s\n", d->moduleURL[cs].c_str());
 	}
 
 	d->moduleQTHURLMutex.unlock();
@@ -208,7 +208,7 @@ void IRCDDBApp::rptrQRG(const std::string& callsign, double txFrequency, double 
 
 	d->moduleQRGMutex.lock();
 	d->moduleQRG[cs] = cs + std::string(" ") + f;
-	CUtils::lprint("QRG: %s", d->moduleQRG[cs].c_str());
+	printf("QRG: %s\n", d->moduleQRG[cs].c_str());
 	d->moduleQRGMutex.unlock();
 
 	d->infoTimer = 5; // send info in 5 seconds
@@ -256,7 +256,7 @@ IRCDDB_RESPONSE_TYPE IRCDDBApp::getReplyMessageType()
 	if (0 == msgType.compare("IDRT_GATEWAY"))
 		return IDRT_GATEWAY;
 
-	CUtils::lprint("IRCDDBApp::getMessageType: unknown msg type: %s", msgType.c_str());
+	printf("IRCDDBApp::getMessageType: unknown msg type: %s\n", msgType.c_str());
 
 	return IDRT_NONE;
 }
@@ -336,7 +336,7 @@ void IRCDDBApp::userLeave(const std::string& nick)
 
 	if (d->currentServer.size()) {
 		if (d->user.count(d->myNick) != 1) {
-			CUtils::lprint("IRCDDBApp::userLeave: could not find own nick");
+			printf("IRCDDBApp::userLeave: could not find own nick\n");
 			d->userMapMutex.unlock();
 			return;
 		}
@@ -367,13 +367,13 @@ void IRCDDBApp::userListReset()
 void IRCDDBApp::setCurrentNick(const std::string& nick)
 {
 	d->myNick = nick;
-	CUtils::lprint("IRCDDBApp::setCurrentNick %s", nick.c_str());
+	printf("IRCDDBApp::setCurrentNick %s\n", nick.c_str());
 }
 
 void IRCDDBApp::setBestServer(const std::string& ircUser)
 {
 	d->bestServer = ircUser;
-	CUtils::lprint("IRCDDBApp::setBestServer %s", ircUser.c_str());
+	printf("IRCDDBApp::setBestServer %s\n", ircUser.c_str());
 }
 
 void IRCDDBApp::setTopic(const std::string& topic)
@@ -650,7 +650,7 @@ void IRCDDBApp::doNotFound(std::string& msg, std::string& retval)
 		tableID = std::stoi(tk);
 
 		if (tableID<0 || tableID>=numberOfTables) {
-			CUtils::lprint("invalid table ID %d", tableID);
+			printf("invalid table ID %d\n", tableID);
 			return;
 		}
 
@@ -681,7 +681,7 @@ void IRCDDBApp::doUpdate(std::string& msg)
 	if (std::regex_match(tk, d->tablePattern)) {
 		tableID = std::stoi(tk);
 		if ((tableID < 0) || (tableID >= numberOfTables)) {
-			CUtils::lprint("invalid table ID %d", tableID);
+			printf("invalid table ID %d\n", tableID);
 			return;
 		}
 
@@ -882,7 +882,7 @@ void IRCDDBApp::Entry()
 				break;
 
 			case 2:	// choose server
-				CUtils::lprint("IRCDDBApp: state=2 choose new 's-'-user");
+				printf("IRCDDBApp: state=2 choose new 's-'-user\n");
 				if (NULL == getSendQ())
 					d->state = 10;
 				else {
@@ -908,7 +908,7 @@ void IRCDDBApp::Entry()
 					if (sendlistTableID < 0)
 						d->state = 6; // end of sendlist
 					else {
-						CUtils::lprint("IRCDDBApp: state=3 tableID=%d", sendlistTableID);
+						printf("IRCDDBApp: state=3 tableID=%d\n", sendlistTableID);
 						d->state = 4; // send "SENDLIST"
 						d->timer = 900; // 15 minutes max for update
 					}
@@ -947,7 +947,7 @@ void IRCDDBApp::Entry()
 				if (NULL == getSendQ())
 					d->state = 10; // disconnect DB
 				else {
-					CUtils::lprint( "IRCDDBApp: state=6 initialization completed");
+					printf( "IRCDDBApp: state=6 initialization completed\n");
 					d->infoTimer = 2;
 					d->initReady = true;
 					d->state = 7;

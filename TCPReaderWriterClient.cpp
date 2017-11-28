@@ -76,7 +76,7 @@ bool CTCPReaderWriterClient::open()
 
 	m_fd = ::socket(PF_INET, SOCK_STREAM, 0);
 	if (m_fd < 0) {
-		CUtils::lprint("Cannot create the TCP client socket, err=%d", errno);
+		printf("Cannot create the TCP client socket, err=%d\n", errno);
 		return false;
 	}
 
@@ -87,13 +87,13 @@ bool CTCPReaderWriterClient::open()
 		addr.sin_port   = 0U;
 		addr.sin_addr.s_addr = ::inet_addr(m_localAddress.c_str());
 		if (addr.sin_addr.s_addr == INADDR_NONE) {
-			CUtils::lprint("The address is invalid - %s", m_localAddress.c_str());
+			printf("The address is invalid - %s\n", m_localAddress.c_str());
 			close();
 			return false;
 		}
 
 		if (::bind(m_fd, (sockaddr*)&addr, sizeof(sockaddr_in)) == -1) {
-		CUtils::lprint("Cannot bind the TCP client address, err=%d", errno);
+		printf("Cannot bind the TCP client address, err=%d\n", errno);
 			close();
 			return false;
 		}
@@ -111,14 +111,14 @@ bool CTCPReaderWriterClient::open()
 	}
 
 	if (::connect(m_fd, (sockaddr*)&addr, sizeof(struct sockaddr_in)) == -1) {
-		CUtils::lprint("Cannot connect the TCP client socket, err=%d", errno);
+		printf("Cannot connect the TCP client socket, err=%d\n", errno);
 		close();
 		return false;
 	}
 
 	int noDelay = 1;
 	if (::setsockopt(m_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&noDelay, sizeof(noDelay)) == -1) {
-		CUtils::lprint("Cannot set the TCP client socket option, err=%d", errno);
+		printf("Cannot set the TCP client socket option, err=%d\n", errno);
 		close();
 		return false;
 	}
@@ -144,7 +144,7 @@ int CTCPReaderWriterClient::read(unsigned char* buffer, unsigned int length, uns
 
 	int ret = ::select(m_fd + 1, &readFds, NULL, NULL, &tv);
 	if (ret < 0) {
-		CUtils::lprint("Error returned from TCP client select, err=%d", errno);
+		printf("Error returned from TCP client select, err=%d\n", errno);
 		return -1;
 	}
 
@@ -155,7 +155,7 @@ int CTCPReaderWriterClient::read(unsigned char* buffer, unsigned int length, uns
 	if (len == 0) {
 		return -2;
 	} else if (len < 0) {
-		CUtils::lprint("Error returned from recv, err=%d", errno);
+		printf("Error returned from recv, err=%d\n", errno);
 		return -1;
 	}
 
@@ -191,7 +191,7 @@ bool CTCPReaderWriterClient::write(const unsigned char* buffer, unsigned int len
 
 	ssize_t ret = ::send(m_fd, (char *)buffer, length, 0);
 	if (ret != ssize_t(length)) {
-		CUtils::lprint("Error returned from send, err=%d", errno);
+		printf("Error returned from send, err=%d\n", errno);
 		return false;
 	}
 

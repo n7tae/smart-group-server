@@ -12,8 +12,8 @@ SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 
-smartgroupserver :  $(OBJS)
-	g++ $(CPPFLAGS) -o smartgroupserver $(OBJS) -L/usr/lib -lconfig++ -pthread
+sgs :  $(OBJS)
+	g++ $(CPPFLAGS) -o sgs $(OBJS) -L/usr/lib -lconfig++ -pthread
 
 %.o : %.cpp
 	g++ $(CPPFLAGS) -MMD -MD -c $< -o $@

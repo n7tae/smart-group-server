@@ -74,7 +74,7 @@ void IRCProtocol::setNetworkReady(bool b)
 {
 	if (b == true) {
 		if (0 != m_state)
-			CUtils::lprint("IRCProtocol::setNetworkReady: unexpected state");
+			printf("IRCProtocol::setNetworkReady: unexpected state\n");
 		m_state = 1;
 		chooseNewNick();
 	} else

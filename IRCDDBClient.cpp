@@ -48,7 +48,7 @@ CIRCDDBClient::~CIRCDDBClient()
 	// A false return implies a network error, or unable to log in
 bool CIRCDDBClient::open()
 {
-	CUtils::lprint("start client and app");
+	printf("start client and app\n");
 	d->client->startWork();
 	d->app->startWork();
 	return true;
@@ -85,27 +85,27 @@ bool CIRCDDBClient::sendHeard( const std::string& myCall, const std::string& myC
 									const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3 )
 {
 	if (myCall.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:myCall='%s' len != 8", myCall.c_str());
+		printf("CIRCDDBClient::sendHeard:myCall='%s' len != 8\n", myCall.c_str());
 		return false;
 	}
 
 	if (myCallExt.size() != 4) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:myCallExt='%s' len != 4", myCallExt.c_str());
+		printf("CIRCDDBClient::sendHeard:myCallExt='%s' len != 4\n", myCallExt.c_str());
 		return false;
 	}
 
 	if (yourCall.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:yourCall='%s' len != 8", yourCall.c_str());
+		printf("CIRCDDBClient::sendHeard:yourCall='%s' len != 8\n", yourCall.c_str());
 		return false;
 	}
 
 	if (rpt1.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:rpt1='%s' len != 8", rpt1.c_str());
+		printf("CIRCDDBClient::sendHeard:rpt1='%s' len != 8\n", rpt1.c_str());
 		return false;
 	}
 
 	if (rpt2.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:rpt2='%s' len != 8", rpt2.c_str());
+		printf("CIRCDDBClient::sendHeard:rpt2='%s' len != 8\n", rpt2.c_str());
 		return false;
 	}
 
@@ -118,27 +118,27 @@ bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::str
 	const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message)
 {
 	if (myCall.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:myCall='%s' len != 8", myCall.c_str());
+		printf("CIRCDDBClient::sendHeard:myCall='%s' len != 8\n", myCall.c_str());
 		return false;
 	}
 
 	if (myCallExt.size() != 4) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:myCallExt='%s' len != 4", myCallExt.c_str());
+		printf("CIRCDDBClient::sendHeard:myCallExt='%s' len != 4\n", myCallExt.c_str());
 		return false;
 	}
 
 	if (yourCall.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:yourCall='%s' len != 8", yourCall.c_str());
+		printf("CIRCDDBClient::sendHeard:yourCall='%s' len != 8\n", yourCall.c_str());
 		return false;
 	}
 
 	if (rpt1.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:rpt1='%s' len != 8", rpt1.c_str());
+		printf("CIRCDDBClient::sendHeard:rpt1='%s' len != 8\n", rpt1.c_str());
 		return false;
 	}
 
 	if (rpt2.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:rpt2='%s' len != 8", rpt2.c_str());
+		printf("CIRCDDBClient::sendHeard:rpt2='%s' len != 8\n", rpt2.c_str());
 		return false;
 	}
 
@@ -147,7 +147,7 @@ bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::str
 		dest = std::string("        ");
 
 	if (8 != dest.size()) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:network_destination='%s' len != 8", dest.c_str());
+		printf("CIRCDDBClient::sendHeard:network_destination='%s' len != 8\n", dest.c_str());
 		return false;
 	}
 
@@ -170,42 +170,42 @@ bool CIRCDDBClient::sendHeardWithTXStats( const std::string& myCall, const std::
 	const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors)
 {
 	if ((num_dv_frames <= 0) || (num_dv_frames > 65535)) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:num_dv_frames=%d not in range 1-65535", num_dv_frames);
+		printf("CIRCDDBClient::sendHeard:num_dv_frames=%d not in range 1-65535\n", num_dv_frames);
 		return false;
 	}
 	
 	if (num_dv_silent_frames > num_dv_frames) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:num_dv_silent_frames=%d > num_dv_frames=%d", num_dv_silent_frames, num_dv_frames);
+		printf("CIRCDDBClient::sendHeard:num_dv_silent_frames=%d > num_dv_frames=%d\n", num_dv_silent_frames, num_dv_frames);
 		return false;
 	}
 	
 	if (num_bit_errors > (4*num_dv_frames)) { // max 4 bit errors per frame
-		CUtils::lprint("CIRCDDBClient::sendHeard:num_bit_errors > (4*num_dv_frames), %d > 4*%d", num_bit_errors, num_dv_frames);
+		printf("CIRCDDBClient::sendHeard:num_bit_errors > (4*num_dv_frames), %d > 4*%d\n", num_bit_errors, num_dv_frames);
 		return false;
 	}
 	
 	if (myCall.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:myCall='%s' len != 8", myCall.c_str());
+		printf("CIRCDDBClient::sendHeard:myCall='%s' len != 8\n", myCall.c_str());
 		return false;
 	}
 	
 	if (myCallExt.size() != 4) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:myCallExt='%s' len != 4", myCallExt.c_str());
+		printf("CIRCDDBClient::sendHeard:myCallExt='%s' len != 4\n", myCallExt.c_str());
 		return false;
 	}
 	
 	if (yourCall.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:yourCall='%s' len != 8", yourCall.c_str());
+		printf("CIRCDDBClient::sendHeard:yourCall='%s' len != 8\n", yourCall.c_str());
 		return false;
 	}
 	
 	if (rpt1.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:rpt1='%s' len != 8", rpt1.c_str());
+		printf("CIRCDDBClient::sendHeard:rpt1='%s' len != 8\n", rpt1.c_str());
 		return false;
 	}
 	
 	if (rpt2.size() != 8) {
-		CUtils::lprint("CIRCDDBClient::sendHeard:rpt2='%s' len != 8", rpt2.c_str());
+		printf("CIRCDDBClient::sendHeard:rpt2='%s' len != 8\n", rpt2.c_str());
 		return false;
 	}
 
@@ -231,7 +231,7 @@ bool CIRCDDBClient::sendHeardWithTXStats( const std::string& myCall, const std::
 bool CIRCDDBClient::findGateway(const std::string& gatewayCallsign)
 {
 	if (8 != gatewayCallsign.size()) {
-		CUtils::lprint("CIRCDDBClient::findGateway:gatewayCallsign='%s' len != 8", gatewayCallsign.c_str());
+		printf("CIRCDDBClient::findGateway:gatewayCallsign='%s' len != 8\n", gatewayCallsign.c_str());
 		return false;
 	}
 	std::string gw(gatewayCallsign);
@@ -243,7 +243,7 @@ bool CIRCDDBClient::findGateway(const std::string& gatewayCallsign)
 bool CIRCDDBClient::findRepeater(const std::string& repeaterCallsign)
 {
 	if (8 != repeaterCallsign.size()) {
-		CUtils::lprint("CIRCDDBClient::findRepeater:repeaterCallsign='%s' len != 8", repeaterCallsign.c_str());
+		printf("CIRCDDBClient::findRepeater:repeaterCallsign='%s' len != 8\n", repeaterCallsign.c_str());
 		return false;
 	}
 	std::string rptr(repeaterCallsign);
@@ -255,7 +255,7 @@ bool CIRCDDBClient::findRepeater(const std::string& repeaterCallsign)
 bool CIRCDDBClient::findUser(const std::string& userCallsign)
 {
 	if (8 != userCallsign.size()) {
-		CUtils::lprint("CIRCDDBClient::findUser:userCall='%s' len != 8", userCallsign.c_str());
+		printf("CIRCDDBClient::findUser:userCall='%s' len != 8\n", userCallsign.c_str());
 		return false;
 	}
 	std::string usr(userCallsign);
@@ -278,24 +278,24 @@ bool CIRCDDBClient::receiveRepeater(std::string& repeaterCallsign, std::string& 
 	IRCDDB_RESPONSE_TYPE rt = d->app->getReplyMessageType();
 
 	if (rt != IDRT_REPEATER) {
-		CUtils::lprint("CIRCDDBClient::receiveRepeater: unexpected response type=%d", rt);
+		printf("CIRCDDBClient::receiveRepeater: unexpected response type=%d\n", rt);
 		return false;
 	}
 
 	IRCMessage *m = d->app->getReplyMessage();
 	if (m == NULL) {
-		CUtils::lprint("CIRCDDBClient::receiveRepeater: no message");
+		printf("CIRCDDBClient::receiveRepeater: no message\n");
 		return false;
 	}
 
 	if (m->getCommand().compare("IDRT_REPEATER")) {
-		CUtils::lprint("CIRCDDBClient::receiveRepeater: wrong message type, expected 'IDRT_REPEATER, got '%s'", m->getCommand().c_str());
+		printf("CIRCDDBClient::receiveRepeater: wrong message type, expected 'IDRT_REPEATER, got '%s'\n", m->getCommand().c_str());
 		delete m;
 		return false;
 	}
 
 	if (3 != m->getParamCount()) {
-		CUtils::lprint("CIRCDDBClient::receiveRepeater: unexpected number of message parameters, expected 3, got %d", m->getParamCount());
+		printf("CIRCDDBClient::receiveRepeater: unexpected number of message parameters, expected 3, got %d\n", m->getParamCount());
 		delete m;
 		return false;
 	}
@@ -314,25 +314,25 @@ bool CIRCDDBClient::receiveGateway(std::string& gatewayCallsign, std::string& ad
 	IRCDDB_RESPONSE_TYPE rt = d->app->getReplyMessageType();
 
 	if (rt != IDRT_GATEWAY) {
-		CUtils::lprint("CIRCDDBClient::receiveGateway: unexpected response type=%d", rt);
+		printf("CIRCDDBClient::receiveGateway: unexpected response type=%d\n", rt);
 		return false;
 	}
 
 	IRCMessage *m = d->app->getReplyMessage();
 
 	if (m == NULL) {
-		CUtils::lprint("CIRCDDBClient::receiveGateway: no message");
+		printf("CIRCDDBClient::receiveGateway: no message\n");
 		return false;
 	}
 
 	if (m->getCommand().compare("IDRT_GATEWAY")) {
-		CUtils::lprint("CIRCDDBClient::receiveGateway: wrong message type, expected 'IDRT_GATEWAY' got '%s'", m->getCommand().c_str());
+		printf("CIRCDDBClient::receiveGateway: wrong message type, expected 'IDRT_GATEWAY' got '%s'\n", m->getCommand().c_str());
 		delete m;
 	return false;
 	}
 
 	if (2 != m->getParamCount()) {
-		CUtils::lprint("CIRCDDBClient::receiveGateway: unexpected number of message parameters, expected 2, got %d", m->getParamCount());
+		printf("CIRCDDBClient::receiveGateway: unexpected number of message parameters, expected 2, got %d\n", m->getParamCount());
 		delete m;
 	return false;
 	}
@@ -356,25 +356,25 @@ bool CIRCDDBClient::receiveUser(std::string& userCallsign, std::string& repeater
 	IRCDDB_RESPONSE_TYPE rt = d->app->getReplyMessageType();
 
 	if (rt != IDRT_USER) {
-		CUtils::lprint("CIRCDDBClient::receiveUser: unexpected response type=%d", rt);
+		printf("CIRCDDBClient::receiveUser: unexpected response type=%d\n", rt);
 		return false;
 	}
 
 	IRCMessage * m = d->app->getReplyMessage();
 
 	if (m == NULL) {
-		CUtils::lprint("CIRCDDBClient::receiveUser: no message");
+		printf("CIRCDDBClient::receiveUser: no message\n");
 		return false;
 	}
 
 	if (m->getCommand().compare("IDRT_USER")) {
-		CUtils::lprint("CIRCDDBClient::receiveUser: wrong message type, expected 'IDRT_USER', got '%s'", m->getCommand().c_str());
+		printf("CIRCDDBClient::receiveUser: wrong message type, expected 'IDRT_USER', got '%s'\n", m->getCommand().c_str());
 		delete m;
 		return false;
 	}
 
 	if (5 != m->getParamCount()) {
-		CUtils::lprint("CIRCDDBClient::receiveUser: unexpected number of message parameters, expected 5, got %d", m->getParamCount());
+		printf("CIRCDDBClient::receiveUser: unexpected number of message parameters, expected 5, got %d\n", m->getParamCount());
 		delete m;
 		return false;
 	}

@@ -49,7 +49,7 @@ in_addr CUDPReaderWriter::lookup(const std::string& hostname)
 		return addr;
 	}
 
-	CUtils::lprint("Cannot find address for host %s", hostname.c_str());
+	printf("Cannot find address for host %s\n", hostname.c_str());
 
 	addr.s_addr = INADDR_NONE;
 	return addr;
@@ -59,7 +59,7 @@ bool CUDPReaderWriter::open()
 {
 	m_fd = ::socket(PF_INET, SOCK_DGRAM, 0);
 	if (m_fd < 0) {
-		CUtils::lprint("Cannot create the UDP socket, err: %d", errno);
+		printf("Cannot create the UDP socket, err: %d\n", errno);
 		return false;
 	}
 
@@ -73,19 +73,19 @@ bool CUDPReaderWriter::open()
 		if (m_address.size()) {
 			addr.sin_addr.s_addr = ::inet_addr(m_address.c_str());
 			if (addr.sin_addr.s_addr == INADDR_NONE) {
-				CUtils::lprint("The address is invalid - %s", m_address.c_str());
+				printf("The address is invalid - %s\n", m_address.c_str());
 				return false;
 			}
 		}
 
 		int reuse = 1;
 		if (::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == -1) {
-			CUtils::lprint("Cannot set the UDP socket option (port: %u), err: %d", m_port, errno);
+			printf("Cannot set the UDP socket option (port: %u), err: %d\n", m_port, errno);
 			return false;
 		}
 
 		if (::bind(m_fd, (sockaddr*)&addr, sizeof(sockaddr_in)) == -1) {
-			CUtils::lprint("Cannot bind the UDP address (port: %u), err: %d", m_port, errno);
+			printf("Cannot bind the UDP address (port: %u), err: %d\n", m_port, errno);
 			return false;
 		}
 	}
@@ -107,7 +107,7 @@ int CUDPReaderWriter::read(unsigned char* buffer, unsigned int length, in_addr& 
 
 	int ret = ::select(m_fd + 1, &readFds, NULL, NULL, &tv);
 	if (ret < 0) {
-		CUtils::lprint("Error returned from UDP select (port: %u), err: %d", m_port, errno);
+		printf("Error returned from UDP select (port: %u), err: %d\n", m_port, errno);
 		return -1;
 	}
 
@@ -119,7 +119,7 @@ int CUDPReaderWriter::read(unsigned char* buffer, unsigned int length, in_addr& 
 
 	ssize_t len = ::recvfrom(m_fd, (char*)buffer, length, 0, (sockaddr *)&addr, &size);
 	if (len <= 0) {
-		CUtils::lprint("Error returned from recvfrom (port: %u), err: %d", m_port, errno);
+		printf("Error returned from recvfrom (port: %u), err: %d\n", m_port, errno);
 		return -1;
 	}
 
@@ -140,7 +140,7 @@ bool CUDPReaderWriter::write(const unsigned char* buffer, unsigned int length, c
 
 	ssize_t ret = ::sendto(m_fd, (char *)buffer, length, 0, (sockaddr *)&addr, sizeof(sockaddr_in));
 	if (ret < 0) {
-		CUtils::lprint("Error returned from sendto (port: %u), err: %d", m_port, errno);
+		printf("Error returned from sendto (port: %u), err: %d\n", m_port, errno);
 		return false;
 	}
 

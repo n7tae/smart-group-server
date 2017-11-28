@@ -67,7 +67,7 @@ void CG2Handler::process(CHeaderData& header)
 	unsigned char flag1 = header.getFlag1();
 	if (flag1 == 0x01) {
 		// Don't check the incoming stream
-		// CUtils::lprint("G2 busy message received"));
+		// printf("G2 busy message received\n"));
 		return;
 	}
 
@@ -97,7 +97,7 @@ void CG2Handler::process(CHeaderData& header)
 	// Find the destination repeater
 	CRepeaterHandler* repeater = CRepeaterHandler::findDVRepeater(header.getRptCall2());
 	if (repeater == NULL) {
-		CUtils::lprint("Incoming G2 header from %s to unknown repeater - %s", header.getMyCall1().c_str(), header.getRptCall2().c_str());
+		printf("Incoming G2 header from %s to unknown repeater - %s\n", header.getMyCall1().c_str(), header.getRptCall2().c_str());
 		return;		// Not found, ignore
 	}
 
@@ -112,7 +112,7 @@ void CG2Handler::process(CHeaderData& header)
 		}
 	}
 
-	CUtils::lprint("No space to add new G2 route, ignoring");
+	printf("No space to add new G2 route, ignoring\n");
 
 	delete route;
 }
@@ -177,7 +177,7 @@ bool CG2Handler::clockInt(unsigned int ms)
 	m_inactivityTimer.clock(ms);
 
 	if (m_inactivityTimer.isRunning() && m_inactivityTimer.hasExpired()) {
-		CUtils::lprint("Inactivity timeout for a G2 route has expired");
+		printf("Inactivity timeout for a G2 route has expired\n");
 		return true;
 	}
 

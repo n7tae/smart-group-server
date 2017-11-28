@@ -77,7 +77,7 @@ m_remote(NULL)
 #if defined(DCS_LINK)
 	CDCSHandler::initialise(MAX_DCS_LINKS);
 #endif
-	CUtils::lprint("StarNetServerThread created");
+	printf("StarNetServerThread created\n");
 }
 
 CStarNetServerThread::~CStarNetServerThread()
@@ -93,7 +93,7 @@ CStarNetServerThread::~CStarNetServerThread()
 #if defined(DCS_LINK)
 	CDCSHandler::finalise();
 #endif
-	CUtils::lprint("StarNetServerThread destroyed");
+	printf("StarNetServerThread destroyed\n");
 }
 
 void CStarNetServerThread::run()
@@ -103,7 +103,7 @@ void CStarNetServerThread::run()
 	m_dextraPool = new CDExtraProtocolHandlerPool(MAX_DEXTRA_LINKS, DEXTRA_PORT, m_address);
 	ret = m_dextraPool->open();
 	if (!ret) {
-		CUtils::lprint("Could not open the DExtra protocol pool");
+		printf("Could not open the DExtra protocol pool\n");
 		delete m_dextraPool;
 		m_dextraPool = NULL;
 	}
@@ -113,7 +113,7 @@ void CStarNetServerThread::run()
 	m_dcsPool = new CDCSProtocolHandlerPool(MAX_DCS_LINKS, DCS_PORT, m_address);
 	ret = m_dcsPool->open();
 	if (!ret) {
-		CUtils::lprint("Could not open the DCS protocol pool");
+		printf("Could not open the DCS protocol pool\n");
 		delete m_dcsPool;
 		m_dcsPool = NULL;
 	}
@@ -122,7 +122,7 @@ void CStarNetServerThread::run()
 	m_g2Handler = new CG2ProtocolHandler(G2_DV_PORT, m_address);
 	ret = m_g2Handler->open();
 	if (!ret) {
-		CUtils::lprint("Could not open the G2 protocol handler");
+		printf("Could not open the G2 protocol handler\n");
 		delete m_g2Handler;
 		m_g2Handler = NULL;
 	}
@@ -144,7 +144,7 @@ void CStarNetServerThread::run()
 
 	m_stopped = false;
 
-	CUtils::lprint("Starting the StarNet Server thread");
+	printf("Starting the StarNet Server thread\n");
 
 //	CHeaderLogger* headerLogger = NULL;
 //	if (m_logEnabled) {
@@ -214,7 +214,7 @@ void CStarNetServerThread::run()
 			time_t now;
 			time(&now);
 			unsigned long ms = (unsigned long)(1000.0 * difftime(now, start));
-//CUtils::lprint("StarNetServerThread::run: ms=%u", ms);
+//printf("StarNetServerThread::run: ms=%u\n", ms);
 			time(&start);
 
 			m_statusTimer.clock(ms);
@@ -231,13 +231,13 @@ void CStarNetServerThread::run()
 		}
 	}
 	catch (std::exception& e) {
-		CUtils::lprint("Exception raised - \"%s\"", e.what());
+		printf("Exception raised - \"%s\"\n", e.what());
 	}
 	catch (...) {
-		CUtils::lprint("Unknown exception raised");
+		printf("Unknown exception raised\n");
 	}
 
-	CUtils::lprint("Stopping the StarNet Server thread");
+	printf("Stopping the StarNet Server thread\n");
 
 #if defined(DEXTRA_LINK)
 	// Unlink from all reflectors
@@ -331,19 +331,19 @@ void CStarNetServerThread::processIrcDDB()
 			case 0:
 			case 10:
 				if (m_lastStatus != IS_DISCONNECTED) {
-					CUtils::lprint("Disconnected from ircDDB");
+					printf("Disconnected from ircDDB\n");
 					m_lastStatus = IS_DISCONNECTED;
 				}
 				break;
 			case 7:
 				if (m_lastStatus != IS_CONNECTED) {
-					CUtils::lprint("Connected to ircDDB");
+					printf("Connected to ircDDB\n");
 					m_lastStatus = IS_CONNECTED;
 				}
 				break;
 			default:
 				if (m_lastStatus != IS_CONNECTING) {
-					CUtils::lprint("Connecting to ircDDB");
+					printf("Connecting to ircDDB\n");
 					m_lastStatus = IS_CONNECTING;
 				}
 				break;
@@ -367,10 +367,10 @@ void CStarNetServerThread::processIrcDDB()
 						break;
 
 					if (address.size()) {
-						CUtils::lprint("USER: %s %s %s %s", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
+						printf("USER: %s %s %s %s\n", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateUser(user, repeater, gateway, address, timestamp, DP_DEXTRA, false, false);
 					} else {
-						CUtils::lprint("USER: %s NOT FOUND", user.c_str());
+						printf("USER: %s NOT FOUND\n", user.c_str());
 					}
 				}
 				break;
@@ -382,10 +382,10 @@ void CStarNetServerThread::processIrcDDB()
 						break;
 
 					if (address.size()) {
-						CUtils::lprint("REPEATER: %s %s %s", repeater.c_str(), gateway.c_str(), address.c_str());
+						printf("REPEATER: %s %s %s\n", repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateRepeater(repeater, gateway, address, DP_DEXTRA, false, false);
 					} else {
-						CUtils::lprint("REPEATER: %s NOT FOUND", repeater.c_str());
+						printf("REPEATER: %s NOT FOUND\n", repeater.c_str());
 					}
 				}
 				break;
@@ -404,10 +404,10 @@ void CStarNetServerThread::processIrcDDB()
 #endif
 
 					if (0 == address.size()) {
-						CUtils::lprint("GATEWAY: %s %s", gateway.c_str(), address.c_str());
+						printf("GATEWAY: %s %s\n", gateway.c_str(), address.c_str());
 						m_cache.updateGateway(gateway, address, DP_DEXTRA, false, false);
 					} else {
-						CUtils::lprint("GATEWAY: %s NOT FOUND", gateway.c_str());
+						printf("GATEWAY: %s NOT FOUND\n", gateway.c_str());
 					}
 				}
 				break;
@@ -446,7 +446,7 @@ void CStarNetServerThread::processDExtra()
 			case DE_HEADER: {
 					CHeaderData* header = m_dextraPool->readHeader();
 					if (header != NULL) {
-						// CUtils::lprint("DExtra header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str());
+						// printf("DExtra header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s\n", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str());
 						CDExtraHandler::process(*header);
 						delete header;
 					}
@@ -497,7 +497,7 @@ void CStarNetServerThread::processDCS()
 			case DC_DATA: {
 					CAMBEData* data = m_dcsPool->readData();
 					if (data != NULL) {
-						// CUtils::lprint("DCS header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str());
+						// printf("DCS header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s\n", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str());
 						CDCSHandler::process(*data);
 						delete data;
 					}
@@ -520,7 +520,7 @@ void CStarNetServerThread::processG2()
 			case GT_HEADER: {
 					CHeaderData* header = m_g2Handler->readHeader();
 					if (header != NULL) {
-//CUtils::lprint("G2 header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s  Flags: %02X %02X %02X", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str(), header->getFlag1(), header->getFlag2(), header->getFlag3());
+//printf("G2 header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s  Flags: %02X %02X %02X\n", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str(), header->getFlag1(), header->getFlag2(), header->getFlag3());
 						CG2Handler::process(*header);
 						delete header;
 					}
@@ -547,7 +547,7 @@ void CStarNetServerThread::loadReflectors(const std::string fname)
 
 	struct stat sbuf;
 	if (stat(filepath.c_str(), &sbuf)) {
-		CUtils::lprint("%s doesn't exist!", filepath.c_str());
+		printf("%s doesn't exist!\n", filepath.c_str());
 		return;
 	}
 
@@ -579,7 +579,7 @@ void CStarNetServerThread::loadReflectors(const std::string fname)
 #else
 						m_cache.updateGateway(name, address, DP_DCS, third?1:0, true);
 #endif
-//						CUtils::lprint("reflector:%s, address:%s lock:%s", name.c_str(), address.c_str(), third?"true":"false");
+//						printf("reflector:%s, address:%s lock:%s\n", name.c_str(), address.c_str(), third?"true":"false");
 					}
 				}
 			}
@@ -588,6 +588,6 @@ void CStarNetServerThread::loadReflectors(const std::string fname)
 	}
 
 
-	CUtils::lprint("Loaded %u of %u DExtra reflectors", count, tries);
+	printf("Loaded %u of %u DExtra reflectors\n", count, tries);
 }
 #endif

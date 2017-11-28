@@ -290,7 +290,7 @@ void CDExtraHandler::process(const CPollData& poll)
 		return;
 
 	// An unmatched poll indicates the need for a new entry
-	CUtils::lprint("New incoming DExtra Dongle from %s", reflector.c_str());
+	printf("New incoming DExtra Dongle from %s\n", reflector.c_str());
 
 	CDExtraHandler* handler = new CDExtraHandler(m_incoming, reflector, yourAddress, yourPort, DIR_INCOMING);
 
@@ -309,7 +309,7 @@ void CDExtraHandler::process(const CPollData& poll)
 		CPollData poll(m_callsign, yourAddress, yourPort);
 		m_incoming->writePoll(poll);
 	} else {
-		CUtils::lprint("No space to add new DExtra Dongle, ignoring");
+		printf("No space to add new DExtra Dongle, ignoring\n");
 		delete handler;
 	}
 }
@@ -358,14 +358,14 @@ void CDExtraHandler::process(CConnectData& connect)
 	// Check the validity of our repeater callsign
 	IReflectorCallback* handler = CRepeaterHandler::findDVRepeater(reflectorCallsign);
 	if (handler == NULL) {
-		CUtils::lprint("DExtra connect to unknown reflector %s from %s", reflectorCallsign.c_str(), repeaterCallsign.c_str());
+		printf("DExtra connect to unknown reflector %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
 		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, yourAddress, yourPort);
 		m_incoming->writeConnect(reply);
 		return;
 	}
 
 	// A new connect packet indicates the need for a new entry
-	CUtils::lprint("New incoming DExtra link to %s from %s", reflectorCallsign.c_str(), repeaterCallsign.c_str());
+	printf("New incoming DExtra link to %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
 
 	CDExtraHandler* dextra = new CDExtraHandler(handler, repeaterCallsign, reflectorCallsign, m_incoming, yourAddress, yourPort, DIR_INCOMING);
 
@@ -390,7 +390,7 @@ void CDExtraHandler::process(CConnectData& connect)
 		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, yourAddress, yourPort);
 		m_incoming->writeConnect(reply);
 
-		CUtils::lprint("No space to add new DExtra repeater, ignoring");
+		printf("No space to add new DExtra repeater, ignoring\n");
 		delete dextra;
 	}
 }
@@ -417,7 +417,7 @@ void CDExtraHandler::link(IReflectorCallback* handler, const std::string& repeat
 		CConnectData reply(repeater, gateway, CT_LINK1, address, DEXTRA_PORT);
 		protoHandler->writeConnect(reply);
 	} else {
-		CUtils::lprint("No space to add new DExtra link, ignoring");
+		printf("No space to add new DExtra link, ignoring\n");
 		delete dextra;
 	}
 }
@@ -432,7 +432,7 @@ void CDExtraHandler::unlink(IReflectorCallback* handler, const std::string& call
 
 			if (exclude) {
 				if (reflector->m_direction == DIR_OUTGOING && reflector->m_destination == handler && reflector->m_reflector.compare(callsign)) {
-					CUtils::lprint("Removing outgoing DExtra link %s, %s", reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
+					printf("Removing outgoing DExtra link %s, %s\n", reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
 
 					if (reflector->m_linkState == DEXTRA_LINKING || reflector->m_linkState == DEXTRA_LINKED) {
 						CConnectData connect(reflector->m_repeater, reflector->m_yourAddress, reflector->m_yourPort);
@@ -447,7 +447,7 @@ void CDExtraHandler::unlink(IReflectorCallback* handler, const std::string& call
 				}
 			} else {
 				if (reflector->m_destination == handler && 0==reflector->m_reflector.compare(callsign)) {
-					CUtils::lprint("Removing DExtra link %s, %s", reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
+					printf("Removing DExtra link %s, %s\n", reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
 
 					if (reflector->m_linkState == DEXTRA_LINKING || reflector->m_linkState == DEXTRA_LINKED) {
 						CConnectData connect(reflector->m_repeater, reflector->m_yourAddress, reflector->m_yourPort);
@@ -494,7 +494,7 @@ void CDExtraHandler::unlink()
 
 		if (reflector != NULL) {
 			if (reflector->m_repeater.size()) {
-				CUtils::lprint("Unlinking from DExtra reflector %s", reflector->m_reflector.c_str());
+				printf("Unlinking from DExtra reflector %s\n", reflector->m_reflector.c_str());
 
 				CConnectData connect(reflector->m_repeater, reflector->m_yourAddress, reflector->m_yourPort);
 				reflector->m_handler->writeConnect(connect);
@@ -532,10 +532,10 @@ void CDExtraHandler::gatewayUpdate(const std::string& reflector, const std::stri
 			if (0==reflector->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, gateway)) {
 				if (address.size()) {
 					// A new address, change the value
-					CUtils::lprint("Changing IP address of DExtra gateway or reflector %s to %s", reflector->m_reflector.c_str(), address.c_str());
+					printf("Changing IP address of DExtra gateway or reflector %s to %s\n", reflector->m_reflector.c_str(), address.c_str());
 					reflector->m_yourAddress.s_addr = ::inet_addr(address.c_str());
 				} else {
-					CUtils::lprint("IP address for DExtra gateway or reflector %s has been removed", reflector->m_reflector.c_str());
+					printf("IP address for DExtra gateway or reflector %s has been removed\n", reflector->m_reflector.c_str());
 
 					// No address, this probably shouldn't happen....
 					if (reflector->m_direction == DIR_OUTGOING && reflector->m_destination != NULL)
@@ -582,7 +582,7 @@ void CDExtraHandler::processInt(CHeaderData& header)
 	if (m_whiteList != NULL) {
 		bool res = m_whiteList->isInList(my);
 		if (!res) {
-			CUtils::lprint("%s rejected from DExtra as not found in the white list", my.c_str());
+			printf("%s rejected from DExtra as not found in the white list\n", my.c_str());
 			m_dExtraId = 0x00U;
 			return;
 		}
@@ -591,7 +591,7 @@ void CDExtraHandler::processInt(CHeaderData& header)
 	if (m_blackList != NULL) {
 		bool res = m_blackList->isInList(my);
 		if (res) {
-			CUtils::lprint("%s rejected from DExtra as found in the black list", my.c_str());
+			printf("%s rejected from DExtra as found in the black list\n", my.c_str());
 			m_dExtraId = 0x00U;
 			return;
 		}
@@ -723,7 +723,7 @@ bool CDExtraHandler::processInt(CConnectData& connect, CD_TYPE type)
 				return false;
 
 			if (m_linkState == DEXTRA_LINKING) {
-				CUtils::lprint("DExtra ACK message received from %s", m_reflector.c_str());
+				printf("DExtra ACK message received from %s\n", m_reflector.c_str());
 
 				if (m_direction == DIR_OUTGOING && m_destination != NULL)
 					m_destination->linkUp(DP_DEXTRA, m_reflector);
@@ -741,7 +741,7 @@ bool CDExtraHandler::processInt(CConnectData& connect, CD_TYPE type)
 				return false;
 
 			if (m_linkState == DEXTRA_LINKING) {
-				CUtils::lprint("DExtra NAK message received from %s", m_reflector.c_str());
+				printf("DExtra NAK message received from %s\n", m_reflector.c_str());
 
 				if (m_direction == DIR_OUTGOING && m_destination != NULL)
 					m_destination->linkRefused(DP_DEXTRA, m_reflector);
@@ -756,7 +756,7 @@ bool CDExtraHandler::processInt(CConnectData& connect, CD_TYPE type)
 				return false;
 
 			if (m_linkState == DEXTRA_LINKED) {
-				CUtils::lprint("DExtra disconnect message received from %s", m_reflector.c_str());
+				printf("DExtra disconnect message received from %s\n", m_reflector.c_str());
 
 				if (m_direction == DIR_OUTGOING && m_destination != NULL)
 					m_destination->linkFailed(DP_DEXTRA, m_reflector, false);
@@ -790,13 +790,13 @@ bool CDExtraHandler::clockInt(unsigned int ms)
 
 		switch (m_linkState) {
 			case DEXTRA_LINKING:
-				CUtils::lprint("DExtra link to %s has failed to connect", m_reflector.c_str());
+				printf("DExtra link to %s has failed to connect\n", m_reflector.c_str());
 				break;
 			case DEXTRA_LINKED:
-				CUtils::lprint("DExtra link to %s has failed (poll inactivity)", m_reflector.c_str());
+				printf("DExtra link to %s has failed (poll inactivity)\n", m_reflector.c_str());
 				break;
 			case DEXTRA_UNLINKING:
-				CUtils::lprint("DExtra link to %s has failed to disconnect cleanly", m_reflector.c_str());
+				printf("DExtra link to %s has failed to disconnect cleanly\n", m_reflector.c_str());
 				break;
 			default:
 				break;

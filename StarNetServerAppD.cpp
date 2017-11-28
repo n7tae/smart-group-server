@@ -20,53 +20,22 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <getopt.h>
 #include <string>
 
 #include "StarNetServerConfig.h"
 #include "StarNetServerAppD.h"
 #include "StarNetServerDefs.h"
-//#include "APRSWriter.h"
 #include "Version.h"
 #include "IRCDDBClient.h"
 #include "Utils.h"
 
-int main(int argc, char** argv)
+int main(int argc, char *argv[])
 {
-	std::string cfgFile;
-	while (1) {
-		static struct option long_options[] = {
-			{"help",    no_argument,       0, 'h'},
-			{"cfgfile", required_argument, 0, 'c'},
-			{0,         0,                 0,   0}
-		};
-		/* getopt_long stores the option index here. */
-		int option_index = 0;
-
-		int c = getopt_long_only(argc, argv, "hc:", long_options, &option_index);
-
-		/* Detect the end of the options. */
-		if (c == -1)
-			break;
-
-		switch (c) {
-			case 'h':
-				::printf("usage: %s [-c<cfgfile>|--cfgfile=<cfgfile>]\n", argv[0]);
-				exit(0);
-			case 'c':
-				cfgFile.assign(optarg);
-				break;
-			default:
-				exit(1);
-		}
-	}
-	if (optind < argc) {
-		printf ("Unknown arguments: ");
-		while (optind < argc)
-			printf ("%s ", argv[optind++]);
-		putchar ('\n');
+	if (2 != argc) {
+		printf ("usage: %s path_to_config_file\n", argv[0]);
 		exit(1);
 	}
+	std::string cfgFile(argv[1]);
 
 	CStarNetServerAppD gateway(cfgFile);
 
@@ -96,7 +65,7 @@ void CStarNetServerAppD::run()
 {
 	m_thread->run();
 
-	CUtils::lprint("exiting");
+	printf("exiting\n");
 }
 
 bool CStarNetServerAppD::createThread()
@@ -111,21 +80,17 @@ bool CStarNetServerAppD::createThread()
 	CallSign.resize(7, ' ');
 	CallSign.push_back('G');
 
-	CUtils::lprint("Gateway callsign set to %s, local address set to %s", CallSign.c_str(), address.c_str());
-
-	//bool logEnabled;
-	//config.getMiscellaneous(logEnabled);
-	//CUtils::lprint("Log enabled set to %s", logEnabled ? "true" : "false");
+	printf("Gateway callsign set to %s, local address set to %s\n", CallSign.c_str(), address.c_str());
 
 	std::string hostname, username, password;
 	config.getIrcDDB(hostname, username, password);
-	CUtils::lprint("ircDDB host set to %s, username set to %s", hostname.c_str(), username.c_str());
+	printf("ircDDB host set to %s, username set to %s\n", hostname.c_str(), username.c_str());
 
 	if (hostname.size() && username.size()) {
 		CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_") + LOG_BASE_NAME + std::string("-") + VERSION, address); 
 		bool res = ircDDB->open();
 		if (!res) {
-			CUtils::lprint("Cannot initialise the ircDDB protocol handler");
+			printf("Cannot initialise the ircDDB protocol handler\n");
 			return false;
 		}
 
@@ -150,12 +115,12 @@ bool CStarNetServerAppD::createThread()
 			repeater.push_back(band[0]);
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch, reflector);
-			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s",
+			printf("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s\n",
 				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
 				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false", reflector.c_str());
 #else
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch);
-			CUtils::lprint("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s",
+			printf("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s\n",
 				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
 				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false");
 #endif
@@ -166,7 +131,7 @@ bool CStarNetServerAppD::createThread()
 	std::string remotePassword;
 	unsigned int remotePort;
 	config.getRemote(remoteEnabled, remotePassword, remotePort);
-	CUtils::lprint("Remote enabled set to %d, port set to %u", int(remoteEnabled), remotePort);
+	printf("Remote enabled set to %d, port set to %u\n", int(remoteEnabled), remotePort);
 	m_thread->setRemote(remoteEnabled, remotePassword, remotePort);
 
 	m_thread->setAddress(address);

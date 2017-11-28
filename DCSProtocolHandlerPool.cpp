@@ -38,7 +38,7 @@ m_index(0U)
 		m_pool[i].m_inUse   = false;
 	}
 
-	CUtils::lprint("Allocated UDP ports %u-%u to DCS", port, port + n - 1U);
+	printf("Allocated UDP ports %u-%u to DCS\n", port, port + n - 1U);
 }
 
 CDCSProtocolHandlerPool::~CDCSProtocolHandlerPool()
@@ -78,7 +78,7 @@ CDCSProtocolHandler* CDCSProtocolHandlerPool::getHandler(unsigned int port)
 		}
 	}
 
-	CUtils::lprint("Cannot find a free DCS port in the pool");
+	printf("Cannot find a free DCS port in the pool\n");
 
 	return NULL;
 }
@@ -94,7 +94,7 @@ void CDCSProtocolHandlerPool::release(CDCSProtocolHandler* handler)
 		}
 	}
 
-	CUtils::lprint("Trying to release an unused DCS port");
+	printf("Trying to release an unused DCS port\n");
 }
 
 DCS_TYPE CDCSProtocolHandlerPool::read()

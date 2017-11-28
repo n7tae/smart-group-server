@@ -38,7 +38,7 @@ m_index(0U)
 		m_pool[i].m_inUse   = false;
 	}
 
-	CUtils::lprint("Allocated UDP ports %u-%u to DExtra", port, port + n - 1U);
+	printf("Allocated UDP ports %u-%u to DExtra\n", port, port + n - 1U);
 }
 
 CDExtraProtocolHandlerPool::~CDExtraProtocolHandlerPool()
@@ -78,7 +78,7 @@ CDExtraProtocolHandler* CDExtraProtocolHandlerPool::getHandler(unsigned int port
 		}
 	}
 
-	CUtils::lprint("Cannot find a free DExtra port in the pool");
+	printf("Cannot find a free DExtra port in the pool\n");
 
 	return NULL;
 }
@@ -94,7 +94,7 @@ void CDExtraProtocolHandlerPool::release(CDExtraProtocolHandler* handler)
 		}
 	}
 
-	CUtils::lprint("Trying to release an unused DExtra port");
+	printf("Trying to release an unused DExtra port\n");
 }
 
 DEXTRA_TYPE CDExtraProtocolHandlerPool::read()
