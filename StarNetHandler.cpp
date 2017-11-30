@@ -353,6 +353,7 @@ m_permanent(),
 m_linkReflector(reflector),
 m_linkGateway(),
 m_linkStatus(LS_NONE),
+m_oldlinkStatus(LS_NONE),
 m_linkTimer(1000U, NETWORK_TIMEOUT),
 m_id(0x00U),
 m_groupTimer(1000U, groupTimeout * 60U),
@@ -888,9 +889,32 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		m_irc->sendHeardWithTXMsg(m_groupCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
 		if (m_offCallsign.size() && m_offCallsign.compare("        "))
 			m_irc->sendHeardWithTXMsg(m_offCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
-
 		m_announceTimer.start(60U * 60U);		// 1 hour
 	}
+
+#if defined(DEXTRA_LINK) || defined(DCS_LINK)
+	if (m_oldlinkStatus!=m_linkStatus && m_linkReflector.size()) {
+		std::string subcommand("REFLECTOR");
+		std::vector<std::string> parms;
+		parms.push_back(m_linkReflector);
+		switch (m_linkStatus) {
+			case LS_LINKING_DCS:
+			case LS_LINKING_DEXTRA:
+			case LS_PENDING_IRCDDB:
+				parms.push_back(std::string("LINKING"));
+				break;
+			case LS_LINKED_DCS:
+			case LS_LINKED_DEXTRA:
+				parms.push_back(std::string("LINKED"));
+				break;
+			default:
+				parms.push_back(std::string("FAILED"));
+				break;
+		}
+		m_irc->sendSGSInfo(subcommand, parms);
+		m_oldlinkStatus = m_linkStatus;
+	}
+#endif
 
 	// For each incoming id
 	for (std::map<unsigned int, CStarNetId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it) {

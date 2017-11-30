@@ -112,6 +112,10 @@ bool CIRCDDBClient::sendHeard( const std::string& myCall, const std::string& myC
 	return d->app->sendHeard(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, std::string("        "), std::string(""), std::string(""));
 }
 
+void CIRCDDBClient::sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms)
+{
+	d->app->sendSGSInfo(subcommand, parms);
+}
 
 // Send heard data, a false return implies a network error
 bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,

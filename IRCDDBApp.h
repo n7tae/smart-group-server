@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <future>
 #include <ctime>
+#include <vector>
 
 class IRCDDBAppPrivate;
 
@@ -68,6 +69,8 @@ public:
 
 	bool sendHeard(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1,
 		unsigned char flag2, unsigned char flag3, const std::string& destination, const std::string& tx_msg, const std::string& tx_stats);
+
+	void sendSGSInfo(const std::string &subcommand, const std::vector<std::string> &pars);
 
 	int getConnectionState();
 

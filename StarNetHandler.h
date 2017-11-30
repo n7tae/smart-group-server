@@ -188,6 +188,7 @@ private:
 	std::string    m_linkReflector;
 	std::string    m_linkGateway;
 	LINK_STATUS    m_linkStatus;
+	LINK_STATUS    m_oldlinkStatus;
 	CTimer         m_linkTimer;
 #endif
 

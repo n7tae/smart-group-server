@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "IRCDDB.h"
 
@@ -104,6 +105,9 @@ public:
 
 	// Send query for a user, a false return implies a network error
 	bool findUser(const std::string& userCallsign);
+
+	// Support for the Smart Group Server
+	void sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms);
 
 	// The following functions are for processing received messages
 	
