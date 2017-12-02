@@ -828,12 +828,12 @@ void CStarNetHandler::linkInt()
 	if (0 == m_linkReflector.size())
 		return;
 
-	printf("Linking %s at startup to DExtra reflector %s", m_repeater.c_str(), m_linkReflector.c_str());
+	printf("Linking %s at startup to DExtra reflector %s\n", m_repeater.c_str(), m_linkReflector.c_str());
 
 	// Find the repeater to link to
 	CRepeaterData* data = m_cache->findRepeater(m_linkReflector);
 	if (data == NULL) {
-		printf("Cannot find the reflector in the cache, not linking");
+		printf("Cannot find the reflector in the cache, not linking\n");
 		return;
 	}
 
@@ -852,12 +852,12 @@ void CStarNetHandler::linkInt()
 	if (0 == m_linkReflector.size())
 		return;
 
-	printf("Linking %s at startup to DCS reflector %s", m_repeater.c_str(), m_linkReflector.c_str());
+	printf("Linking %s at startup to DCS reflector %s\n", m_repeater.c_str(), m_linkReflector.c_str());
 
 	// Find the repeater to link to
 	CRepeaterData* data = m_cache->findRepeater(m_linkReflector);
 	if (data == NULL) {
-		printf("Cannot find the reflector in the cache, not linking");
+		printf("Cannot find the reflector in the cache, not linking\n");
 		return;
 	}
 
@@ -896,6 +896,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 	if (m_oldlinkStatus!=m_linkStatus && m_linkReflector.size()) {
 		std::string subcommand("REFLECTOR");
 		std::vector<std::string> parms;
+		parms.push_back(m_groupCallsign);
 		parms.push_back(m_linkReflector);
 		switch (m_linkStatus) {
 			case LS_LINKING_DCS:
@@ -1152,7 +1153,7 @@ void CStarNetHandler::sendAck(const CUserData& user, const std::string& text) co
 #if defined(DEXTRA_LINK)
 void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string& callsign)
 {
-	printf("DExtra link to %s established", callsign.c_str());
+	printf("DExtra link to %s established\n", callsign.c_str());
 
 	m_linkStatus = LS_LINKED_DEXTRA;
 }
@@ -1161,7 +1162,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 {
 	if (!isRecoverable) {
 		if (m_linkStatus != LS_NONE) {
-			printf("DExtra link to %s has failed", callsign.c_str());
+			printf("DExtra link to %s has failed\n", callsign.c_str());
 			m_linkStatus = LS_NONE;
 		}
 
@@ -1169,7 +1170,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 	}
 
 	if (m_linkStatus == LS_LINKING_DEXTRA || m_linkStatus == LS_LINKED_DEXTRA) {
-		printf("DExtra link to %s has failed, relinking", callsign.c_str());
+		printf("DExtra link to %s has failed, relinking\n", callsign.c_str());
 		m_linkStatus = LS_LINKING_DEXTRA;
 		return true;
 	}
@@ -1180,7 +1181,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string& callsign)
 {
 	if (m_linkStatus != LS_NONE) {
-		printf("DExtra link to %s was refused", callsign.c_str());
+		printf("DExtra link to %s was refused\n", callsign.c_str());
 		m_linkStatus = LS_NONE;
 	}
 }
@@ -1194,7 +1195,7 @@ bool CStarNetHandler::singleHeader()
 #if defined(DCS_LINK)
 void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string& callsign)
 {
-	printf("DCS link to %s established", callsign.c_str());
+	printf("DCS link to %s established\n", callsign.c_str());
 
 	m_linkStatus = LS_LINKED_DCS;
 }
@@ -1202,7 +1203,7 @@ void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string& callsign)
 void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string& callsign)
 {
 	if (m_linkStatus != LS_NONE) {
-		printf("DCS link to %s was refused", callsign.c_str());
+		printf("DCS link to %s was refused\n", callsign.c_str());
 		m_linkStatus = LS_NONE;
 	}
 }
@@ -1211,7 +1212,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 {
 	if (!isRecoverable) {
 		if (m_linkStatus != LS_NONE) {
-			printf("DCS link to %s has failed", callsign.c_str());
+			printf("DCS link to %s has failed\n", callsign.c_str());
 			m_linkStatus = LS_NONE;
 		}
 
@@ -1219,7 +1220,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 	}
 
 	if (m_linkStatus == LS_LINKING_DCS || m_linkStatus == LS_LINKED_DCS) {
-		printf("DCS link to %s has failed, relinking", callsign.c_str());
+		printf("DCS link to %s has failed, relinking\n", callsign.c_str());
 		m_linkStatus = LS_LINKING_DCS;
 		return true;
 	}
