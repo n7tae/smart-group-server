@@ -896,7 +896,9 @@ void CStarNetHandler::clockInt(unsigned int ms)
 	if (m_oldlinkStatus!=m_linkStatus && m_linkReflector.size()) {
 		std::string subcommand("REFLECTOR");
 		std::vector<std::string> parms;
-		parms.push_back(m_groupCallsign);
+		std::string callsign(m_groupCallsign);
+		CUtils::ReplaceChar(callsign, ' ', '_');
+		parms.push_back(callsign);
 		parms.push_back(m_linkReflector);
 		switch (m_linkStatus) {
 			case LS_LINKING_DCS:
