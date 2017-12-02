@@ -4,8 +4,12 @@
 BINDIR=/usr/local/bin
 CFGDIR=/usr/local/etc
 
+#choose one of the three lines below depending on what you want linking you want.
+#you can also delete the "-g -gddb" if you want a much smaller program.
 CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
+#CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDCS_LINK
 #CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DDATA_DIR=\"$(CFGDIR)\"
+
 LDFLAGS=-L/usr/lib -lconfig++
 
 SRCS = $(wildcard *.cpp)
