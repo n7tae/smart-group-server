@@ -899,7 +899,9 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		std::string callsign(m_groupCallsign);
 		CUtils::ReplaceChar(callsign, ' ', '_');
 		parms.push_back(callsign);
-		parms.push_back(m_linkReflector);
+		std::string reflector(m_linkReflector);
+		CUtils::ReplaceChar(reflector, ' ', '_');
+		parms.push_back(reflector);
 		switch (m_linkStatus) {
 			case LS_LINKING_DCS:
 			case LS_LINKING_DEXTRA:
