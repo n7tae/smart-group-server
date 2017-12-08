@@ -19,12 +19,6 @@
 
 #pragma once
 
-#include <string>
-
-const std::string APPLICATION_NAME ("StarNet Server");
-const std::string LOG_BASE_NAME("STARnetServer");
-const std::string CONFIG_FILE_NAME("starnetserver");
-
 const unsigned int MAX_STARNETS     = 15U;
 const unsigned int MAX_DEXTRA_LINKS = 15U;
 const unsigned int MAX_DCS_LINKS    = 15U;

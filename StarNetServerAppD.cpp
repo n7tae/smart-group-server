@@ -88,7 +88,7 @@ bool CStarNetServerAppD::createThread()
 	printf("ircDDB host set to %s, username set to %s\n", hostname.c_str(), username.c_str());
 
 	if (hostname.size() && username.size()) {
-		CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_") + LOG_BASE_NAME + std::string("-") + VERSION, address); 
+		CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_SmartGroupServer") + std::string("-") + VERSION, address); 
 		bool res = ircDDB->open();
 		if (!res) {
 			printf("Cannot initialise the ircDDB protocol handler\n");
