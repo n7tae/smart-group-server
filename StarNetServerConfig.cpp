@@ -138,7 +138,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 
 		bool bvalue;
 		sprintf(key, "module.[%d].callsignswitch", i);
-		get_value(cfg, key, bvalue, true);
+		get_value(cfg, key, bvalue, false);
 		module[i].callsignswitch = bvalue ? SCS_GROUP_CALLSIGN : SCS_USER_CALLSIGN;
 
 		sprintf(key, "module.[%d].txmsgswitch", i);

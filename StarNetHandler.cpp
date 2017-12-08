@@ -890,6 +890,19 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		if (m_offCallsign.size() && m_offCallsign.compare("        "))
 			m_irc->sendHeardWithTXMsg(m_offCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
 		m_announceTimer.start(60U * 60U);		// 1 hour
+#if defined(DEXTRA_LINK) || defined(DCS_LINK)
+#else
+		if (m_groupCallsign.size()) {
+			std::string subcommand("REFLECTOR");
+			std::vector<std::string> parms;
+			std::string callsign(m_groupCallsign);
+			CUtils::ReplaceChar(callsign, ' ',  '_');
+			parms.push_back(callsign);
+			parms.push_back("Not_Linked");
+			parms.push_back("");
+			m_irc->sendSGSInfo, subcommand, parms;
+		}
+#endif
 	}
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
