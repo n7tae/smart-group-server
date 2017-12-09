@@ -22,4 +22,3 @@
 const unsigned int MAX_STARNETS     = 15U;
 const unsigned int MAX_DEXTRA_LINKS = 15U;
 const unsigned int MAX_DCS_LINKS    = 15U;
-const unsigned int MAX_ROUTES       = 0U;
