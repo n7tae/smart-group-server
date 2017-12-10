@@ -29,14 +29,12 @@
 #include <cassert>
 
 #include "StarNetServerThread.h"
-#include "StarNetServerDefs.h"
 #include "StarNetHandler.h"
 #include "DExtraHandler.h"			// DEXTRA LINK
 #include "DCSHandler.h"				// DCS LINK
 #include "HeaderData.h"
 #include "G2Handler.h"
 #include "AMBEData.h"
-//#include "HostFile.h"				// DEXTRA_LINK || DCS_LINK
 #include "Utils.h"
 
 const unsigned int REMOTE_DUMMY_PORT = 65015U;
