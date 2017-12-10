@@ -18,12 +18,13 @@
  */
 
 #include <string>
+#include <vector>
 #include <libconfig.h++>
 #include "Defs.h"
 
 using namespace libconfig;
 
-typedef struct mod_tag {
+struct Smodule {
 	std::string band;
 	std::string callsign;
 	std::string logoff;
@@ -34,7 +35,7 @@ typedef struct mod_tag {
 	unsigned int usertimeout;
 	unsigned int grouptimeout;
 	STARNET_CALLSIGN_SWITCH callsignswitch;
-} TMODULE;
+};
 
 class CStarNetServerConfig {
 public:
@@ -42,27 +43,18 @@ public:
 	~CStarNetServerConfig();
 
 	void getGateway(std::string &callsign, std::string &address) const;
-	void setGateway(const std::string &callsign, const std::string &address);
 
 	void getIrcDDB(std::string &hostname, std::string &username, std::string &password) const;
-	void setIrcDDB(const std::string &hostname, const std::string &username, const std::string &password);
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-	void getStarNet(int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, unsigned int &groupTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, std::string &reflector) const;
-	void setStarNet(int mod, const std::string &band, const std::string &callsign, const std::string &logoff, const std::string &info, const std::string &permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector);
+	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, unsigned int &groupTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, std::string &reflector) const;
 #else
-	void getStarNet(int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, unsigned int &groupTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch) const;
-	void setStarNet(int mod, const std::string &band, const std::string &callsign, const std::string &logoff, const std::string &info, const std::string &permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch);
+	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, unsigned int &groupTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch) const;
 #endif
 
 	void getRemote(bool &enabled, std::string &password, unsigned int &port) const;
-	void setRemote(bool enabled, const std::string &password, unsigned int port);
 
-	//void getMiscellaneous(bool &enabled) const;
-	//void setMiscellaneous(bool enabled);
-
-	void getPosition(int &x, int &y) const;
-	void setPosition(int x, int y);
+	unsigned int getModCount();
 
 private:
 	bool get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value);
@@ -75,12 +67,10 @@ private:
 	std::string m_ircddbHostname;
 	std::string m_ircddbUsername;
 	std::string m_ircddbPassword;
-	TMODULE module[15];
+	std::vector<struct Smodule *> m_module;
 
 	bool m_remoteEnabled;
 	std::string m_remotePassword;
 	unsigned int m_remotePort;
-//	bool m_logEnabled;
-	int m_x;
-	int m_y;
-};
+}
+;

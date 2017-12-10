@@ -32,14 +32,12 @@
 
 const unsigned int MESSAGE_DELAY = 4U;
 
-unsigned int        CStarNetHandler::m_maxStarNets = 0U;
-CStarNetHandler   **CStarNetHandler::m_starNets = NULL;
-
+// define static members
 CG2ProtocolHandler *CStarNetHandler::m_g2Handler = NULL;
 CIRCDDB            *CStarNetHandler::m_irc = NULL;
 CCacheManager      *CStarNetHandler::m_cache = NULL;
 std::string         CStarNetHandler::m_gateway;
-
+std::list<CStarNetHandler *> CStarNetHandler::m_starNets;
 std::string         CStarNetHandler::m_name;
 
 
@@ -174,50 +172,30 @@ CTextCollector& CStarNetId::getTextCollector()
 	return m_textCollector;
 }
 
-void CStarNetHandler::initialise(unsigned int maxStarNets, const std::string& name)
+void CStarNetHandler::initialise(const std::string& name)
 {
-	assert(maxStarNets > 0U);
-
-	m_maxStarNets = maxStarNets;
-	m_name        = name;
-
-	m_starNets = new CStarNetHandler*[maxStarNets];
-
-	for (unsigned int i = 0U; i < maxStarNets; i++)
-		m_starNets[i] = NULL;
+	m_name = name;
 }
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 void CStarNetHandler::add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
 {
-	CStarNetHandler* starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, groupTimeout, callsignSwitch, txMsgSwitch, reflector);
+	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, groupTimeout, callsignSwitch, txMsgSwitch, reflector);
 
-	for (unsigned int i = 0U; i < m_maxStarNets; i++) {
-		if (m_starNets[i] == NULL) {
-			m_starNets[i] = starNet;
-			return;
-		}
-	}
-
-	printf("Cannot add StarNet group with callsign %s, no space\n", callsign.c_str());
-
-	delete starNet;
+	if (starNet)
+		m_starNets.push_back(starNet);
+	else
+		printf("Cannot allocate StarNet group with callsign %s\n", callsign.c_str());
 }
 #else
 void CStarNetHandler::add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch)
 {
-	CStarNetHandler* starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, groupTimeout, callsignSwitch, txMsgSwitch);
+	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, groupTimeout, callsignSwitch, txMsgSwitch);
 
-	for (unsigned int i = 0U; i < m_maxStarNets; i++) {
-		if (m_starNets[i] == NULL) {
-			m_starNets[i] = starNet;
-			return;
-		}
-	}
-
-	printf("Cannot add StarNet group with callsign %s, no space\n", callsign.c_str());
-
-	delete starNet;
+	if (starNet)
+		m_starNets.push_back(starNet);
+	else
+		printf("Cannot allocate StarNet group with callsign %s\n", callsign.c_str());
 }
 #endif
 
@@ -249,12 +227,9 @@ void CStarNetHandler::setGateway(const std::string& gateway)
 
 CStarNetHandler* CStarNetHandler::findStarNet(const std::string& callsign)
 {
-	for (unsigned int i = 0U; i < m_maxStarNets; i++) {
-		CStarNetHandler* starNet = m_starNets[i];
-		if (starNet != NULL) {
-			if (0 == starNet->m_groupCallsign.compare(callsign))
-				return starNet;
-		}
+	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++) {
+		if (0 == (*it)->m_groupCallsign.compare(callsign))
+			return *it;
 	}
 	return NULL;
 }
@@ -263,16 +238,12 @@ CStarNetHandler* CStarNetHandler::findStarNet(const CHeaderData& header)
 {
 	std::string your = header.getYourCall();
 
-	for (unsigned int i = 0U; i < m_maxStarNets; i++) {
-		CStarNetHandler* starNet = m_starNets[i];
-		if (starNet != NULL) {
-			if (0 == starNet->m_groupCallsign.compare(your))
-				return starNet;
-			if (0 == starNet->m_offCallsign.compare(your))
-				return starNet;
-		}
+	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++) {
+		if (0 == (*it)->m_groupCallsign.compare(your))
+			return *it;
+		if (0 == (*it)->m_offCallsign.compare(your))
+			return *it;
 	}
-
 	return NULL;
 }
 
@@ -280,14 +251,10 @@ CStarNetHandler* CStarNetHandler::findStarNet(const CAMBEData& data)
 {
 	unsigned int id = data.getId();
 
-	for (unsigned int i = 0U; i < m_maxStarNets; i++) {
-		CStarNetHandler* starNet = m_starNets[i];
-		if (starNet != NULL) {
-			if (starNet->m_id == id)
-				return starNet;
-		}
+	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++) {
+		if ((*it)->m_id == id)
+			return *it;
 	}
-
 	return NULL;
 }
 
@@ -295,11 +262,8 @@ std::list<std::string> CStarNetHandler::listStarNets()
 {
 	std::list<std::string> starNets;
 
-	for (unsigned int i = 0U; i < m_maxStarNets; i++) {
-		CStarNetHandler* starNet = m_starNets[i];
-		if (starNet != NULL)
-			starNets.push_back(starNet->m_groupCallsign);
-	}
+	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++)
+		starNets.push_back((*it)->m_groupCallsign);
 
 	return starNets;
 }
@@ -308,7 +272,7 @@ CRemoteStarNetGroup* CStarNetHandler::getInfo() const
 {
 	CRemoteStarNetGroup* data = new CRemoteStarNetGroup(m_groupCallsign, m_offCallsign, m_groupTimer.getTimer(), m_groupTimer.getTimeout());
 
-	for (std::map<std::string, CStarNetUser *>::const_iterator it = m_users.begin(); it != m_users.end(); ++it) {
+	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
 		CStarNetUser* user = it->second;
 		data->addUser(user->getCallsign(), user->getTimer().getTimer(), user->getTimer().getTimeout());
 	}
@@ -318,27 +282,23 @@ CRemoteStarNetGroup* CStarNetHandler::getInfo() const
 														  
 void CStarNetHandler::finalise()
 {
-	for (unsigned int i = 0U; i < m_maxStarNets; i++)
-		delete m_starNets[i];
-
-	delete[] m_starNets;
+	while (m_starNets.size()) {
+		delete m_starNets.front();
+		m_starNets.pop_front();
+	}
 }
 
 void CStarNetHandler::clock(unsigned int ms)
 {
-	for (unsigned int i = 0U; i < m_maxStarNets; i++) {
-		if (m_starNets[i] != NULL)
-			m_starNets[i]->clockInt(ms);
-	}
+	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++)
+		(*it)->clockInt(ms);
 }
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 void CStarNetHandler::link()
 {
-	for (unsigned int i = 0U; i < m_maxStarNets; i++) {
-		if (m_starNets[i] != NULL)
-			m_starNets[i]->linkInt();
-	}
+	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++)
+		(*it)->linkInt();
 }
 #endif
 
@@ -409,15 +369,15 @@ m_repeaters()
 
 CStarNetHandler::~CStarNetHandler()
 {
-	for (std::map<unsigned int, CStarNetId *>::iterator it = m_ids.begin(); it != m_ids.end(); it++)
+	for (auto it = m_ids.begin(); it != m_ids.end(); it++)
 		delete it->second;
 	m_ids.empty();
 	
-	for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it)
+	for (auto it = m_users.begin(); it != m_users.end(); ++it)
 		delete it->second;
 	m_users.empty();
 
-	for (std::map<std::string, CStarNetRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 		delete it->second;
 	m_repeaters.empty();
 }

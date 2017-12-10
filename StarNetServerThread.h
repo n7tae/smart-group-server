@@ -32,7 +32,11 @@
 
 class CStarNetServerThread {
 public:
+#if defined(DEXTRA_LINK) || defined(DCS_LINK)
+	CStarNetServerThread(unsigned int count);
+#else
 	CStarNetServerThread();
+#endif
 	virtual ~CStarNetServerThread();
 
 	virtual void setCallsign(const std::string& callsign);
@@ -83,10 +87,12 @@ private:
 	
 #if defined(DEXTRA_LINK)
 	void processDExtra();
+	unsigned int m_count;
 #endif
 
 #if defined(DCS_LINK)
 	void processDCS();
+	unsigned int m_count;
 #endif
 };
 

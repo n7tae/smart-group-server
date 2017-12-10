@@ -41,7 +41,11 @@
 
 const unsigned int REMOTE_DUMMY_PORT = 65015U;
 
+#if defined(DEXTRA_LINK) || defined(DCS_LINK)
+CStarNetServerThread::CStarNetServerThread(unsigned int count) :
+#else
 CStarNetServerThread::CStarNetServerThread() :
+#endif
 m_killed(false),
 m_stopped(true),
 m_callsign(),
@@ -66,16 +70,19 @@ m_remotePassword(),
 m_remotePort(0U),
 m_remote(NULL)
 {
+#if defined(DEXTRA_LINK) || defined(DCS_LINK)
+	m_count = count;
+#endif
 	CHeaderData::initialise();
 	CG2Handler::initialise(0);
-	CStarNetHandler::initialise(MAX_STARNETS);
+	CStarNetHandler::initialise();
 	
 #if defined(DEXTRA_LINK)
-	CDExtraHandler::initialise(MAX_DEXTRA_LINKS);
+	CDExtraHandler::initialise(count);
 #endif
 
 #if defined(DCS_LINK)
-	CDCSHandler::initialise(MAX_DCS_LINKS);
+	CDCSHandler::initialise(count);
 #endif
 	printf("StarNetServerThread created\n");
 }
@@ -100,7 +107,7 @@ void CStarNetServerThread::run()
 {
 	bool ret;
 #if defined(DEXTRA_LINK)
-	m_dextraPool = new CDExtraProtocolHandlerPool(MAX_DEXTRA_LINKS, DEXTRA_PORT, m_address);
+	m_dextraPool = new CDExtraProtocolHandlerPool(m_count, DEXTRA_PORT, m_address);
 	ret = m_dextraPool->open();
 	if (!ret) {
 		printf("Could not open the DExtra protocol pool\n");
@@ -110,7 +117,7 @@ void CStarNetServerThread::run()
 #endif
 
 #if defined(DCS_LINK)
-	m_dcsPool = new CDCSProtocolHandlerPool(MAX_DCS_LINKS, DCS_PORT, m_address);
+	m_dcsPool = new CDCSProtocolHandlerPool(m_count, DCS_PORT, m_address);
 	ret = m_dcsPool->open();
 	if (!ret) {
 		printf("Could not open the DCS protocol pool\n");
@@ -145,16 +152,6 @@ void CStarNetServerThread::run()
 	m_stopped = false;
 
 	printf("Starting the StarNet Server thread\n");
-
-//	CHeaderLogger* headerLogger = NULL;
-//	if (m_logEnabled) {
-//		headerLogger = new CHeaderLogger(m_logDir);
-//		bool ret = headerLogger->open();
-//		if (!ret) {
-//			delete headerLogger;
-//			headerLogger = NULL;
-//		}
-//	}
 
 #if defined(DEXTRA_LINK)
 	loadReflectors(DEXTRA_HOSTS_FILE_NAME);

@@ -63,9 +63,9 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 																									m_ircddbUsername.c_str(), m_ircddbPassword.c_str());
 
 	// module parameters
-	for (int i=0; i<15; i++) {
+	for (int i=0; i<cfg.lookup("module").getLength(); i++) {
 		char key[32];
-		std::string basename, subscribe, unsubscribe;
+		std::string basename, subscribe, unsubscribe, band;
 		snprintf(key, 32, "module.[%d].basename", i);
 		if (get_value(cfg, key, basename, 1, 7, "")) {
 			bool isokay = true;
@@ -84,9 +84,9 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		}
 		
 		sprintf(key, "module.[%d].band", i);
-		get_value(cfg, key, module[i].band, 1, 1, "A");
-		CUtils::ToUpper(module[i].band);
-		if (! isalpha(module[i].band[0])) {
+		get_value(cfg, key, band, 1, 1, "A");
+		CUtils::ToUpper(band);
+		if (! isalpha(band[0])) {
 			printf("Module %d band is not a letter\n", i);
 			basename.empty();
 		}
@@ -110,42 +110,43 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 			printf("subscribe and unsubscribe for %s are identical\n", basename.c_str());
 			basename.empty();
 		}
-		if (0 == basename.size()) {
-			module[i].callsign.empty();
+		// skip to the next module definition
+		if (0 == basename.size())
 			continue;
-		}
 
+		struct Smodule *pmod = new struct Smodule;
 		// pad basename with spaces
 		basename.resize(7, ' ');
-		module[i].callsign = basename + subscribe;
-		module[i].logoff = basename + unsubscribe;
+		pmod->callsign = basename + subscribe;
+		pmod->logoff = basename + unsubscribe;
+		pmod->band = band;
 		
 		sprintf(key, "module.[%d].info", i);
-		get_value(cfg, key, module[i].info, 0, 20, "");
+		get_value(cfg, key, pmod->info, 0, 20, "");
 
 		sprintf(key, "module.[%d].permanent", i);
-		get_value(cfg, key, module[i].permanent, 0, 8, "");
-		CUtils::ToUpper(module[i].permanent);
+		get_value(cfg, key, pmod->permanent, 0, 8, "");
+		CUtils::ToUpper(pmod->permanent);
 
 		int ivalue;
 		sprintf(key, "module.[%d].usertimout", i);
 		get_value(cfg, key, ivalue, 0, 300, 300);
-		module[i].usertimeout = (unsigned int)ivalue;
+		pmod->usertimeout = (unsigned int)ivalue;
 	
 		sprintf(key, "module.[%d].grouptimeout", i);
 		get_value(cfg, key, ivalue, 0, 300, 300);
-		module[i].grouptimeout = (unsigned int)ivalue;
+		pmod->grouptimeout = (unsigned int)ivalue;
 
 		bool bvalue;
 		sprintf(key, "module.[%d].callsignswitch", i);
 		get_value(cfg, key, bvalue, false);
-		module[i].callsignswitch = bvalue ? SCS_GROUP_CALLSIGN : SCS_USER_CALLSIGN;
+		pmod->callsignswitch = bvalue ? SCS_GROUP_CALLSIGN : SCS_USER_CALLSIGN;
 
 		sprintf(key, "module.[%d].txmsgswitch", i);
-		get_value(cfg, key, module[i].txmsgswitch, true);
+		get_value(cfg, key, pmod->txmsgswitch, true);
 
 		sprintf(key, "module.[%d].reflector", i);
-		if (! get_value(cfg, key, basename, 8, 8, "")) {
+		if (get_value(cfg, key, basename, 8, 8, "")) {
 			printf("reflector %d must be undefined or exactly 8 chars!\n", i);
 			basename.empty();
 		}
@@ -153,14 +154,14 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 			CUtils::ToUpper(basename);
 			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS"))
 							&& isdigit(basename[3]) && isdigit(basename[4]) && isdigit(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
-				module[i].reflector = basename;
+				pmod->reflector = basename;
 			else
-				module[i].reflector.empty();
+				pmod->reflector.empty();
 		}
 		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' permanent='%s' usertimeout=%d grouptimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'\n",
-			i, module[i].callsign.c_str(), module[i].logoff.c_str(), module[i].info.c_str(), module[i].permanent.c_str(), module[i].usertimeout, module[i].grouptimeout,
-			SCS_GROUP_CALLSIGN==module[i].callsignswitch ? "Group" : "User",
-			module[i].txmsgswitch ? "true" : "false", module[i].reflector.c_str());
+			i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->permanent.c_str(), pmod->usertimeout, pmod->grouptimeout,
+			SCS_GROUP_CALLSIGN==pmod->callsignswitch ? "Group" : "User", pmod->txmsgswitch ? "true" : "false", pmod->reflector.c_str());
+		m_module.push_back(pmod);
 	}
 
 	// remote control
@@ -170,13 +171,9 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		int ivalue;
 		get_value(cfg, "remote.port", ivalue, 1000, 65000, 32156);
 		m_remotePort = (unsigned int)ivalue;
-		get_value(cfg, "remote.windowX", ivalue, 0, 2000, 0);
-		m_x = (unsigned int)ivalue;
-		get_value(cfg, "remote.windowY", ivalue, 0, 2000, 0);
-		m_y = (unsigned int)ivalue;
-		printf("Remote enabled: password='%s', port=%d, windowX=%d windowY=%d\n", m_remotePassword.c_str(), m_remotePort, m_x, m_y);
+		printf("Remote enabled: password='%s', port=%d\n", m_remotePassword.c_str(), m_remotePort);
 	} else {
-		m_remotePort = m_x = m_y = 0U;
+		m_remotePort = 0U;
 		m_remotePassword.empty();
 		printf("Remote disabled\n");
 	}
@@ -184,6 +181,15 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 
 CStarNetServerConfig::~CStarNetServerConfig()
 {
+	while (m_module.size()) {
+		delete m_module.back();
+		m_module.pop_back();
+	}
+}
+
+unsigned int CStarNetServerConfig::getModCount()
+{
+	return m_module.size();
 }
 
 bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value)
@@ -193,7 +199,6 @@ bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, int &v
 			value = default_value;
 	} else
 		value = default_value;
-//	printf("%s = [%u]\n", path, value);
 	return true;
 }
 
@@ -201,7 +206,6 @@ bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, bool &
 {
 	if (! cfg.lookupValue(path, value))
 		value = default_value;
-//	printf("%s = [%s]\n", path, value ? "true" : "false");
 	return true;
 }
 
@@ -215,21 +219,13 @@ bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, std::s
 		}
 	} else
 		value = default_value;
-//	printf("%s = [%s]\n", path, value.c_str());
 	return true;
 }
-
 
 void CStarNetServerConfig::getGateway(std::string& callsign, std::string& address) const
 {
 	callsign = m_callsign;
 	address  = m_address;
-}
-
-void CStarNetServerConfig::setGateway(const std::string& callsign, const std::string& address)
-{
-	m_callsign = callsign;
-	m_address  = address;
 }
 
 void CStarNetServerConfig::getIrcDDB(std::string& hostname, std::string& username, std::string& password) const
@@ -239,88 +235,30 @@ void CStarNetServerConfig::getIrcDDB(std::string& hostname, std::string& usernam
 	password = m_ircddbPassword;
 }
 
-void CStarNetServerConfig::setIrcDDB(const std::string& hostname, const std::string& username, const std::string& password)
-{
-	m_ircddbHostname = hostname;
-	m_ircddbUsername = username;
-	m_ircddbPassword = password;
-}
-
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-void CStarNetServerConfig::getStarNet(int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
+void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
 #else
-void CStarNetServerConfig::getStarNet(int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch) const
+void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch) const
 #endif
 {
-	band           = module[mod].band;
-	callsign       = module[mod].callsign;
-	logoff         = module[mod].logoff;
-	info           = module[mod].info;
-	permanent      = module[mod].permanent;
-	userTimeout    = module[mod].usertimeout;
-	groupTimeout   = module[mod].grouptimeout;
-	callsignSwitch = module[mod].callsignswitch;
-	txMsgSwitch    = module[mod].txmsgswitch;
+	band           = m_module[mod]->band;
+	callsign       = m_module[mod]->callsign;
+	logoff         = m_module[mod]->logoff;
+	info           = m_module[mod]->info;
+	permanent      = m_module[mod]->permanent;
+	userTimeout    = m_module[mod]->usertimeout;
+	groupTimeout   = m_module[mod]->grouptimeout;
+	callsignSwitch = m_module[mod]->callsignswitch;
+	txMsgSwitch    = m_module[mod]->txmsgswitch;
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-	reflector      = module[mod].reflector;
+	reflector      = m_module[mod]->reflector;
 #endif
 }
-
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
-void CStarNetServerConfig::setStarNet(int mod, const std::string& band, const std::string& callsign, const std::string& logoff, const std::string& info, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
-#else
-void CStarNetServerConfig::setStarNet(int mod, const std::string& band, const std::string& callsign, const std::string& logoff, const std::string& info, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch)
-#endif
-{
-	module[mod].band           = band;
-	module[mod].callsign       = callsign;
-	module[mod].logoff         = logoff;
-	module[mod].info           = info;
-	module[mod].permanent      = permanent;
-	module[mod].usertimeout    = userTimeout;
-	module[mod].grouptimeout   = groupTimeout;
-	module[mod].callsignswitch = callsignSwitch;
-	module[mod].txmsgswitch    = txMsgSwitch;
-
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
-	module[mod].reflector      = reflector;
-#endif
-}
-
 
 void CStarNetServerConfig::getRemote(bool& enabled, std::string& password, unsigned int& port) const
 {
 	enabled  = m_remoteEnabled;
 	password = m_remotePassword;
 	port     = m_remotePort;
-}
-
-void CStarNetServerConfig::setRemote(bool enabled, const std::string& password, unsigned int port)
-{
-	m_remoteEnabled  = enabled;
-	m_remotePassword = password;
-	m_remotePort     = port;
-}
-
-//void CStarNetServerConfig::getMiscellaneous(bool& enabled) const
-//{
-	//enabled = m_logEnabled;
-//}
-
-//void CStarNetServerConfig::setMiscellaneous(bool enabled)
-//{
-	//m_logEnabled = enabled;
-//}
-
-void CStarNetServerConfig::getPosition(int& x, int& y) const
-{
-	x = m_x;
-	y = m_y;
-}
-
-void CStarNetServerConfig::setPosition(int x, int y)
-{
-	m_x = x;
-	m_y = y;
 }

@@ -107,7 +107,7 @@ class CStarNetHandler : public IReflectorCallback {
 class CStarNetHandler {
 #endif
 public:
-	static void initialise(unsigned int maxStarNets, const std::string& name = std::string(""));
+	static void initialise(const std::string& name = std::string(""));
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	static void add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
@@ -167,8 +167,7 @@ protected:
 	void clockInt(unsigned int ms);
 
 private:
-	static unsigned int        m_maxStarNets;
-	static CStarNetHandler**   m_starNets;
+	static std::list<CStarNetHandler *> m_starNets;
 
 	static CG2ProtocolHandler* m_g2Handler;
 	static CIRCDDB*            m_irc;

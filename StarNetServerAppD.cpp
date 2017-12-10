@@ -72,8 +72,11 @@ void CStarNetServerAppD::run()
 bool CStarNetServerAppD::createThread()
 {
 	CStarNetServerConfig config(m_configFile);
-
+#if defined(DEXTRA_LINK) || defined(DCS_LINK)
+	m_thread = new CStarNetServerThread(config.getModCount());
+#else
 	m_thread = new CStarNetServerThread();
+#endif
 
 	std::string CallSign, address;
 	config.getGateway(CallSign, address);
@@ -98,7 +101,7 @@ bool CStarNetServerAppD::createThread()
 		m_thread->setIRC(ircDDB);
 	}
 
-	for (unsigned int i=0; i<MAX_STARNETS; i++) {
+	for (unsigned int i=0; i<config.getModCount(); i++) {
 		std::string band, callsign, logoff, info, permanent, reflector;
 		unsigned int usertimeout, grouptimeout;
 		STARNET_CALLSIGN_SWITCH callsignswitch;
