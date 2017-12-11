@@ -1,16 +1,18 @@
 # Copyright (c) 2017 by Thomas A. Early N7TAE
 
-# if you change these locations, make sure the service.smartgroupserver script is updated!
+# if you change these locations, make sure the sgs.service file is updated!
 BINDIR=/usr/local/bin
 CFGDIR=/usr/local/etc
 
-#choose one of the three lines below depending on what you want linking you want.
-#you can also delete the "-g -gddb" if you want a much smaller program.
-CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
+# choose one of the three lines below depending on what linking you want.
+#CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
 #CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDCS_LINK
-#CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DDATA_DIR=\"$(CFGDIR)\"
+#CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 
-LDFLAGS=-L/usr/lib -lconfig++
+# or, you can choose one of these lines if you want a much smaller program, without debugging help
+CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
+#CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDCS_LINK
+#CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
