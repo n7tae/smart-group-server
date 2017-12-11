@@ -27,7 +27,7 @@ sgs :  $(OBJS)
 .PHONY: clean
 
 clean:
-	$(RM) $(OBJS) $(DEPS) smartgroupserver
+	$(RM) $(OBJS) $(DEPS) sgs
 
 -include $(DEPS)
 
