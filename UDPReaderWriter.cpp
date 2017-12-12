@@ -19,8 +19,6 @@
 #include <cerrno>
 #include <cstring>
 #include "UDPReaderWriter.h"
-#include "Utils.h"
-
 
 CUDPReaderWriter::CUDPReaderWriter(const std::string& address, unsigned int port) :
 m_address(address),

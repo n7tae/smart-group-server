@@ -122,7 +122,9 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		pmod->band = band;
 		
 		sprintf(key, "module.[%d].info", i);
-		get_value(cfg, key, pmod->info, 0, 20, "");
+		get_value(cfg, key, pmod->info, 0, 40, "");
+		if (pmod->info.size())
+			pmod->info.resize(20, ' ')
 
 		sprintf(key, "module.[%d].permanent", i);
 		get_value(cfg, key, pmod->permanent, 0, 8, "");
