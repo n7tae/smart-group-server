@@ -122,12 +122,12 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		pmod->band = band;
 		
 		sprintf(key, "module.[%d].info", i);
-		get_value(cfg, key, pmod->info, 0, 40, "");
+		get_value(cfg, key, pmod->info, 0, 20, "Smart Group Server");
 		if (pmod->info.size())
 			pmod->info.resize(20, ' ');
 
 		sprintf(key, "module.[%d].permanent", i);
-		get_value(cfg, key, pmod->permanent, 0, 8, "");
+		get_value(cfg, key, pmod->permanent, 0, 120, "");
 		CUtils::ToUpper(pmod->permanent);
 
 		int ivalue;

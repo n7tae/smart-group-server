@@ -352,16 +352,22 @@ m_repeaters()
 		else
 			m_shortCallsign = m_groupCallsign.substr(3, 3) + m_groupCallsign[7];
 	}
-
+	if (permanent.size() < 4)
+		return;
 	char *buf = (char *)calloc(permanent.size() + 1, 1);
 	if (buf) {
 		strcpy(buf, permanent.c_str());
 		char *token = strtok(buf, ",");
 		while (token) {
-			std::string newcall(token);
-			newcall.resize(LONG_CALLSIGN_LENGTH, ' ');
-			m_permanent.insert(newcall);
-			token = strtok(NULL, ",");
+			if (strlen(token)) {
+				std::string newcall(token);
+				if (newcall.size() > 3) {
+					CUtils::ToUpper(newcall);
+					newcall.resize(LONG_CALLSIGN_LENGTH, ' ');
+					m_permanent.insert(newcall);
+					token = strtok(NULL, ",");
+				}
+			}
 		}
 		free(buf);
 	}
@@ -380,6 +386,7 @@ CStarNetHandler::~CStarNetHandler()
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 		delete it->second;
 	m_repeaters.empty();
+	m_permanent.erase(m_permanent.begin(), m_permanent.end());
 }
 
 void CStarNetHandler::process(CHeaderData &header)
