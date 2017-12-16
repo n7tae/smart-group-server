@@ -763,7 +763,11 @@ bool CStarNetHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 			break;
 	}
 
-	if (!m_ids[m_id]->isLogin())
+	CStarNetId *tx = m_ids[m_id];
+	if (tx) {
+		if (!tx->isLogin())
+			sendToRepeaters(header);
+	} else
 		sendToRepeaters(header);
 
 	if (m_txMsgSwitch)
@@ -780,7 +784,11 @@ bool CStarNetHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
 
 	m_linkTimer.start();
 
-	if (!m_ids[id]->isLogin())
+	CStarNetId *tx = m_ids[id];
+	if (tx) {
+		if (!tx->isLogin())
+			sendToRepeaters(data);
+	} else
 		sendToRepeaters(data);
 
 	if (data.isEnd()) {
