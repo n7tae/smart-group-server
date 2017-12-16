@@ -551,7 +551,9 @@ void CStarNetHandler::process(CAMBEData &data)
 	m_groupTimer.start();
 
 	// If we've just logged in, the LOGOFF and INFO commands are disabled
-	if (!tx->isLogin()) {
+	if (tx->isLogin()) {
+		printf("got ambe data from %s and tx->m_login is set!\n", user->getCallsign().c_str());
+	} else {
 		// If we've already found some slow data, then don't look again
 		if (!tx->isLogoff() && !tx->isInfo()) {
 			tx->getTextCollector().writeData(data);
