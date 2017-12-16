@@ -397,6 +397,7 @@ void CStarNetHandler::process(CHeaderData &header)
 	unsigned int id = header.getId();
 
 	CStarNetUser* user = m_users[my];
+	bool islogin = false;
 
 	// Ensure that this user is in the cache
 	CUserData* userData = m_cache->findUser(my);
@@ -419,6 +420,7 @@ void CStarNetHandler::process(CHeaderData &header)
 			CStarNetId* tx = new CStarNetId(id, MESSAGE_DELAY, user);
 			tx->setLogin();
 			m_ids[id] = tx;
+			islogin = true;
 		} else {
 			user->reset();
 
@@ -468,12 +470,16 @@ void CStarNetHandler::process(CHeaderData &header)
 	header.setFlag3(0x00);
 
 #if defined(DEXTRA_LINK)
-	header.setRepeaters(m_linkGateway, m_linkReflector);
-	CDExtraHandler::writeHeader(this, header, DIR_OUTGOING);
+	if (!islogin) {
+		header.setRepeaters(m_linkGateway, m_linkReflector);
+		CDExtraHandler::writeHeader(this, header, DIR_OUTGOING);
+	}
 #endif
 #if defined(DCS_LINK)
-	header.setRepeaters(m_linkGateway, m_linkReflector);
-	CDCSHandler::writeHeader(this, header, DIR_OUTGOING);
+	if (!islogin) {
+		header.setRepeaters(m_linkGateway, m_linkReflector);
+		CDCSHandler::writeHeader(this, header, DIR_OUTGOING);
+	}
 #endif
 
 	// Get the home repeater of the user
@@ -528,8 +534,8 @@ void CStarNetHandler::process(CHeaderData &header)
 		default:
 			break;
 	}
-
-	sendToRepeaters(header);
+	if (!islogin)
+		sendToRepeaters(header);
 
 	if (m_txMsgSwitch)
 		sendFromText(my);
@@ -551,9 +557,7 @@ void CStarNetHandler::process(CAMBEData &data)
 	m_groupTimer.start();
 
 	// If we've just logged in, the LOGOFF and INFO commands are disabled
-	if (tx->isLogin()) {
-		printf("got ambe data from %s and tx->m_login is set!\n", user->getCallsign().c_str());
-	} else {
+	if (!tx->isLogin()) {
 		// If we've already found some slow data, then don't look again
 		if (!tx->isLogoff() && !tx->isInfo()) {
 			tx->getTextCollector().writeData(data);
@@ -592,7 +596,7 @@ void CStarNetHandler::process(CAMBEData &data)
 		}
 	}
 
-	if (id == m_id) {
+	if (id == m_id && !tx->isLogin()) {
 #if defined(DEXTRA_LINK)
 		CDExtraHandler::writeAMBE(this, data, DIR_OUTGOING);
 #endif
@@ -759,7 +763,8 @@ bool CStarNetHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 			break;
 	}
 
-	sendToRepeaters(header);
+	if (!m_ids[m_id]->isLogin())
+		sendToRepeaters(header);
 
 	if (m_txMsgSwitch)
 		sendFromText(my);
@@ -775,7 +780,8 @@ bool CStarNetHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
 
 	m_linkTimer.start();
 
-	sendToRepeaters(data);
+	if (!m_ids[id]->isLogin())
+		sendToRepeaters(data);
 
 	if (data.isEnd()) {
 		m_linkTimer.stop();
