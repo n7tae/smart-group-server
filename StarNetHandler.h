@@ -209,4 +209,5 @@ private:
 	void sendToRepeaters(CHeaderData& header) const;
 	void sendToRepeaters(CAMBEData& data) const;
 	void sendAck(const CUserData& user, const std::string& text) const;
+	void logoffUser(const std::string channel, const std::string user);
 };

@@ -1001,6 +1001,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 				if (m_permanent.find(user->getCallsign()) != m_permanent.end()) {
 					permanent.push_back(user);
 				} else {
+					logoffUser(m_groupCallsign, user->getCallsign());	// inform QuadNet
 					printf("Removing %s from StarNet group %s, group timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 					delete user;
 				}
@@ -1024,7 +1025,8 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		CStarNetUser* user = it->second;
 		if (user && user->hasExpired()) {
 			printf("Removing %s from StarNet group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
-
+			
+			logoffUser(m_groupCallsign, user->getCallsign());	// inform QuadNet
 			delete user;
 			m_users.erase(it);
 			// The iterator is now invalid, so we'll find the next expiry on the next clock tick with a
@@ -1032,6 +1034,19 @@ void CStarNetHandler::clockInt(unsigned int ms)
 			break;
 		}
 	}
+}
+
+void CStarNetHandler::logoffUser(const std::string channel, const std::string user)
+{
+	std::string cmd("LOGOFF");
+	std::string chn(channel);
+	std::string usr(user);
+	CUtils::ReplaceChar(chn, ' ', '_');
+	CUtils::ReplaceChar(usr, ' ', '_');
+	std::vector<std::string> parms;
+	parms.push_back(chn);
+	parms.push_back(usr);
+	m_irc->sendSGSInfo(cmd, parms);
 }
 
 void CStarNetHandler::sendToRepeaters(CHeaderData& header) const

@@ -22,4 +22,4 @@
 #include <string>
 
 const std::string VENDOR_NAME("N7TAE");
-const std::string VERSION("20171216");
+const std::string VERSION("20171219");
