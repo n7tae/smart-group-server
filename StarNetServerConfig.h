@@ -33,7 +33,6 @@ struct Smodule {
 	std::string reflector;
 	bool txmsgswitch;
 	unsigned int usertimeout;
-	unsigned int grouptimeout;
 	STARNET_CALLSIGN_SWITCH callsignswitch;
 };
 
@@ -47,9 +46,9 @@ public:
 	void getIrcDDB(std::string &hostname, std::string &username, std::string &password) const;
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, unsigned int &groupTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, std::string &reflector) const;
+	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, std::string &reflector) const;
 #else
-	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, unsigned int &groupTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch) const;
+	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch) const;
 #endif
 
 	void getRemote(bool &enabled, std::string &password, unsigned int &port) const;

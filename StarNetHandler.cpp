@@ -178,9 +178,9 @@ void CStarNetHandler::initialise(const std::string& name)
 }
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-void CStarNetHandler::add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
+void CStarNetHandler::add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
 {
-	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, groupTimeout, callsignSwitch, txMsgSwitch, reflector);
+	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
 
 	if (starNet)
 		m_starNets.push_back(starNet);
@@ -188,9 +188,9 @@ void CStarNetHandler::add(const std::string& callsign, const std::string& logoff
 		printf("Cannot allocate StarNet group with callsign %s\n", callsign.c_str());
 }
 #else
-void CStarNetHandler::add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch)
+void CStarNetHandler::add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch)
 {
-	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, groupTimeout, callsignSwitch, txMsgSwitch);
+	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch);
 
 	if (starNet)
 		m_starNets.push_back(starNet);
@@ -270,7 +270,7 @@ std::list<std::string> CStarNetHandler::listStarNets()
 
 CRemoteStarNetGroup* CStarNetHandler::getInfo() const
 {
-	CRemoteStarNetGroup* data = new CRemoteStarNetGroup(m_groupCallsign, m_offCallsign, m_groupTimer.getTimer(), m_groupTimer.getTimeout());
+	CRemoteStarNetGroup* data = new CRemoteStarNetGroup(m_groupCallsign, m_offCallsign);
 
 	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
 		CStarNetUser* user = it->second;
@@ -303,7 +303,7 @@ void CStarNetHandler::link()
 #endif
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-CStarNetHandler::CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector) :
+CStarNetHandler::CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
 m_shortCallsign("SNET"),
@@ -316,7 +316,6 @@ m_linkStatus(LS_NONE),
 m_oldlinkStatus(LS_INIT),
 m_linkTimer(1000U, NETWORK_TIMEOUT),
 m_id(0x00U),
-m_groupTimer(1000U, groupTimeout * 60U),
 m_announceTimer(1000U, 2U * 60U),		// 2 minutes
 m_userTimeout(userTimeout),
 m_callsignSwitch(callsignSwitch),
@@ -325,7 +324,7 @@ m_ids(),
 m_users(),
 m_repeaters()
 #else
-CStarNetHandler::CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, unsigned int groupTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch) :
+CStarNetHandler::CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
 m_shortCallsign("SNET"),
@@ -333,7 +332,6 @@ m_repeater(repeater),
 m_infoText(infoText),
 m_permanent(),
 m_id(0x00U),
-m_groupTimer(1000U, groupTimeout * 60U),
 m_announceTimer(1000U, 2U * 60U),		// 2 minutes
 m_userTimeout(userTimeout),
 m_callsignSwitch(callsignSwitch),
@@ -410,10 +408,6 @@ void CStarNetHandler::process(CHeaderData &header)
 			// This is a new user, add them to the list
 			printf("Adding %s to StarNet group %s\n", my.c_str(), m_groupCallsign.c_str());
 
-			// Start the StarNet group timer if not already running
-			if (!m_groupTimer.isRunning())
-				m_groupTimer.start();
-
 			user = new CStarNetUser(my, m_userTimeout * 60U);
 			m_users[my] = user;
 
@@ -452,8 +446,6 @@ void CStarNetHandler::process(CHeaderData &header)
 
 		return;
 	}
-
-	m_groupTimer.start();
 
 	if (m_id != 0x00U) {
 		delete userData;
@@ -554,8 +546,6 @@ void CStarNetHandler::process(CAMBEData &data)
 	CStarNetUser* user = tx->getUser();
 	user->reset();
 
-	m_groupTimer.start();
-
 	// If we've just logged in, the LOGOFF and INFO commands are disabled
 	if (!tx->isLogin()) {
 		// If we've already found some slow data, then don't look again
@@ -653,7 +643,6 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 		m_ids.clear();
 		m_repeaters.clear();
 
-		m_groupTimer.stop();
 		m_id = 0x00U;
 
 		return true;
@@ -695,7 +684,6 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 			m_ids.clear();
 			m_repeaters.clear();
 
-			m_groupTimer.stop();
 			m_id = 0x00U;
 		}
 
@@ -985,42 +973,9 @@ void CStarNetHandler::clockInt(unsigned int ms)
 			user->clock(ms);
 	}
 
-	// Handle the group expiry timer
-	m_groupTimer.clock(ms);
-
 	// Don't do timeouts when relaying audio
 	if (m_id != 0x00U)
 		return;
-
-	if (m_groupTimer.isRunning() && m_groupTimer.hasExpired()) {
-		std::vector<CStarNetUser *> permanent;
-
-		// Clear all the users, except the permenent one
-		for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
-			CStarNetUser* user = it->second;
-
-			if (user) {
-				if (m_permanent.find(user->getCallsign()) != m_permanent.end()) {
-					permanent.push_back(user);
-				} else {
-					logoffUser(m_groupCallsign, user->getCallsign());	// inform QuadNet
-					printf("Removing %s from StarNet group %s, group timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
-					delete user;
-				}
-			}
-		}
-
-		m_users.clear();
-
-		// Re-insert the permenent users
-		for (std::vector<CStarNetUser *>::const_iterator it = permanent.begin(); it != permanent.end(); ++it) {
-			CStarNetUser* user = *it;
-			std::string callsign = user->getCallsign();
-			m_users[callsign] = user;
-		}
-
-		m_groupTimer.stop();
-	}
 
 	// Individual user expiry
 	for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {

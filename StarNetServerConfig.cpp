@@ -135,10 +135,6 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		get_value(cfg, key, ivalue, 0, 300, 300);
 		pmod->usertimeout = (unsigned int)ivalue;
 	
-		sprintf(key, "module.[%d].grouptimeout", i);
-		get_value(cfg, key, ivalue, 0, 300, 300);
-		pmod->grouptimeout = (unsigned int)ivalue;
-
 		bool bvalue;
 		sprintf(key, "module.[%d].callsignswitch", i);
 		get_value(cfg, key, bvalue, false);
@@ -160,8 +156,8 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 			else
 				pmod->reflector.empty();
 		}
-		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' permanent='%s' usertimeout=%d grouptimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'\n",
-			i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->permanent.c_str(), pmod->usertimeout, pmod->grouptimeout,
+		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' permanent='%s' usertimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'\n",
+			i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->permanent.c_str(), pmod->usertimeout,
 			SCS_GROUP_CALLSIGN==pmod->callsignswitch ? "Group" : "User", pmod->txmsgswitch ? "true" : "false", pmod->reflector.c_str());
 		m_module.push_back(pmod);
 	}
@@ -238,9 +234,9 @@ void CStarNetServerConfig::getIrcDDB(std::string& hostname, std::string& usernam
 }
 
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
+void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
 #else
-void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, unsigned int& groupTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch) const
+void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch) const
 #endif
 {
 	band           = m_module[mod]->band;
@@ -249,7 +245,6 @@ void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::
 	info           = m_module[mod]->info;
 	permanent      = m_module[mod]->permanent;
 	userTimeout    = m_module[mod]->usertimeout;
-	groupTimeout   = m_module[mod]->grouptimeout;
 	callsignSwitch = m_module[mod]->callsignswitch;
 	txMsgSwitch    = m_module[mod]->txmsgswitch;
 

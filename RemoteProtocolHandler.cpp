@@ -371,14 +371,6 @@ bool CRemoteProtocolHandler::sendStarNetGroup(const CRemoteStarNetGroup& data)
 		p[i] = data.getLogoff().at(i);
 	p += LONG_CALLSIGN_LENGTH;
 
-	uint32_t timer = wxUINT32_SWAP_ON_BE(data.getTimer());
-	memcpy(p, &timer, sizeof(uint32_t));
-	p += sizeof(uint32_t);
-
-	uint32_t timeout = wxUINT32_SWAP_ON_BE(data.getTimeout());
-	memcpy(p, &timeout, sizeof(uint32_t));
-	p += sizeof(uint32_t);
-
 	for (unsigned int n = 0U; n < data.getUserCount(); n++) {
 		CRemoteStarNetUser *user = data.getUser(n);
 

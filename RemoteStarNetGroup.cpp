@@ -19,11 +19,9 @@
 
 #include "RemoteStarNetGroup.h"
 
-CRemoteStarNetGroup::CRemoteStarNetGroup(const std::string& callsign, const std::string& logoff, uint32_t timer, uint32_t timeout) :
+CRemoteStarNetGroup::CRemoteStarNetGroup(const std::string& callsign, const std::string& logoff) :
 m_callsign(callsign),
 m_logoff(logoff),
-m_timer(timer),
-m_timeout(timeout),
 m_users()
 {
 	if (logoff.compare("        "))
@@ -53,16 +51,6 @@ std::string CRemoteStarNetGroup::getCallsign() const
 std::string CRemoteStarNetGroup::getLogoff() const
 {
 	return m_logoff;
-}
-
-uint32_t CRemoteStarNetGroup::getTimer() const
-{
-	return m_timer;
-}
-
-uint32_t CRemoteStarNetGroup::getTimeout() const
-{
-	return m_timeout;
 }
 
 uint32_t CRemoteStarNetGroup::getUserCount() const

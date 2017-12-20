@@ -102,14 +102,14 @@ bool CStarNetServerAppD::createThread()
 
 	for (unsigned int i=0; i<config.getModCount(); i++) {
 		std::string band, callsign, logoff, info, permanent, reflector;
-		unsigned int usertimeout, grouptimeout;
+		unsigned int usertimeout;
 		STARNET_CALLSIGN_SWITCH callsignswitch;
 		bool txmsgswitch;
 		
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-		config.getStarNet(i, band, callsign, logoff, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch, reflector);
+		config.getStarNet(i, band, callsign, logoff, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
 #else
-		config.getStarNet(i, band, callsign, logoff, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch);
+		config.getStarNet(i, band, callsign, logoff, info, permanent, usertimeout, callsignswitch, txmsgswitch);
 #endif
 
 		if (callsign.size() && isalnum(callsign[0])) {
@@ -117,14 +117,14 @@ bool CStarNetServerAppD::createThread()
 			repeater.resize(7, ' ');
 			repeater.push_back(band[0]);
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
-			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch, reflector);
-			printf("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s\n",
-				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
+			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
+			printf("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s\n",
+				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout,
 				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false", reflector.c_str());
 #else
-			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, grouptimeout, callsignswitch, txmsgswitch);
-			printf("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, group: %u mins, callsign switch: %s, tx msg switch: %s\n",
-				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout, grouptimeout,
+			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, callsignswitch, txmsgswitch);
+			printf("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, callsign switch: %s, tx msg switch: %s\n",
+				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout,
 				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false");
 #endif
 		}
