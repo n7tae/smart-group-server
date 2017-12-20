@@ -122,27 +122,27 @@ bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::str
 	const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message)
 {
 	if (myCall.size() != 8) {
-		printf("CIRCDDBClient::sendHeard:myCall='%s' len != 8\n", myCall.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXMsg:myCall='%s' len != 8\n", myCall.c_str());
 		return false;
 	}
 
 	if (myCallExt.size() != 4) {
-		printf("CIRCDDBClient::sendHeard:myCallExt='%s' len != 4\n", myCallExt.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXMsg:myCallExt='%s' len != 4\n", myCallExt.c_str());
 		return false;
 	}
 
 	if (yourCall.size() != 8) {
-		printf("CIRCDDBClient::sendHeard:yourCall='%s' len != 8\n", yourCall.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXMsg:yourCall='%s' len != 8\n", yourCall.c_str());
 		return false;
 	}
 
 	if (rpt1.size() != 8) {
-		printf("CIRCDDBClient::sendHeard:rpt1='%s' len != 8\n", rpt1.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXMsg:rpt1='%s' len != 8\n", rpt1.c_str());
 		return false;
 	}
 
 	if (rpt2.size() != 8) {
-		printf("CIRCDDBClient::sendHeard:rpt2='%s' len != 8\n", rpt2.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXMsg:rpt2='%s' len != 8\n", rpt2.c_str());
 		return false;
 	}
 
@@ -151,7 +151,7 @@ bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::str
 		dest = std::string("        ");
 
 	if (8 != dest.size()) {
-		printf("CIRCDDBClient::sendHeard:network_destination='%s' len != 8\n", dest.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXMsg:network_destination='%s' len != 8\n", dest.c_str());
 		return false;
 	}
 
@@ -174,42 +174,42 @@ bool CIRCDDBClient::sendHeardWithTXStats( const std::string& myCall, const std::
 	const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors)
 {
 	if ((num_dv_frames <= 0) || (num_dv_frames > 65535)) {
-		printf("CIRCDDBClient::sendHeard:num_dv_frames=%d not in range 1-65535\n", num_dv_frames);
+		printf("CIRCDDBClient::sendHeardWithTXStats:num_dv_frames=%d not in range 1-65535\n", num_dv_frames);
 		return false;
 	}
 	
 	if (num_dv_silent_frames > num_dv_frames) {
-		printf("CIRCDDBClient::sendHeard:num_dv_silent_frames=%d > num_dv_frames=%d\n", num_dv_silent_frames, num_dv_frames);
+		printf("CIRCDDBClient::sendHeardWithTXStats:num_dv_silent_frames=%d > num_dv_frames=%d\n", num_dv_silent_frames, num_dv_frames);
 		return false;
 	}
 	
 	if (num_bit_errors > (4*num_dv_frames)) { // max 4 bit errors per frame
-		printf("CIRCDDBClient::sendHeard:num_bit_errors > (4*num_dv_frames), %d > 4*%d\n", num_bit_errors, num_dv_frames);
+		printf("CIRCDDBClient::sendHeardWithTXStats:num_bit_errors > (4*num_dv_frames), %d > 4*%d\n", num_bit_errors, num_dv_frames);
 		return false;
 	}
 	
 	if (myCall.size() != 8) {
-		printf("CIRCDDBClient::sendHeard:myCall='%s' len != 8\n", myCall.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXStats:myCall='%s' len != 8\n", myCall.c_str());
 		return false;
 	}
 	
 	if (myCallExt.size() != 4) {
-		printf("CIRCDDBClient::sendHeard:myCallExt='%s' len != 4\n", myCallExt.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXStats:myCallExt='%s' len != 4\n", myCallExt.c_str());
 		return false;
 	}
 	
 	if (yourCall.size() != 8) {
-		printf("CIRCDDBClient::sendHeard:yourCall='%s' len != 8\n", yourCall.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXStats:yourCall='%s' len != 8\n", yourCall.c_str());
 		return false;
 	}
 	
 	if (rpt1.size() != 8) {
-		printf("CIRCDDBClient::sendHeard:rpt1='%s' len != 8\n", rpt1.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXStats:rpt1='%s' len != 8\n", rpt1.c_str());
 		return false;
 	}
 	
 	if (rpt2.size() != 8) {
-		printf("CIRCDDBClient::sendHeard:rpt2='%s' len != 8\n", rpt2.c_str());
+		printf("CIRCDDBClient::sendHeardWithTXStats:rpt2='%s' len != 8\n", rpt2.c_str());
 		return false;
 	}
 
