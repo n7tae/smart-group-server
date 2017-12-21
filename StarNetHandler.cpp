@@ -893,6 +893,12 @@ void CStarNetHandler::clockInt(unsigned int ms)
 				parms.push_back(std::string("FAILED"));
 				break;
 		}
+		parms.push_back(std::to_string(m_userTimeout));
+		std::string info(m_infoText);
+		info.resize(20, '_');
+		CUtils::ReplaceChar(info, ' ', '_');
+		parms.push_back(info);
+		
 		m_irc->sendSGSInfo(subcommand, parms);
 		m_oldlinkStatus = m_linkStatus;
 #else
@@ -903,6 +909,12 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		parms.push_back(callsign);
 		parms.push_back("________");	// this is the reflector
 		parms.push_back("UNLINKED");	// this is the status
+		parms.push_back(std::to_string(m_userTimeout);
+		std::string info(m_infoText);
+		info.resize(20, ' ');
+		CUtils::ReplaceChar(callsign, ' ', '_');
+		parms.push_back(info);
+		
 		m_irc->sendSGSInfo(subcommand, parms);
 #endif
 	}
