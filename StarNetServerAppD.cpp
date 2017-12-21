@@ -38,7 +38,13 @@ int main(int argc, char *argv[])
 	}
 	
 	if ('-' == argv[1][0]) {
-		printf("Smart Group Server Version %s by %s\n", VERSION.c_str(), VENDOR_NAME.c_str());
+#if defined(DEXTRA_LINK)
+		printf("\nSmart Group Server\nVersion %s\nBy %s\nWith DExtra Linking\n\n", VERSION.c_str(), VENDOR_NAME.c_str());
+#elif defined(DCS_LINK)
+		printf("\nSmart Group Server\nVersion %s\nBy %s\nWITH DCS Linking\n\n", VERSION.c_str(), VENDOR_NAME.c_str());
+#else
+		printf("\nSmart Group Server\nVersion %s\nBy %s\nWithout Linking\n\n", VERSION.c_str(), VENDOR_NAME.c_str());
+#endif
 		return 0;
 	}
 	
