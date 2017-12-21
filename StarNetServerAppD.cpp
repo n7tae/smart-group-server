@@ -33,8 +33,15 @@ int main(int argc, char *argv[])
 	setbuf(stdout, NULL);
 	if (2 != argc) {
 		printf("usage: %s path_to_config_file\n", argv[0]);
-		exit(1);
+		printf("       %s --version\n", argv[0]);
+		return 1;
 	}
+	
+	if ('-' == argv[1][0]) {
+		printf("Smart Group Server Version %s by %s\n", VERSION.c_str(), VENDOR_NAME.c_str());
+		return 0;
+	}
+	
 	std::string cfgFile(argv[1]);
 
 	CStarNetServerAppD gateway(cfgFile);
