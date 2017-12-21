@@ -22,7 +22,7 @@ Also the Smart Group Server needs to have a unique callsign in QuadNet. Ideally,
 
 These instructions are for a Debian-based OS. Begin by downloading this git repository:
 ```
-git clone git:/github.com/n7tae/smart-group-server.git
+git clone git://github.com/n7tae/smart-group-server.git
 ```
 Install the only needed development library:
 ```
