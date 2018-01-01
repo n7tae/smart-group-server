@@ -582,7 +582,10 @@ void CStarNetServerThread::loadReflectors(const std::string fname)
 		hostfile.getline(line, 256);
 	}
 
-
+#if defined(DEXTRA_LINK)
 	printf("Loaded %u of %u DExtra reflectors\n", count, tries);
+#else
+	printf("Loaded %u of %u DCS reflectors\n", count, tries);
+#endif
 }
 #endif
