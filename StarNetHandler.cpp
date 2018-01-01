@@ -861,10 +861,10 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		if (m_offCallsign.size() && m_offCallsign.compare("        "))
 			m_irc->sendHeardWithTXMsg(m_offCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
 		m_announceTimer.start(60U * 60U);		// 1 hour
-	}
-	
-	if (m_oldlinkStatus!=m_linkStatus && 7==m_irc->getConnectionState()) {
+		
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
+	}
+	if (m_oldlinkStatus!=m_linkStatus && 7==m_irc->getConnectionState()) {
 		std::string subcommand("REFLECTOR");
 		std::vector<std::string> parms;
 		std::string callsign(m_groupCallsign);
@@ -909,16 +909,15 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		parms.push_back(callsign);
 		parms.push_back("________");	// this is the reflector
 		parms.push_back("UNLINKED");	// this is the status
-		parms.push_back(std::to_string(m_userTimeout);
+		parms.push_back(std::to_string(m_userTimeout));
 		std::string info(m_infoText);
 		info.resize(20, ' ');
 		CUtils::ReplaceChar(callsign, ' ', '_');
 		parms.push_back(info);
-		
 		m_irc->sendSGSInfo(subcommand, parms);
 #endif
 	}
-
+	
 	// For each incoming id
 	for (std::map<unsigned int, CStarNetId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it) {
 		CStarNetId* tx = it->second;
