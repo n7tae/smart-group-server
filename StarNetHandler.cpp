@@ -863,7 +863,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		m_announceTimer.start(60U * 60U);		// 1 hour
 	}
 	
-	if (m_oldlinkStatus != m_linkStatus) {
+	if (m_oldlinkStatus!=m_linkStatus && 7==m_irc->getConnectionState()) {
 #if defined(DEXTRA_LINK) || defined(DCS_LINK)
 		std::string subcommand("REFLECTOR");
 		std::vector<std::string> parms;
