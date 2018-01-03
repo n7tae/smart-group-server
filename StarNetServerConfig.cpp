@@ -190,6 +190,15 @@ unsigned int CStarNetServerConfig::getModCount()
 	return m_module.size();
 }
 
+unsigned int CStarNetServerConfig::getLinkCount(const char *type)
+{
+	unsigned int count = 0;
+	for (unsigned int i=0; i<getModCount(); i++)
+		if (0 == m_module[i]->reflector.compare(0, 3, type))
+			count++;
+	return count;
+}
+
 bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value)
 {
 	if (cfg.lookupValue(path, value)) {
@@ -233,11 +242,7 @@ void CStarNetServerConfig::getIrcDDB(std::string& hostname, std::string& usernam
 	password = m_ircddbPassword;
 }
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
-#else
-void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch) const
-#endif
 {
 	band           = m_module[mod]->band;
 	callsign       = m_module[mod]->callsign;
@@ -247,10 +252,7 @@ void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::
 	userTimeout    = m_module[mod]->usertimeout;
 	callsignSwitch = m_module[mod]->callsignswitch;
 	txMsgSwitch    = m_module[mod]->txmsgswitch;
-
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	reflector      = m_module[mod]->reflector;
-#endif
 }
 
 void CStarNetServerConfig::getRemote(bool& enabled, std::string& password, unsigned int& port) const

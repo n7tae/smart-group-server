@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2015 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,21 +32,14 @@
 
 class CStarNetServerThread {
 public:
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
-	CStarNetServerThread(unsigned int count);
-#else
-	CStarNetServerThread();
-#endif
+	CStarNetServerThread(unsigned int countDExtra, unsigned int countDCS);
 	virtual ~CStarNetServerThread();
 
 	virtual void setCallsign(const std::string& callsign);
 	virtual void setAddress(const std::string& address);
 	
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
-	virtual void addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
-#else
-	virtual void addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch);
-#endif
+	virtual void addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent,
+							unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
 
 	virtual void setRemote(bool enabled, const std::string& password, unsigned int port);
 	virtual void setIRC(CIRCDDB* irc);
@@ -62,16 +55,11 @@ private:
 	std::string	m_callsign;
 	std::string	m_address;
 	
-#if defined(DEXTRA_LINK)
-	CDExtraProtocolHandlerPool*	m_dextraPool;
-#endif
+	CDExtraProtocolHandlerPool *m_dextraPool;
+	CDCSProtocolHandlerPool    *m_dcsPool;
 
-#if defined(DCS_LINK)
-	CDCSProtocolHandlerPool*	m_dcsPool;
-#endif
-
-	CG2ProtocolHandler*	m_g2Handler;
-	CIRCDDB*			m_irc;
+	CG2ProtocolHandler *m_g2Handler;
+	CIRCDDB            *m_irc;
 	CCacheManager 		m_cache;
 	bool				m_logEnabled;
 	CTimer				m_statusTimer;
@@ -79,20 +67,16 @@ private:
 	bool				m_remoteEnabled;
 	std::string			m_remotePassword;
 	unsigned int		m_remotePort;
-	CRemoteHandler*		m_remote;
+	CRemoteHandler     *m_remote;
 
 	void processIrcDDB();
 	void processG2();
-	void loadReflectors(const std::string fname);
+	void loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarProtocol);
 	
-#if defined(DEXTRA_LINK)
 	void processDExtra();
-	unsigned int m_count;
-#endif
-
-#if defined(DCS_LINK)
+	unsigned int m_countDExtra;
 	void processDCS();
-	unsigned int m_count;
-#endif
+	unsigned int m_countDCS;
+	unsigned int m_countTotal;
 };
 

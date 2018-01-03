@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010,2011,2012,2014 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early
+ *   Copyright (c) 2017,2017 by Thomas A. Early
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -45,15 +45,12 @@ public:
 
 	void getIrcDDB(std::string &hostname, std::string &username, std::string &password) const;
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, std::string &reflector) const;
-#else
-	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch) const;
-#endif
 
 	void getRemote(bool &enabled, std::string &password, unsigned int &port) const;
 
 	unsigned int getModCount();
+	unsigned int getLinkCount(const char *type);
 
 private:
 	bool get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value);

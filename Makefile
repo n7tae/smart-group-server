@@ -4,15 +4,10 @@
 BINDIR=/usr/local/bin
 CFGDIR=/usr/local/etc
 
-# choose one of the three lines below depending on what linking you want.
-#CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
-#CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDCS_LINK
+# choose this if you want debugging help
 #CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
-
-# or, you can choose one of these lines if you want a much smaller program, without debugging help
-CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDEXTRA_LINK
-#CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\" -DDCS_LINK
-#CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
+# or, you can choose this for a much smaller executable without debugging help
+CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)

@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2013,2015 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -39,24 +39,13 @@
 
 const unsigned int REMOTE_DUMMY_PORT = 65015U;
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
-CStarNetServerThread::CStarNetServerThread(unsigned int count) :
-#else
-CStarNetServerThread::CStarNetServerThread() :
-#endif
+CStarNetServerThread::CStarNetServerThread(unsigned int countDExtra, unsigned int countDCS) :
 m_killed(false),
 m_stopped(true),
 m_callsign(),
 m_address(),
-
-#if defined(DEXTRA_LINK)
 m_dextraPool(NULL),
-#endif
-
-#if defined(DCS_LINK)
 m_dcsPool(NULL),
-#endif
-
 m_g2Handler(NULL),
 m_irc(NULL),
 m_cache(),
@@ -68,20 +57,13 @@ m_remotePassword(),
 m_remotePort(0U),
 m_remote(NULL)
 {
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
-	m_count = count;
-#endif
 	CHeaderData::initialise();
 	CG2Handler::initialise(0);
 	CStarNetHandler::initialise();
-	
-#if defined(DEXTRA_LINK)
-	CDExtraHandler::initialise(count);
-#endif
-
-#if defined(DCS_LINK)
-	CDCSHandler::initialise(count);
-#endif
+	if (countDExtra)
+		CDExtraHandler::initialise(countDExtra);
+	if (countDCS)
+		CDCSHandler::initialise(countDCS);
 	printf("StarNetServerThread created\n");
 }
 
@@ -91,38 +73,37 @@ CStarNetServerThread::~CStarNetServerThread()
 	CG2Handler::finalise();
 	CStarNetHandler::finalise();
 	
-#if defined(DEXTRA_LINK)
-	CDExtraHandler::finalise();
-#endif
+	if (m_countDExtra)
+		CDExtraHandler::finalise();
 
-#if defined(DCS_LINK)
-	CDCSHandler::finalise();
-#endif
+	if (m_countDCS)
+		CDCSHandler::finalise();
+
 	printf("StarNetServerThread destroyed\n");
 }
 
 void CStarNetServerThread::run()
 {
 	bool ret;
-#if defined(DEXTRA_LINK)
-	m_dextraPool = new CDExtraProtocolHandlerPool(m_count, DEXTRA_PORT, m_address);
-	ret = m_dextraPool->open();
-	if (!ret) {
-		printf("Could not open the DExtra protocol pool\n");
-		delete m_dextraPool;
-		m_dextraPool = NULL;
+	if (m_countDExtra) {
+		m_dextraPool = new CDExtraProtocolHandlerPool(m_countDExtra, DEXTRA_PORT, m_address);
+		ret = m_dextraPool->open();
+		if (!ret) {
+			printf("Could not open the DExtra protocol pool\n");
+			delete m_dextraPool;
+			m_dextraPool = NULL;
+		}
 	}
-#endif
 
-#if defined(DCS_LINK)
-	m_dcsPool = new CDCSProtocolHandlerPool(m_count, DCS_PORT, m_address);
-	ret = m_dcsPool->open();
-	if (!ret) {
-		printf("Could not open the DCS protocol pool\n");
-		delete m_dcsPool;
-		m_dcsPool = NULL;
+	if (m_countDCS) {
+		m_dcsPool = new CDCSProtocolHandlerPool(m_countDCS, DCS_PORT, m_address);
+		ret = m_dcsPool->open();
+		if (!ret) {
+			printf("Could not open the DCS protocol pool\n");
+			delete m_dcsPool;
+			m_dcsPool = NULL;
+		}
 	}
-#endif
 
 	m_g2Handler = new CG2ProtocolHandler(G2_DV_PORT, m_address);
 	ret = m_g2Handler->open();
@@ -133,16 +114,16 @@ void CStarNetServerThread::run()
 	}
 
 	// Wait here until we have the essentials to run
-#if defined(DEXTRA_LINK)
-	while (!m_killed && (m_g2Handler == NULL || m_dextraPool == NULL || m_irc == NULL || 0==m_callsign.size()))
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-#elif defined(DCS_LINK)
-	while (!m_killed && (m_g2Handler == NULL || m_dcsPool == NULL || m_irc == NULL || 0==m_callsign.size()))
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-#else
 	while (!m_killed && (m_g2Handler == NULL || m_irc == NULL || 0==m_callsign.size()))
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-#endif
+	if (m_countDExtra) {
+		while (NULL == m_dextraPool)
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+	if (m_countDCS) {
+		while (NULL == m_dcsPool)
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
 
 	if (m_killed)
 		return;
@@ -151,33 +132,30 @@ void CStarNetServerThread::run()
 
 	printf("Starting the StarNet Server thread\n");
 
-#if defined(DEXTRA_LINK)
-	loadReflectors(DEXTRA_HOSTS_FILE_NAME);
-#endif
+	if (m_countDExtra)
+		loadReflectors(DEXTRA_HOSTS_FILE_NAME, DP_DEXTRA);
 
-#if defined(DCS_LINK)
-	loadReflectors(DCS_HOSTS_FILE_NAME);
-#endif
+	if (m_countDCS)
+		loadReflectors(DCS_HOSTS_FILE_NAME, DP_DCS);
 
 	CG2Handler::setG2ProtocolHandler(m_g2Handler);
 
-#if defined(DEXTRA_LINK)
-	CDExtraHandler::setCallsign(m_callsign);
-	CDExtraHandler::setDExtraProtocolHandlerPool(m_dextraPool);
-#endif
-#if defined(DCS_LINK)
-	CDCSHandler::setDCSProtocolHandlerPool(m_dcsPool);
-//	CDCSHandler::setHeaderLogger(headerLogger);
-	CDCSHandler::setGatewayType(GT_STARNET);
-#endif
+	if (m_countDExtra) {
+		CDExtraHandler::setCallsign(m_callsign);
+		CDExtraHandler::setDExtraProtocolHandlerPool(m_dextraPool);
+	}
+	
+	if (m_countDCS) {
+		CDCSHandler::setDCSProtocolHandlerPool(m_dcsPool);
+		CDCSHandler::setGatewayType(GT_STARNET);
+	}
 
 	CStarNetHandler::setCache(&m_cache);
 	CStarNetHandler::setGateway(m_callsign);
 	CStarNetHandler::setG2Handler(m_g2Handler);
 	CStarNetHandler::setIRC(m_irc);
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
-	CStarNetHandler::link();
-#endif
+	if (m_countDExtra || m_countDCS)
+		CStarNetHandler::link();
 
 	if (m_remoteEnabled && m_remotePassword.size() && m_remotePort > 0U) {
 		m_remote = new CRemoteHandler(m_remotePassword, m_remotePort);
@@ -197,31 +175,27 @@ void CStarNetServerThread::run()
 		while (!m_killed) {
 			processIrcDDB();
 			processG2();
-#if defined(DEXTRA_LINK)
-			processDExtra();
-#endif
-#if defined(DCS_LINK)
-			processDCS();
-#endif
+			if (m_countDExtra)
+				processDExtra();
+			if (m_countDCS)
+				processDCS();
 			if (m_remote != NULL)
 				m_remote->process();
 
 			time_t now;
 			time(&now);
 			unsigned long ms = (unsigned long)(1000.0 * difftime(now, start));
-//printf("StarNetServerThread::run: ms=%u\n", ms);
 			time(&start);
 
 			m_statusTimer.clock(ms);
 
 			CG2Handler::clock(ms);
 			CStarNetHandler::clock(ms);
-#if defined(DEXTRA_LINK)
-			CDExtraHandler::clock(ms);
-#endif
-#if defined(DCS_LINK)
-			CDCSHandler::clock(ms);
-#endif
+			if (m_countDExtra)
+				CDExtraHandler::clock(ms);
+			if (m_countDCS)
+				CDCSHandler::clock(ms);
+
 			std::this_thread::sleep_for(std::chrono::milliseconds(TIME_PER_TIC_MS));
 		}
 	}
@@ -234,21 +208,19 @@ void CStarNetServerThread::run()
 
 	printf("Stopping the StarNet Server thread\n");
 
-#if defined(DEXTRA_LINK)
-	// Unlink from all reflectors
-	CDExtraHandler::unlink();
+	if (m_countDExtra) {
+		// Unlink from all reflectors
+		CDExtraHandler::unlink();
+		m_dextraPool->close();
+		delete m_dextraPool;
+	}
 
-	m_dextraPool->close();
-	delete m_dextraPool;
-#endif
-
-#if defined(DCS_LINK)
-	// Unlink from all reflectors
-	CDCSHandler::unlink();
-
-	m_dcsPool->close();
-	delete m_dcsPool;
-#endif
+	if (m_countDCS) {
+		// Unlink from all reflectors
+		CDCSHandler::unlink();
+		m_dcsPool->close();
+		delete m_dcsPool;
+	}
 
 	m_g2Handler->close();
 	delete m_g2Handler;
@@ -260,11 +232,6 @@ void CStarNetServerThread::run()
 		m_remote->close();
 		delete m_remote;
 	}
-
-//	if (headerLogger != NULL) {
-//		headerLogger->close();
-//		delete headerLogger;
-//	}
 }
 
 void CStarNetServerThread::kill()
@@ -285,17 +252,10 @@ void CStarNetServerThread::setAddress(const std::string& address)
 	m_address = address;
 }
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 void CStarNetServerThread::addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
 {
 	CStarNetHandler::add(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
 }
-#else
-void CStarNetServerThread::addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch)
-{
-	CStarNetHandler::add(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch);
-}
-#endif
 
 void CStarNetServerThread::setIRC(CIRCDDB* irc)
 {
@@ -391,12 +351,11 @@ void CStarNetServerThread::processIrcDDB()
 					if (!res)
 						break;
 
-#if defined(DEXTRA_LINK)
-					CDExtraHandler::gatewayUpdate(gateway, address);
-#endif
-#if defined(DCS_LINK)
-					CDCSHandler::gatewayUpdate(gateway, address);
-#endif
+					if (m_countDExtra)
+						CDExtraHandler::gatewayUpdate(gateway, address);
+
+					if (m_countDCS)
+						CDCSHandler::gatewayUpdate(gateway, address);
 
 					if (0 == address.size()) {
 						printf("GATEWAY: %s %s\n", gateway.c_str(), address.c_str());
@@ -410,7 +369,6 @@ void CStarNetServerThread::processIrcDDB()
 	}
 }
 
-#if defined(DEXTRA_LINK)
 void CStarNetServerThread::processDExtra()
 {
 	for (;;) {
@@ -459,9 +417,7 @@ void CStarNetServerThread::processDExtra()
 		}
 	}
 }
-#endif
 
-#if defined(DCS_LINK)
 void CStarNetServerThread::processDCS()
 {
 	for (;;) {
@@ -501,7 +457,6 @@ void CStarNetServerThread::processDCS()
 		}
 	}
 }
-#endif
 
 void CStarNetServerThread::processG2()
 {
@@ -534,8 +489,7 @@ void CStarNetServerThread::processG2()
 	}
 }
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
-void CStarNetServerThread::loadReflectors(const std::string fname)
+void CStarNetServerThread::loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarProtocol)
 {
 	std::string filepath(CFG_DIR);
 	filepath += std::string("/") + fname;
@@ -569,11 +523,7 @@ void CStarNetServerThread::loadReflectors(const std::string fname)
 					if (he) {
 						count++;
 						std::string address(inet_ntoa(*(struct in_addr*)(he->h_addr_list[0])));
-#if defined(DEXTRA_LINK)
-						m_cache.updateGateway(name, address, DP_DEXTRA, third?1:0, true);
-#else
-						m_cache.updateGateway(name, address, DP_DCS, third?1:0, true);
-#endif
+						m_cache.updateGateway(name, address, dstarProtocol, third?1:0, true);
 //						printf("reflector:%s, address:%s lock:%s\n", name.c_str(), address.c_str(), third?"true":"false");
 					}
 				}
@@ -582,10 +532,5 @@ void CStarNetServerThread::loadReflectors(const std::string fname)
 		hostfile.getline(line, 256);
 	}
 
-#if defined(DEXTRA_LINK)
-	printf("Loaded %u of %u DExtra reflectors\n", count, tries);
-#else
-	printf("Loaded %u of %u DCS reflectors\n", count, tries);
-#endif
+	printf("Loaded %u of %u %s reflectors\n", count, tries, DP_DEXTRA==dstarProtocol?"DExtra":"DCS");
 }
-#endif

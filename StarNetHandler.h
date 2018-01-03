@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011-2014 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -101,28 +101,15 @@ public:
 	IRepeaterCallback* m_local;
 };
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 class CStarNetHandler : public IReflectorCallback {
-#else
-class CStarNetHandler {
-#endif
 public:
 	static void initialise(const std::string& name = std::string(""));
-
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	static void add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
-#else
-	static void add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch);
-#endif
-
 	static void setG2Handler(CG2ProtocolHandler* handler);
 	static void setIRC(CIRCDDB* irc);
 	static void setCache(CCacheManager* cache);
 	static void setGateway(const std::string& gateway);
-
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	static void link();
-#endif
 
 	static std::list<std::string> listStarNets();
 
@@ -141,7 +128,6 @@ public:
 
 	bool logoff(const std::string& callsign);
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	virtual bool process(CHeaderData& header, DIRECTION direction, AUDIO_SOURCE source);
 	virtual bool process(CAMBEData& data, DIRECTION direction, AUDIO_SOURCE source);
 
@@ -150,20 +136,12 @@ public:
 	virtual bool linkFailed(DSTAR_PROTOCOL protocol, const std::string& callsign, bool isRecoverable);
 
 	virtual bool singleHeader();
-#endif
 
 protected:
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
-#else
-	CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch);
-#endif
 	virtual ~CStarNetHandler();
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	void linkInt();
-#endif
-
 	void clockInt(unsigned int ms);
 
 private:
@@ -183,20 +161,16 @@ private:
 	std::string    m_repeater;
 	std::string    m_infoText;
 	std::set<std::string>  m_permanent;
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	std::string    m_linkReflector;
 	std::string    m_linkGateway;
 	LINK_STATUS    m_linkStatus;
 	LINK_STATUS    m_oldlinkStatus;
 	CTimer         m_linkTimer;
-#endif
+	DSTAR_LINKTYPE m_linkType;
 
 	unsigned int   m_id;
-
 	CTimer         m_announceTimer;
-
 	unsigned int   m_userTimeout;
-
 	STARNET_CALLSIGN_SWITCH  m_callsignSwitch;
 	bool                     m_txMsgSwitch;
 

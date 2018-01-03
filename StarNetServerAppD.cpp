@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010,2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,13 +38,7 @@ int main(int argc, char *argv[])
 	}
 	
 	if ('-' == argv[1][0]) {
-#if defined(DEXTRA_LINK)
-		printf("\nSmart Group Server\nVersion %s\nBy %s\nWith DExtra Linking\n\n", VERSION.c_str(), VENDOR_NAME.c_str());
-#elif defined(DCS_LINK)
-		printf("\nSmart Group Server\nVersion %s\nBy %s\nWITH DCS Linking\n\n", VERSION.c_str(), VENDOR_NAME.c_str());
-#else
-		printf("\nSmart Group Server\nVersion %s\nBy %s\nWithout Linking\n\n", VERSION.c_str(), VENDOR_NAME.c_str());
-#endif
+		printf("\nSmart Group Server\nVersion %s\nBy %s\n\n", VERSION.c_str(), VENDOR_NAME.c_str());
 		return 0;
 	}
 	
@@ -84,11 +78,7 @@ void CStarNetServerAppD::run()
 bool CStarNetServerAppD::createThread()
 {
 	CStarNetServerConfig config(m_configFile);
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
-	m_thread = new CStarNetServerThread(config.getModCount());
-#else
-	m_thread = new CStarNetServerThread();
-#endif
+	m_thread = new CStarNetServerThread(config.getLinkCount("XRF"), config.getLinkCount("DCS"));
 
 	std::string CallSign, address;
 	config.getGateway(CallSign, address);
@@ -119,27 +109,16 @@ bool CStarNetServerAppD::createThread()
 		STARNET_CALLSIGN_SWITCH callsignswitch;
 		bool txmsgswitch;
 		
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 		config.getStarNet(i, band, callsign, logoff, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
-#else
-		config.getStarNet(i, band, callsign, logoff, info, permanent, usertimeout, callsignswitch, txmsgswitch);
-#endif
 
 		if (callsign.size() && isalnum(callsign[0])) {
 			std::string repeater(CallSign);
 			repeater.resize(7, ' ');
 			repeater.push_back(band[0]);
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
 			printf("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s\n",
 				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout,
 				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false", reflector.c_str());
-#else
-			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, callsignswitch, txmsgswitch);
-			printf("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, callsign switch: %s, tx msg switch: %s\n",
-				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout,
-				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false");
-#endif
 		}
 	}
 

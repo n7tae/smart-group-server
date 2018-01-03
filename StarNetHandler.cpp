@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011-2014 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -177,7 +177,6 @@ void CStarNetHandler::initialise(const std::string& name)
 	m_name = name;
 }
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 void CStarNetHandler::add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
 {
 	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
@@ -187,17 +186,6 @@ void CStarNetHandler::add(const std::string& callsign, const std::string& logoff
 	else
 		printf("Cannot allocate StarNet group with callsign %s\n", callsign.c_str());
 }
-#else
-void CStarNetHandler::add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch)
-{
-	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch);
-
-	if (starNet)
-		m_starNets.push_back(starNet);
-	else
-		printf("Cannot allocate StarNet group with callsign %s\n", callsign.c_str());
-}
-#endif
 
 void CStarNetHandler::setG2Handler(CG2ProtocolHandler* handler)
 {
@@ -294,15 +282,12 @@ void CStarNetHandler::clock(unsigned int ms)
 		(*it)->clockInt(ms);
 }
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 void CStarNetHandler::link()
 {
 	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++)
 		(*it)->linkInt();
 }
-#endif
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 CStarNetHandler::CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
@@ -323,25 +308,14 @@ m_txMsgSwitch(txMsgSwitch),
 m_ids(),
 m_users(),
 m_repeaters()
-#else
-CStarNetHandler::CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch) :
-m_groupCallsign(callsign),
-m_offCallsign(logoff),
-m_shortCallsign("SNET"),
-m_repeater(repeater),
-m_infoText(infoText),
-m_permanent(),
-m_id(0x00U),
-m_announceTimer(1000U, 2U * 60U),		// 2 minutes
-m_userTimeout(userTimeout),
-m_callsignSwitch(callsignSwitch),
-m_txMsgSwitch(txMsgSwitch),
-m_ids(),
-m_users(),
-m_repeaters()
-#endif
 {
 	m_announceTimer.start();
+
+	// set link type
+	if (m_linkReflector.size())
+		m_linkType = (0 == m_linkReflector.compare(0, 3, "XRF")) ? LT_DEXTRA : LT_DCS;
+	else
+		m_linkType = LT_NONE;
 
 	// Create the short version of the STARnet Group callsign
 	if (0 == m_groupCallsign.compare(0, 3, "STN")) {
@@ -461,18 +435,17 @@ void CStarNetHandler::process(CHeaderData &header)
 	header.setFlag2(0x00);
 	header.setFlag3(0x00);
 
-#if defined(DEXTRA_LINK)
-	if (!islogin) {
-		header.setRepeaters(m_linkGateway, m_linkReflector);
-		CDExtraHandler::writeHeader(this, header, DIR_OUTGOING);
+	if (LT_DEXTRA == m_linkType) {
+		if (!islogin) {
+			header.setRepeaters(m_linkGateway, m_linkReflector);
+			CDExtraHandler::writeHeader(this, header, DIR_OUTGOING);
+		}
+	} else if (LT_DCS == m_linkType) {
+		if (!islogin) {
+			header.setRepeaters(m_linkGateway, m_linkReflector);
+			CDCSHandler::writeHeader(this, header, DIR_OUTGOING);
+		}
 	}
-#endif
-#if defined(DCS_LINK)
-	if (!islogin) {
-		header.setRepeaters(m_linkGateway, m_linkReflector);
-		CDCSHandler::writeHeader(this, header, DIR_OUTGOING);
-	}
-#endif
 
 	// Get the home repeater of the user
 	std::string exclude;
@@ -587,12 +560,10 @@ void CStarNetHandler::process(CAMBEData &data)
 	}
 
 	if (id == m_id && !tx->isLogin()) {
-#if defined(DEXTRA_LINK)
-		CDExtraHandler::writeAMBE(this, data, DIR_OUTGOING);
-#endif
-#if defined(DCS_LINK)
-		CDCSHandler::writeAMBE(this, data, DIR_OUTGOING);
-#endif
+		if (LT_DEXTRA == m_linkType)
+			CDExtraHandler::writeAMBE(this, data, DIR_OUTGOING);
+		else if (LT_DCS == m_linkType)
+			CDCSHandler::writeAMBE(this, data, DIR_OUTGOING);
 		sendToRepeaters(data);
 	}
 
@@ -691,7 +662,6 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 	}
 }
 
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 bool CStarNetHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 {
 	if (m_id != 0x00U)
@@ -791,15 +761,13 @@ bool CStarNetHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
 
 	return true;
 }
-#endif
 
-#if defined(DEXTRA_LINK)
 void CStarNetHandler::linkInt()
 {
-	if (0 == m_linkReflector.size())
+	if (LT_NONE == m_linkType)
 		return;
 
-	printf("Linking %s at startup to DExtra reflector %s\n", m_repeater.c_str(), m_linkReflector.c_str());
+	printf("Linking %s at startup to %s reflector %s\n", m_repeater.c_str(), (LT_DEXTRA==m_linkType)?"DExtra":"DCS", m_linkReflector.c_str());
 
 	// Find the repeater to link to
 	CRepeaterData* data = m_cache->findRepeater(m_linkReflector);
@@ -809,41 +777,23 @@ void CStarNetHandler::linkInt()
 	}
 
 	m_linkGateway = data->getGateway();
-	m_linkStatus  = LS_LINKING_DEXTRA;
-
-	CDExtraHandler::link(this, m_repeater, m_linkReflector, data->getAddress());
-
-	delete data;
-}
-#endif
-
-#if defined(DCS_LINK)
-void CStarNetHandler::linkInt()
-{
-	if (0 == m_linkReflector.size())
-		return;
-
-	printf("Linking %s at startup to DCS reflector %s\n", m_repeater.c_str(), m_linkReflector.c_str());
-
-	// Find the repeater to link to
-	CRepeaterData* data = m_cache->findRepeater(m_linkReflector);
-	if (data == NULL) {
-		printf("Cannot find the reflector in the cache, not linking\n");
-		return;
+	switch (m_linkType) {
+		case LT_DEXTRA:
+			m_linkStatus  = LS_LINKING_DEXTRA;
+			CDExtraHandler::link(this, m_repeater, m_linkReflector, data->getAddress());
+			break;
+		case LT_DCS:
+			m_linkStatus  = LS_LINKING_DCS;
+			CDCSHandler::link(this, m_repeater, m_linkReflector, data->getAddress());
+			break;
+		case LT_NONE:
+			break;
 	}
-
-	m_linkGateway = data->getGateway();
-	m_linkStatus  = LS_LINKING_DCS;
-
-	CDCSHandler::link(this, m_repeater, m_linkReflector, data->getAddress());
-
 	delete data;
 }
-#endif
 
 void CStarNetHandler::clockInt(unsigned int ms)
 {
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	m_linkTimer.clock(ms);
 	if (m_linkTimer.isRunning() && m_linkTimer.hasExpired()) {
 		m_linkTimer.stop();
@@ -854,7 +804,6 @@ void CStarNetHandler::clockInt(unsigned int ms)
 			delete it->second;
 		m_repeaters.clear();
 	}
-#endif
 	m_announceTimer.clock(ms);
 	if (m_announceTimer.hasExpired()) {
 		m_irc->sendHeardWithTXMsg(m_groupCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
@@ -862,7 +811,6 @@ void CStarNetHandler::clockInt(unsigned int ms)
 			m_irc->sendHeardWithTXMsg(m_offCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
 		m_announceTimer.start(60U * 60U);		// 1 hour
 		
-#if defined(DEXTRA_LINK) || defined(DCS_LINK)
 	}
 	if (m_oldlinkStatus!=m_linkStatus && 7==m_irc->getConnectionState()) {
 		std::string subcommand("REFLECTOR");
@@ -901,21 +849,6 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		
 		m_irc->sendSGSInfo(subcommand, parms);
 		m_oldlinkStatus = m_linkStatus;
-#else
-		std::string subcommand("REFLECTOR");
-		std::vector<std::string> parms;
-		std::string callsign(m_groupCallsign);
-		CUtils::ReplaceChar(callsign, ' ',  '_');
-		parms.push_back(callsign);
-		parms.push_back("________");	// this is the reflector
-		parms.push_back("UNLINKED");	// this is the status
-		parms.push_back(std::to_string(m_userTimeout));
-		std::string info(m_infoText);
-		info.resize(20, ' ');
-		CUtils::ReplaceChar(callsign, ' ', '_');
-		parms.push_back(info);
-		m_irc->sendSGSInfo(subcommand, parms);
-#endif
 	}
 	
 	// For each incoming id
@@ -1133,10 +1066,9 @@ void CStarNetHandler::sendAck(const CUserData& user, const std::string& text) co
 	}
 }
 
-#if defined(DEXTRA_LINK)
 void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string& callsign)
 {
-	printf("DExtra link to %s established\n", callsign.c_str());
+	printf("%s link to %s established\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());
 
 	m_linkStatus = LS_LINKED_DEXTRA;
 }
@@ -1145,7 +1077,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 {
 	if (!isRecoverable) {
 		if (m_linkStatus != LS_NONE) {
-			printf("DExtra link to %s has failed\n", callsign.c_str());
+			printf("%s link to %s has failed\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());
 			m_linkStatus = LS_NONE;
 		}
 
@@ -1153,7 +1085,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 	}
 
 	if (m_linkStatus == LS_LINKING_DEXTRA || m_linkStatus == LS_LINKED_DEXTRA) {
-		printf("DExtra link to %s has failed, relinking\n", callsign.c_str());
+		printf("%s link to %s has failed, relinking\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());
 		m_linkStatus = LS_LINKING_DEXTRA;
 		return true;
 	}
@@ -1164,7 +1096,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string& callsign)
 {
 	if (m_linkStatus != LS_NONE) {
-		printf("DExtra link to %s was refused\n", callsign.c_str());
+		printf("%s link to %s was refused\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());
 		m_linkStatus = LS_NONE;
 	}
 }
@@ -1173,46 +1105,3 @@ bool CStarNetHandler::singleHeader()
 {
 	return true;
 }
-#endif
-
-#if defined(DCS_LINK)
-void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string& callsign)
-{
-	printf("DCS link to %s established\n", callsign.c_str());
-
-	m_linkStatus = LS_LINKED_DCS;
-}
-
-void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string& callsign)
-{
-	if (m_linkStatus != LS_NONE) {
-		printf("DCS link to %s was refused\n", callsign.c_str());
-		m_linkStatus = LS_NONE;
-	}
-}
-
-bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bool isRecoverable)
-{
-	if (!isRecoverable) {
-		if (m_linkStatus != LS_NONE) {
-			printf("DCS link to %s has failed\n", callsign.c_str());
-			m_linkStatus = LS_NONE;
-		}
-
-		return false;
-	}
-
-	if (m_linkStatus == LS_LINKING_DCS || m_linkStatus == LS_LINKED_DCS) {
-		printf("DCS link to %s has failed, relinking\n", callsign.c_str());
-		m_linkStatus = LS_LINKING_DCS;
-		return true;
-	}
-
-	return false;
-}
-
-bool CStarNetHandler::singleHeader()
-{
-	return true;
-}
-#endif
