@@ -48,8 +48,8 @@ public:
 	virtual void kill();
 
 private:
-	bool		m_nolog;
-	std::string	m_logDir;
+	unsigned int m_countDExtra;
+	unsigned int m_countDCS;
 	bool		m_killed;
 	bool		m_stopped;
 	std::string	m_callsign;
@@ -74,9 +74,6 @@ private:
 	void loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarProtocol);
 	
 	void processDExtra();
-	unsigned int m_countDExtra;
 	void processDCS();
-	unsigned int m_countDCS;
-	unsigned int m_countTotal;
 };
 

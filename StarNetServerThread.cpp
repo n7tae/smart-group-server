@@ -40,6 +40,8 @@
 const unsigned int REMOTE_DUMMY_PORT = 65015U;
 
 CStarNetServerThread::CStarNetServerThread(unsigned int countDExtra, unsigned int countDCS) :
+m_countDExtra(countDExtra),
+m_countDCS(countDCS),
 m_killed(false),
 m_stopped(true),
 m_callsign(),
