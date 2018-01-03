@@ -2,7 +2,17 @@ smart-group-server
 ==================
 ## Introduction
 
-This smart-group-server is based on Jonathan G4KLX's StarNetServer. It was designed expressly for QuadNet. The smart-group-server interact with QuadNet using IRC messages to provide additional information that will typically be display on the QuadNet web page at openquad.net. The smart-group-server may not function proplerly on other IRCDDB networks.
+This smart-group-server is based on Jonathan G4KLX's StarNetServer. It was designed expressly for QuadNet. The smart-group-server interact with QuadNet using IRC messages to provide additional information that will typically be display on the STARNET GROUPS web page at openquad.net. The smart-group-server may not function proplerly on other IRCDDB networks.
+
+### What's New
+
+* **V# 180103** The smart-group-server now supports linking both DExtra and DCS reflectors to different channels *in the same server instance*. The compile time switches for DEXTRA_LINK and DCS_LINK are gone. If you need an unlinked channel, don't define a *reflector* parameter in the configuration.
+
+* **V# 180101** There is no hard limit on how many channels you can have running on a single smart-group-server. There is a practical limit. For instance, you could run out of ports for DExtra or DCS linking. There is also a performance limit when there are so many channels, servicing a single time slice takes longer than a D-Star frame. I don't know when this will happen. Resource allocation is much more efficient. DExtra and DCS resource are only allocated for the channels defined in the configuration file.
+
+* **Original Version** The underlying IRCDDB version has been upgraded to 2.0.0 and supports new IRC Messages that the smart-group-server uses to communicate the channel states to the Quadnet Servers.
+
+## Server OS Requirements
 
 The smart-group-server requires a modern OS to compile and run. At least Debian 8 or Ubuntu 16.10, or equivilent. The command
 ```
