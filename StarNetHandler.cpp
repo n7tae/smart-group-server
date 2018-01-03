@@ -291,7 +291,7 @@ void CStarNetHandler::link()
 CStarNetHandler::CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
-m_shortCallsign("SNET"),
+m_shortCallsign("SMRT"),
 m_repeater(repeater),
 m_infoText(infoText),
 m_permanent(),
@@ -317,8 +317,8 @@ m_repeaters()
 	else
 		m_linkType = LT_NONE;
 
-	// Create the short version of the STARnet Group callsign
-	if (0 == m_groupCallsign.compare(0, 3, "STN")) {
+	// Create the short version of the Smart Group callsign
+	if (0 == m_groupCallsign.compare(0, 3, "SGS")) {
 		if (' ' == m_groupCallsign[7])
 			m_shortCallsign = std::string("S") + m_groupCallsign.substr(3, 3);
 		else
@@ -487,12 +487,10 @@ void CStarNetHandler::process(CHeaderData &header)
 
 	switch (m_callsignSwitch) {
 		case SCS_GROUP_CALLSIGN:
-			// Change the My Callsign 1 to be that of the StarNet group
 			header.setMyCall1(m_groupCallsign);
-			header.setMyCall2("SNET");
+			header.setMyCall2("SMRT");
 			break;
 		case SCS_USER_CALLSIGN:
-			// Change the My Callsign 2 to be that of the StarNet group
 			header.setMyCall1(my);
 			header.setMyCall2(m_shortCallsign);
 			break;
@@ -708,12 +706,10 @@ bool CStarNetHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 
 	switch (m_callsignSwitch) {
 		case SCS_GROUP_CALLSIGN:
-			// Change the My Callsign 1 to be that of the StarNet group
 			header.setMyCall1(m_groupCallsign);
-			header.setMyCall2("SNET");
+			header.setMyCall2("SMRT");
 			break;
 		case SCS_USER_CALLSIGN:
-			// Change the My Callsign 2 to be that of the StarNet group
 			header.setMyCall1(my);
 			header.setMyCall2(m_shortCallsign);
 			break;
