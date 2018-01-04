@@ -79,7 +79,7 @@ CTimer CStarNetUser::getTimer() const
 	return m_timer;
 }
 
-CStarNetId::CStarNetId(unsigned int id, unsigned int timeout, CStarNetUser* user) :
+CStarNetId::CStarNetId(unsigned int id, unsigned int timeout, CStarNetUser *user) :
 m_id(id),
 m_timer(1000U, timeout),
 m_login(false),
@@ -177,7 +177,8 @@ void CStarNetHandler::initialise(const std::string& name)
 	m_name = name;
 }
 
-void CStarNetHandler::add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
+void CStarNetHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
+														unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector)
 {
 	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
 
@@ -187,33 +188,33 @@ void CStarNetHandler::add(const std::string& callsign, const std::string& logoff
 		printf("Cannot allocate StarNet group with callsign %s\n", callsign.c_str());
 }
 
-void CStarNetHandler::setG2Handler(CG2ProtocolHandler* handler)
+void CStarNetHandler::setG2Handler(CG2ProtocolHandler *handler)
 {
 	assert(handler != NULL);
 
 	m_g2Handler = handler;
 }
 
-void CStarNetHandler::setIRC(CIRCDDB* irc)
+void CStarNetHandler::setIRC(CIRCDDB *irc)
 {
 	assert(irc != NULL);
 
 	m_irc = irc;
 }
 
-void CStarNetHandler::setCache(CCacheManager* cache)
+void CStarNetHandler::setCache(CCacheManager *cache)
 {
 	assert(cache != NULL);
 
 	m_cache = cache;
 }
 
-void CStarNetHandler::setGateway(const std::string& gateway)
+void CStarNetHandler::setGateway(const std::string &gateway)
 {
 	m_gateway = gateway;
 }
 
-CStarNetHandler* CStarNetHandler::findStarNet(const std::string& callsign)
+CStarNetHandler *CStarNetHandler::findStarNet(const std::string &callsign)
 {
 	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++) {
 		if (0 == (*it)->m_groupCallsign.compare(callsign))
@@ -222,7 +223,7 @@ CStarNetHandler* CStarNetHandler::findStarNet(const std::string& callsign)
 	return NULL;
 }
 
-CStarNetHandler* CStarNetHandler::findStarNet(const CHeaderData& header)
+CStarNetHandler *CStarNetHandler::findStarNet(const CHeaderData &header)
 {
 	std::string your = header.getYourCall();
 
@@ -235,7 +236,7 @@ CStarNetHandler* CStarNetHandler::findStarNet(const CHeaderData& header)
 	return NULL;
 }
 
-CStarNetHandler* CStarNetHandler::findStarNet(const CAMBEData& data)
+CStarNetHandler *CStarNetHandler::findStarNet(const CAMBEData &data)
 {
 	unsigned int id = data.getId();
 
@@ -256,11 +257,11 @@ std::list<std::string> CStarNetHandler::listStarNets()
 	return starNets;
 }
 
-CRemoteStarNetGroup* CStarNetHandler::getInfo() const
+CRemoteStarNetGroup *CStarNetHandler::getInfo() const
 {
-	CRemoteStarNetGroup* data = new CRemoteStarNetGroup(m_groupCallsign, m_offCallsign);
+	CRemoteStarNetGroup *data = new CRemoteStarNetGroup(m_groupCallsign, m_offCallsign);
 
-	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
+	for (auto it=m_users.begin(); it!=m_users.end(); ++it) {
 		CStarNetUser* user = it->second;
 		data->addUser(user->getCallsign(), user->getTimer().getTimer(), user->getTimer().getTimeout());
 	}
@@ -288,7 +289,8 @@ void CStarNetHandler::link()
 		(*it)->linkInt();
 }
 
-CStarNetHandler::CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector) :
+CStarNetHandler::CStarNetHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
+																unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
 m_shortCallsign("SMRT"),
@@ -962,7 +964,7 @@ void CStarNetHandler::sendToRepeaters(CHeaderData& header) const
 	}
 }
 
-void CStarNetHandler::sendToRepeaters(CAMBEData& data) const
+void CStarNetHandler::sendToRepeaters(CAMBEData &data) const
 {
 	for (std::map<std::string, CStarNetRepeater *>::const_iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
 		CStarNetRepeater* repeater = it->second;
@@ -976,7 +978,7 @@ void CStarNetHandler::sendToRepeaters(CAMBEData& data) const
 	}
 }
 
-void CStarNetHandler::sendFromText(const std::string& my) const
+void CStarNetHandler::sendFromText(const std::string &my) const
 {
 	std::string text;
 	switch (m_callsignSwitch) {
@@ -1018,7 +1020,7 @@ void CStarNetHandler::sendFromText(const std::string& my) const
 	}
 }
 
-void CStarNetHandler::sendAck(const CUserData& user, const std::string& text) const
+void CStarNetHandler::sendAck(const CUserData &user, const std::string &text) const
 {
 	unsigned int id = CHeaderData::createId();
 
@@ -1062,14 +1064,14 @@ void CStarNetHandler::sendAck(const CUserData& user, const std::string& text) co
 	}
 }
 
-void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string& callsign)
+void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string &callsign)
 {
 	printf("%s link to %s established\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());
 
 	m_linkStatus = LS_LINKED_DEXTRA;
 }
 
-bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bool isRecoverable)
+bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string &callsign, bool isRecoverable)
 {
 	if (!isRecoverable) {
 		if (m_linkStatus != LS_NONE) {
@@ -1089,7 +1091,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string& callsign, bo
 	return false;
 }
 
-void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string& callsign)
+void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string &callsign)
 {
 	if (m_linkStatus != LS_NONE) {
 		printf("%s link to %s was refused\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());

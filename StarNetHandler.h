@@ -104,41 +104,43 @@ public:
 class CStarNetHandler : public IReflectorCallback {
 public:
 	static void initialise(const std::string& name = std::string(""));
-	static void add(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
-	static void setG2Handler(CG2ProtocolHandler* handler);
-	static void setIRC(CIRCDDB* irc);
-	static void setCache(CCacheManager* cache);
-	static void setGateway(const std::string& gateway);
+	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
+										unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string & eflector);
+	static void setG2Handler(CG2ProtocolHandler *handler);
+	static void setIRC(CIRCDDB *irc);
+	static void setCache(CCacheManager *cache);
+	static void setGateway(const std::string &gateway);
 	static void link();
 
 	static std::list<std::string> listStarNets();
 
-	static CStarNetHandler* findStarNet(const std::string& callsign);
-	static CStarNetHandler* findStarNet(const CHeaderData& header);
-	static CStarNetHandler* findStarNet(const CAMBEData& data);
+	static CStarNetHandler *findStarNet(const std::string &callsign);
+	static CStarNetHandler *findStarNet(const CHeaderData &header);
+	static CStarNetHandler *findStarNet(const CAMBEData &data);
 
 	static void finalise();
 
 	static void clock(unsigned int ms);
 
-	void process(CHeaderData& header);
-	void process(CAMBEData& data);
+	void process(CHeaderData &header);
+	void process(CAMBEData &data);
 
 	CRemoteStarNetGroup* getInfo() const;
 
 	bool logoff(const std::string& callsign);
 
-	virtual bool process(CHeaderData& header, DIRECTION direction, AUDIO_SOURCE source);
-	virtual bool process(CAMBEData& data, DIRECTION direction, AUDIO_SOURCE source);
+	virtual bool process(CHeaderData &header, DIRECTION direction, AUDIO_SOURCE source);
+	virtual bool process(CAMBEData &data, DIRECTION direction, AUDIO_SOURCE source);
 
-	virtual void linkUp(DSTAR_PROTOCOL protocol, const std::string& callsign);
-	virtual void linkRefused(DSTAR_PROTOCOL protocol, const std::string& callsign);
-	virtual bool linkFailed(DSTAR_PROTOCOL protocol, const std::string& callsign, bool isRecoverable);
+	virtual void linkUp(DSTAR_PROTOCOL protocol, const std::string &callsign);
+	virtual void linkRefused(DSTAR_PROTOCOL protocol, const std::string &callsign);
+	virtual bool linkFailed(DSTAR_PROTOCOL protocol, const std::string &callsign, bool isRecoverable);
 
 	virtual bool singleHeader();
 
 protected:
-	CStarNetHandler(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
+	CStarNetHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
+												unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector);
 	virtual ~CStarNetHandler();
 
 	void linkInt();
@@ -147,9 +149,9 @@ protected:
 private:
 	static std::list<CStarNetHandler *> m_starNets;
 
-	static CG2ProtocolHandler* m_g2Handler;
-	static CIRCDDB*            m_irc;
-	static CCacheManager*      m_cache;
+	static CG2ProtocolHandler *m_g2Handler;
+	static CIRCDDB            *m_irc;
+	static CCacheManager      *m_cache;
 	static std::string         m_gateway;
 
 	static std::string         m_name;
@@ -178,9 +180,9 @@ private:
 	std::map<std::string, CStarNetUser *>     m_users;
 	std::map<std::string, CStarNetRepeater *> m_repeaters;
 
-	void sendFromText(const std::string& text) const;
-	void sendToRepeaters(CHeaderData& header) const;
-	void sendToRepeaters(CAMBEData& data) const;
-	void sendAck(const CUserData& user, const std::string& text) const;
+	void sendFromText(const std::string &text) const;
+	void sendToRepeaters(CHeaderData &header) const;
+	void sendToRepeaters(CAMBEData &data) const;
+	void sendAck(const CUserData &user, const std::string &text) const;
 	void logoffUser(const std::string channel, const std::string user);
 };

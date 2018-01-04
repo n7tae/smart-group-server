@@ -10,7 +10,7 @@ This smart-group-server is based on Jonathan G4KLX's StarNetServer. It was desig
 
 * **V# 180101** There is no hard limit on how many channels you can have running on a single smart-group-server. There is a practical limit. For instance, you could run out of ports for DExtra or DCS linking. There is also a performance limit when there are so many channels, servicing a single time slice takes longer than a D-Star frame. I don't know when this will happen. Resource allocation is much more efficient. DExtra and DCS resource are only allocated for the channels defined in the configuration file.
 
-* **Original Version** The underlying IRCDDB version has been upgraded to 2.0.0 and supports new IRC Messages that the smart-group-server uses to communicate the channel states to the Quadnet Servers.
+* **Original Version** The underlying IRCDDB version has been upgraded to 2.0.0 and supports new IRC Messages that the smart-group-server uses to communicate the channel states to the Quadnet Servers. The dependancy on wxWidgets is gone!
 
 ## Server OS Requirements
 

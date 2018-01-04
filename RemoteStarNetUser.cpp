@@ -37,10 +37,10 @@ std::string CRemoteStarNetUser::getCallsign() const
 
 uint32_t CRemoteStarNetUser::getTimer() const
 {
-	return (uint32_t)m_timer;
+	return m_timer;
 }
 
 uint32_t CRemoteStarNetUser::getTimeout() const
 {
-	return (uint32_t)m_timeout;
+	return m_timeout;
 }
