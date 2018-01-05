@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ enum RPH_TYPE {
 
 class CRemoteProtocolHandler {
 public:
-	CRemoteProtocolHandler(unsigned int port, const std::string& address = std::string(""));
+	CRemoteProtocolHandler(unsigned int port, const std::string &address = std::string(""));
 	~CRemoteProtocolHandler();
 
 	bool open();
@@ -54,18 +54,18 @@ public:
 
 	std::string readRepeater();
 	std::string readStarNetGroup();
-	bool readHash(const std::string& password, uint32_t random);
-	bool readLink(std::string& callsign, RECONNECT& reconnect, std::string& reflector);
-	bool readUnlink(std::string& callsign, PROTOCOL& protocol, std::string& reflector);
-	bool readLinkScr(std::string& callsign, RECONNECT& reconnect, std::string& reflector);
-	bool readLogoff(std::string& callsign, std::string& user);
+	bool readHash(const std::string &password, uint32_t random);
+	bool readLink(std::string &callsign, RECONNECT &reconnect, std::string &reflector);
+	bool readUnlink(std::string &callsign, PROTOCOL &protocol, std::string &reflector);
+	bool readLinkScr(std::string &callsign, RECONNECT &reconnect, std::string &reflector);
+	bool readLogoff(std::string &callsign, std::string &user);
 
 	bool sendACK();
-	bool sendNAK(const std::string& text);
+	bool sendNAK(const std::string &text);
 	bool sendRandom(uint32_t random);
-	bool sendCallsigns(const std::list<std::string>& repeaters, const std::list<std::string>& starNets);
-	bool sendRepeater(const CRemoteRepeaterData& data);
-	bool sendStarNetGroup(const CRemoteStarNetGroup& data);
+	bool sendCallsigns(const std::list<std::string> &repeaters, const std::list<std::string> &starNets);
+	bool sendRepeater(const CRemoteRepeaterData &data);
+	bool sendStarNetGroup(const CRemoteStarNetGroup &data);
 
 	void setLoggedIn(bool set);
 
@@ -77,7 +77,7 @@ private:
 	unsigned int      m_port;
 	bool              m_loggedIn;
 	RPH_TYPE          m_type;
-	unsigned char*    m_inBuffer;
+	unsigned char    *m_inBuffer;
 	unsigned int      m_inLength;
-	unsigned char*    m_outBuffer;
+	unsigned char    *m_outBuffer;
 };

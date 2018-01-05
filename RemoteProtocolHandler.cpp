@@ -30,7 +30,7 @@
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
-CRemoteProtocolHandler::CRemoteProtocolHandler(unsigned int port, const std::string& address) :
+CRemoteProtocolHandler::CRemoteProtocolHandler(unsigned int port, const std::string &address) :
 m_socket(address, port),
 m_address(),
 m_port(0U),
@@ -159,16 +159,16 @@ RPH_TYPE CRemoteProtocolHandler::readType()
 	}
 }
 
-bool CRemoteProtocolHandler::readHash(const std::string& password, uint32_t random)
+bool CRemoteProtocolHandler::readHash(const std::string &password, uint32_t random)
 {
 	if (m_type != RPHT_HASH)
 		return false;
 
-	unsigned char* hash = m_inBuffer + 3U;
+	unsigned char *hash = m_inBuffer + 3U;
 
 	unsigned int len = password.size() + sizeof(uint32_t);
-	unsigned char*  in = new unsigned char[len];
-	unsigned char* out = new unsigned char[32U];
+	unsigned char *in = new unsigned char[len];
+	unsigned char *out = new unsigned char[32U];
 
 	memcpy(in, &random, sizeof(uint32_t));
 	for (unsigned int i = 0U; i < password.size(); i++)
@@ -190,7 +190,7 @@ std::string CRemoteProtocolHandler::readRepeater()
 	if (m_type != RPHT_REPEATER)
 		return std::string("");
 
-	std::string callsign((char*)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
+	std::string callsign((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
 
 	return callsign;
 }
@@ -200,35 +200,35 @@ std::string CRemoteProtocolHandler::readStarNetGroup()
 	if (m_type != RPHT_STARNET)
 		return std::string("");
 
-	std::string callsign((char*)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
+	std::string callsign((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
 
 	return callsign;
 }
 
-bool CRemoteProtocolHandler::readLogoff(std::string& callsign, std::string& user)
+bool CRemoteProtocolHandler::readLogoff(std::string &callsign, std::string &user)
 {
 	if (m_type != RPHT_LOGOFF)
 		return false;
 
-	callsign = std::string((char*)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
-	user = std::string((char*)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH), LONG_CALLSIGN_LENGTH);
+	callsign = std::string((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
+	user = std::string((char *)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH), LONG_CALLSIGN_LENGTH);
 
 	return true;
 }
 
 
-bool CRemoteProtocolHandler::readLink(std::string& callsign, RECONNECT& reconnect, std::string& reflector)
+bool CRemoteProtocolHandler::readLink(std::string &callsign, RECONNECT &reconnect, std::string &reflector)
 {
 	if (m_type != RPHT_LINK)
 		return false;
 
-	callsign = std::string((char*)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
+	callsign = std::string((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
 
 	uint32_t temp;
 	memcpy(&temp, m_inBuffer + 3U + LONG_CALLSIGN_LENGTH, sizeof(uint32_t));
 	reconnect = RECONNECT(wxINT32_SWAP_ON_BE(temp));
 
-	reflector = std::string((char*)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH + sizeof(uint32_t)), LONG_CALLSIGN_LENGTH);
+	reflector = std::string((char *)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH + sizeof(uint32_t)), LONG_CALLSIGN_LENGTH);
 
 	if (0==reflector.compare("        "))
 		reflector.clear();
@@ -236,32 +236,32 @@ bool CRemoteProtocolHandler::readLink(std::string& callsign, RECONNECT& reconnec
 	return true;
 }
 
-bool CRemoteProtocolHandler::readUnlink(std::string& callsign, PROTOCOL& protocol, std::string& reflector)
+bool CRemoteProtocolHandler::readUnlink(std::string &callsign, PROTOCOL &protocol, std::string &reflector)
 {
 	if (m_type != RPHT_UNLINK)
 		return false;
 
-	callsign = std::string((char*)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
+	callsign = std::string((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
 
 	uint32_t temp;
 	memcpy(&temp, m_inBuffer + 3U + LONG_CALLSIGN_LENGTH, sizeof(uint32_t));
 	protocol = PROTOCOL(wxINT32_SWAP_ON_BE(temp));
 
-	reflector = std::string((char*)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH + sizeof(uint32_t)), LONG_CALLSIGN_LENGTH);
+	reflector = std::string((char *)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH + sizeof(uint32_t)), LONG_CALLSIGN_LENGTH);
 
 	return true;
 }
 
-bool CRemoteProtocolHandler::readLinkScr(std::string& callsign, RECONNECT& reconnect, std::string& reflector)
+bool CRemoteProtocolHandler::readLinkScr(std::string &callsign, RECONNECT &reconnect, std::string &reflector)
 {
 	if (m_type != RPHT_LINKSCR)
 		return false;
 
-	callsign = std::string((char*)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
+	callsign = std::string((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
 
-	reflector = std::string((char*)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH), LONG_CALLSIGN_LENGTH);
+	reflector = std::string((char *)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH), LONG_CALLSIGN_LENGTH);
 
-	std::string rec = std::string((char*)(m_inBuffer + 3U + 2U * LONG_CALLSIGN_LENGTH), 1U);
+	std::string rec = std::string((char *)(m_inBuffer + 3U + 2U * LONG_CALLSIGN_LENGTH), 1U);
 
 	unsigned long val = stoul(rec);
 
@@ -273,9 +273,9 @@ bool CRemoteProtocolHandler::readLinkScr(std::string& callsign, RECONNECT& recon
 	return true;
 }
 
-bool CRemoteProtocolHandler::sendCallsigns(const std::list<std::string>& repeaters, const std::list<std::string>& starNets)
+bool CRemoteProtocolHandler::sendCallsigns(const std::list<std::string> &repeaters, const std::list<std::string> &starNets)
 {
-	unsigned char* p = m_outBuffer;
+	unsigned char *p = m_outBuffer;
 
 	memcpy(p, "CAL", 3U);
 	p += 3U;
@@ -303,9 +303,9 @@ bool CRemoteProtocolHandler::sendCallsigns(const std::list<std::string>& repeate
 	return m_socket.write(m_outBuffer, p - m_outBuffer, m_address, m_port);
 }
 
-bool CRemoteProtocolHandler::sendRepeater(const CRemoteRepeaterData& data)
+bool CRemoteProtocolHandler::sendRepeater(const CRemoteRepeaterData &data)
 {
-	unsigned char* p = m_outBuffer;
+	unsigned char *p = m_outBuffer;
 
 	memcpy(p, "RPT", 3U);
 	p += 3U;
@@ -354,9 +354,9 @@ bool CRemoteProtocolHandler::sendRepeater(const CRemoteRepeaterData& data)
 	return m_socket.write(m_outBuffer, p - m_outBuffer, m_address, m_port);
 }
 
-bool CRemoteProtocolHandler::sendStarNetGroup(const CRemoteStarNetGroup& data)
+bool CRemoteProtocolHandler::sendStarNetGroup(const CRemoteStarNetGroup &data)
 {
-	unsigned char* p = m_outBuffer;
+	unsigned char *p = m_outBuffer;
 
 	memcpy(p, "SNT", 3U);
 	p += 3U;

@@ -38,7 +38,7 @@ Install the only needed development library:
 ```
 sudo apt-get install libconfig++-dev
 ```
-Change to the smart-group-server directory and type `make`. This should make the executable, `sgs` without errors or warnings. By default, you will have a group server that can link groups to X-Reflectors. To link to DCS reflectors (or for no linking) modify the `Makefile` before you make. If you change you mind about linking, do a `make clean` before you do another make.
+Change to the smart-group-server directory and type `make`. This should make the executable, `sgs` without errors or warnings. By default, you will have a group server that can link groups to X-Reflectors or DCS-Reflectors. Of course you can declare an unlinked channel by simply not defining a *reflector* parameter for that channel.
 
 ## Configuring
 
@@ -48,7 +48,7 @@ Your callsign parameter in the ircddb section of your configuration file is the 
 
 ## Installing and Uninstalling
 
-To install and start the smart-group-server, type `sudo make install`. This will download the necessary Hosts files for linking to DExtra for DCS reflectors and put all the necessary files in /usr/local. See the Makefile for more information. To uninstall it, type `sudo make uninstall`.
+To install and start the smart-group-server, type `sudo make install`. This will download the necessary Hosts files for linking to DExtra for DCS reflectors and put all the necessary files in /usr/local and then start the server. See the Makefile for more information. To uninstall it, type `sudo make uninstall`. This will stop the server and remove all files from /usr/local.
 
 73
 
