@@ -47,4 +47,5 @@ private:
 	void link(const std::string& callsign, RECONNECT reconnect, const std::string& reflector, bool respond);
 	void unlink(const std::string& callsign, PROTOCOL protocol, const std::string& reflector);
 	void logoff(const std::string& callsign, const std::string& user);
+	const char *ReconnectText(RECONNECT value);
 };

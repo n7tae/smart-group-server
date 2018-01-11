@@ -91,9 +91,9 @@ void CRemoteHandler::process()
 				RECONNECT reconnect;
 				m_handler.readLink(callsign, reconnect, reflector);
 				if (0 == reflector.size())
-					printf("Remote control user has linked \"%s\" to \"None\" with reconnect %d\n", callsign.c_str(), int(reconnect));
+					printf("Remote control user has linked \"%s\" to \"None\" with reconnect %s\n", callsign.c_str(), ReconnectText(reconnect));
 				else
-					printf("Remote control user has linked \"%s\" to \"%s\" with reconnect %d\n", callsign.c_str(), reflector.c_str(), int(reconnect));
+					printf("Remote control user has linked \"%s\" to \"%s\" with reconnect %s\n", callsign.c_str(), reflector.c_str(), ReconnectText(reconnect));
 				link(callsign, reconnect, reflector, true);
 			}
 			break;
@@ -101,7 +101,7 @@ void CRemoteHandler::process()
 				std::string callsign, reflector;
 				PROTOCOL protocol;
 				m_handler.readUnlink(callsign, protocol, reflector);
-				printf("Remote control user has unlinked \"%s\" from \"%s\" for protocol %d\n", callsign.c_str(), reflector.c_str(), int(protocol));
+				printf("Remote control user has unlinked \"%s\" from \"%s\"\n", callsign.c_str(), reflector.c_str());
 				unlink(callsign, protocol, reflector);
 			}
 			break;
@@ -110,9 +110,9 @@ void CRemoteHandler::process()
 				RECONNECT reconnect;
 				m_handler.readLinkScr(callsign, reconnect, reflector);
 				if (0 == reflector.size())
-					printf("Remote control user has linked \"%s\" to \"None\" with reconnect %d from localhost\n", callsign.c_str(), reconnect);
+					printf("Remote control user has linked \"%s\" to \"None\" with reconnect %s from localhost\n", callsign.c_str(), ReconnectText(reconnect));
 				else
-					printf("Remote control user has linked \"%s\" to \"%s\" with reconnect %d from localhost\n", callsign.c_str(), reflector.c_str(), reconnect);
+					printf("Remote control user has linked \"%s\" to \"%s\" with reconnect %s from localhost\n", callsign.c_str(), reflector.c_str(), ReconnectText(reconnect));
 				link(callsign, reconnect, reflector, false);
 			}
 			break;
@@ -179,6 +179,32 @@ void CRemoteHandler::sendStarNetGroup(const std::string& callsign)
 
 void CRemoteHandler::link(const std::string& callsign, RECONNECT reconnect, const std::string& reflector, bool respond)
 {
+	CStarNetHandler *smartGroup = CStarNetHandler::findStarNet(callsign);
+	if (0 == reflector.compare(0, 3, "DCS") || 0 == reflector.compare(0, 3, "XRF")) {
+		if (NULL == smartGroup) {
+			m_handler.sendNAK("Invalid smartgroup callsign");
+			return;
+		}
+		DSTAR_LINKTYPE linkType = smartGroup->getLinkType();
+		if ((0==callsign.compare(0, 3, "XRF") && linkType!=LT_DEXTRA) || (0==callsign.compare(0, 3, "DCS") && linkType!=LT_DCS)) {
+			std::string response("Can't link ");
+			response += callsign + " of type ";
+			switch (linkType) {
+				case LT_DEXTRA:
+					response.append("DExtra");
+					break;
+				case LT_DCS:
+					response.append("DCS");
+					break;
+				case LT_NONE:
+					response.append("Unlinked");
+					break;
+			}
+			response += std::string(" to ") + reflector;
+			m_handler.sendNAK(response);
+			return;
+		}
+	}
 	CRepeaterHandler* repeater = CRepeaterHandler::findDVRepeater(callsign);
 	if (repeater == NULL) {
 		m_handler.sendNAK("Invalid repeater callsign");
@@ -189,6 +215,8 @@ void CRemoteHandler::link(const std::string& callsign, RECONNECT reconnect, cons
 
 	if (respond)
 	    m_handler.sendACK();
+	if (smartGroup)
+		smartGroup->updateReflectorInfo();	// tell QuadNet
 }
 
 void CRemoteHandler::unlink(const std::string& callsign, PROTOCOL protocol, const std::string& reflector)
@@ -217,4 +245,48 @@ void CRemoteHandler::logoff(const std::string& callsign, const std::string& user
 		m_handler.sendNAK("Invalid STARnet user callsign");
 	else
 		m_handler.sendACK();
+}
+
+const char *CRemoteHandler::ReconnectText(RECONNECT value)
+{
+	const char *ret;
+	switch (value) {
+		case RECONNECT_NEVER:
+			ret = "never";
+			break;
+		case RECONNECT_FIXED:
+			ret = "fixed";
+			break;
+		case RECONNECT_5MINS:
+			ret = "5 mins";
+			break;
+		case RECONNECT_10MINS:
+			ret = "10 mins";
+			break;
+		case RECONNECT_15MINS:
+			ret = "15 mins";
+			break;
+		case RECONNECT_20MINS:
+			ret = "20 mins";
+			break;
+		case RECONNECT_25MINS:
+			ret = "25 mins";
+			break;
+		case RECONNECT_30MINS:
+			ret = "30 mins";
+			break;
+		case RECONNECT_60MINS:
+			ret = "60 mins";
+			break;
+		case RECONNECT_90MINS:
+			ret = "90 mins";
+			break;
+		case RECONNECT_120MINS:
+			ret = "120 mins";
+			break;
+		case RECONNECT_180MINS:
+			ret = "180 mins";
+			break;
+	}
+	return ret;
 }

@@ -412,7 +412,7 @@ bool CRemoteProtocolHandler::sendACK()
 	return m_socket.write(m_outBuffer, 3U, m_address, m_port);
 }
 
-bool CRemoteProtocolHandler::sendNAK(const std::string& text)
+bool CRemoteProtocolHandler::sendNAK(const std::string &text)
 {
 	memcpy(m_outBuffer + 0U, "NAK", 3U);
 

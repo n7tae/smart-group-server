@@ -17,16 +17,15 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
- #include <cassert>
- #include <cstdio>
- #include <cstring>
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 #include <vector>
 
 #include "SlowDataEncoder.h"
 #include "RepeaterHandler.h"
 #include "StarNetHandler.h"
 #include "DExtraHandler.h"		// DEXTRA_LINK
-#include "DStarDefines.h"
 #include "DCSHandler.h"			// DCS_LINK
 #include "Utils.h"
 
@@ -600,6 +599,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 			CStarNetUser* user = it->second;
 			if (user) {
 				printf("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+				logoffUser(m_groupCallsign, user->getCallsign());	// inform Quadnet
 				delete user;
 			}
 		}
@@ -624,6 +624,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 			return false;
 		}
 		printf("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+		logoffUser(m_groupCallsign, user->getCallsign());	// inform Quadnet
 
 		// Find any associated id structure associated with this use, and the logged off user is the
 		// currently relayed one, remove his id.
@@ -811,41 +812,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		
 	}
 	if (m_oldlinkStatus!=m_linkStatus && 7==m_irc->getConnectionState()) {
-		std::string subcommand("REFLECTOR");
-		std::vector<std::string> parms;
-		std::string callsign(m_groupCallsign);
-		CUtils::ReplaceChar(callsign, ' ', '_');
-		parms.push_back(callsign);
-		std::string reflector(m_linkReflector);
-		if (reflector.size() < 8)
-			reflector.assign("________");
-		else
-			CUtils::ReplaceChar(reflector, ' ', '_');
-		parms.push_back(reflector);
-		switch (m_linkStatus) {
-			case LS_LINKING_DCS:
-			case LS_LINKING_DEXTRA:
-			case LS_PENDING_IRCDDB:
-				parms.push_back(std::string("LINKING"));
-				break;
-			case LS_LINKED_DCS:
-			case LS_LINKED_DEXTRA:
-				parms.push_back(std::string("LINKED"));
-				break;
-			case LS_NONE:
-				parms.push_back(std::string("UNLINKED"));
-				break;
-			default:
-				parms.push_back(std::string("FAILED"));
-				break;
-		}
-		parms.push_back(std::to_string(m_userTimeout));
-		std::string info(m_infoText);
-		info.resize(20, '_');
-		CUtils::ReplaceChar(info, ' ', '_');
-		parms.push_back(info);
-		
-		m_irc->sendSGSInfo(subcommand, parms);
+		updateReflectorInfo();
 		m_oldlinkStatus = m_linkStatus;
 	}
 	
@@ -935,6 +902,45 @@ void CStarNetHandler::clockInt(unsigned int ms)
 	}
 }
 
+void CStarNetHandler::updateReflectorInfo()
+{
+	std::string subcommand("REFLECTOR");
+	std::vector<std::string> parms;
+	std::string callsign(m_groupCallsign);
+	CUtils::ReplaceChar(callsign, ' ', '_');
+	parms.push_back(callsign);
+	std::string reflector(m_linkReflector);
+	if (reflector.size() < 8)
+		reflector.assign("________");
+	else
+		CUtils::ReplaceChar(reflector, ' ', '_');
+	parms.push_back(reflector);
+	switch (m_linkStatus) {
+		case LS_LINKING_DCS:
+		case LS_LINKING_DEXTRA:
+		case LS_PENDING_IRCDDB:
+			parms.push_back(std::string("LINKING"));
+			break;
+		case LS_LINKED_DCS:
+		case LS_LINKED_DEXTRA:
+			parms.push_back(std::string("LINKED"));
+			break;
+		case LS_NONE:
+			parms.push_back(std::string("UNLINKED"));
+			break;
+		default:
+			parms.push_back(std::string("FAILED"));
+			break;
+	}
+	parms.push_back(std::to_string(m_userTimeout));
+	std::string info(m_infoText);
+	info.resize(20, '_');
+	CUtils::ReplaceChar(info, ' ', '_');
+	parms.push_back(info);
+	
+	m_irc->sendSGSInfo(subcommand, parms);
+}
+
 void CStarNetHandler::logoffUser(const std::string channel, const std::string user)
 {
 	std::string cmd("LOGOFF");
@@ -986,7 +992,7 @@ void CStarNetHandler::sendFromText(const std::string &my) const
 			text = std::string("FROM %") + my;
 			break;
 		case SCS_USER_CALLSIGN:
-			text = std::string("VIA STARnet ") + m_groupCallsign;
+			text = std::string("VIA SMARTGP ") + m_groupCallsign;
 			break;
 		default:
 			break;
@@ -1068,7 +1074,7 @@ void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string &callsign)
 {
 	printf("%s link to %s established\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());
 
-	m_linkStatus = LS_LINKED_DEXTRA;
+	m_linkStatus = (LT_DEXTRA == m_linkType) ? LS_LINKED_DEXTRA : LS_LINKED_DCS;
 }
 
 bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string &callsign, bool isRecoverable)
@@ -1082,9 +1088,9 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string &callsign, bo
 		return false;
 	}
 
-	if (m_linkStatus == LS_LINKING_DEXTRA || m_linkStatus == LS_LINKED_DEXTRA) {
+	if (m_linkStatus == LS_LINKING_DEXTRA || m_linkStatus == LS_LINKED_DEXTRA || m_linkStatus == LS_LINKING_DCS || m_linkStatus == LS_LINKED_DCS) {
 		printf("%s link to %s has failed, relinking\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());
-		m_linkStatus = LS_LINKING_DEXTRA;
+		m_linkStatus = (LT_DEXTRA == m_linkType) ? LS_LINKING_DEXTRA : LS_LINKING_DCS;
 		return true;
 	}
 
@@ -1102,4 +1108,9 @@ void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string &callsign)
 bool CStarNetHandler::singleHeader()
 {
 	return true;
+}
+
+DSTAR_LINKTYPE CStarNetHandler::getLinkType()
+{
+	return m_linkType;
 }

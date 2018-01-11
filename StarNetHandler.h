@@ -31,6 +31,7 @@
 #include "RepeaterCallback.h"
 #include "TextCollector.h"
 #include "CacheManager.h"
+#include "DStarDefines.h"
 #include "HeaderData.h"
 #include "AMBEData.h"
 #include "IRCDDB.h"
@@ -124,6 +125,8 @@ public:
 
 	void process(CHeaderData &header);
 	void process(CAMBEData &data);
+	void updateReflectorInfo();
+	DSTAR_LINKTYPE getLinkType();
 
 	CRemoteStarNetGroup* getInfo() const;
 
