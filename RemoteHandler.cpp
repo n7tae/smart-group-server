@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011,2012,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017-2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 #include "DCSHandler.h"
 #include "Utils.h"
 
-CRemoteHandler::CRemoteHandler(const std::string& password, unsigned int port, const std::string& address) :
+CRemoteHandler::CRemoteHandler(const std::string &password, unsigned int port, const std::string &address) :
 m_password(password),
 m_handler(port, address),
 m_random(0U)
@@ -141,15 +141,15 @@ void CRemoteHandler::sendCallsigns()
 	m_handler.sendCallsigns(repeaters, starNets);
 }
 
-void CRemoteHandler::sendRepeater(const std::string& callsign)
+void CRemoteHandler::sendRepeater(const std::string &callsign)
 {
-	CRepeaterHandler* repeater = CRepeaterHandler::findDVRepeater(callsign);
+	CRepeaterHandler *repeater = CRepeaterHandler::findDVRepeater(callsign);
 	if (repeater == NULL) {
 		m_handler.sendNAK("Invalid repeater callsign");
 		return;
 	}
 
-	CRemoteRepeaterData* data = repeater->getInfo();
+	CRemoteRepeaterData *data = repeater->getInfo();
 	if (data != NULL) {
 		CDExtraHandler::getInfo(repeater, *data);
 //		CDPlusHandler::getInfo(repeater, *data);
@@ -162,50 +162,50 @@ void CRemoteHandler::sendRepeater(const std::string& callsign)
 	delete data;
 }
 
-void CRemoteHandler::sendStarNetGroup(const std::string& callsign)
+void CRemoteHandler::sendStarNetGroup(const std::string &callsign)
 {
-	CStarNetHandler* starNet = CStarNetHandler::findStarNet(callsign);
+	CStarNetHandler *starNet = CStarNetHandler::findStarNet(callsign);
 	if (starNet == NULL) {
 		m_handler.sendNAK("Invalid STARnet Group callsign");
 		return;
 	}
 
-	CRemoteStarNetGroup* data = starNet->getInfo();
+	CRemoteStarNetGroup *data = starNet->getInfo();
 	if (data != NULL)
 		m_handler.sendStarNetGroup(*data);
 
 	delete data;
 }
 
-void CRemoteHandler::link(const std::string& callsign, RECONNECT reconnect, const std::string& reflector, bool respond)
+void CRemoteHandler::link(const std::string &callsign, RECONNECT reconnect, const std::string &reflector, bool respond)
 {
-	CStarNetHandler *smartGroup = CStarNetHandler::findStarNet(callsign);
-	if (0 == reflector.compare(0, 3, "DCS") || 0 == reflector.compare(0, 3, "XRF")) {
-		if (NULL == smartGroup) {
-			m_handler.sendNAK("Invalid smartgroup callsign");
-			return;
-		}
-		DSTAR_LINKTYPE linkType = smartGroup->getLinkType();
-		if ((0==callsign.compare(0, 3, "XRF") && linkType!=LT_DEXTRA) || (0==callsign.compare(0, 3, "DCS") && linkType!=LT_DCS)) {
-			std::string response("Can't link ");
-			response += callsign + " of type ";
-			switch (linkType) {
-				case LT_DEXTRA:
-					response.append("DExtra");
-					break;
-				case LT_DCS:
-					response.append("DCS");
-					break;
-				case LT_NONE:
-					response.append("Unlinked");
-					break;
-			}
-			response += std::string(" to ") + reflector;
-			m_handler.sendNAK(response);
-			return;
-		}
-	}
-	CRepeaterHandler* repeater = CRepeaterHandler::findDVRepeater(callsign);
+//	CStarNetHandler *smartGroup = CStarNetHandler::findStarNet(callsign);
+//	if (0 == reflector.compare(0, 3, "DCS") || 0 == reflector.compare(0, 3, "XRF")) {
+//		if (NULL == smartGroup) {
+//			m_handler.sendNAK("Invalid smartgroup callsign");
+//			return;
+//		}
+//		DSTAR_LINKTYPE linkType = smartGroup->getLinkType();
+//		if ((0==callsign.compare(0, 3, "XRF") && linkType!=LT_DEXTRA) || (0==callsign.compare(0, 3, "DCS") && linkType!=LT_DCS)) {
+//			std::string response("Can't link ");
+//			response += callsign + " of type ";
+//			switch (linkType) {
+//				case LT_DEXTRA:
+//					response.append("DExtra");
+//					break;
+//				case LT_DCS:
+//					response.append("DCS");
+//					break;
+//				case LT_NONE:
+//					response.append("Unlinked");
+//					break;
+//			}
+//			response += std::string(" to ") + reflector;
+//			m_handler.sendNAK(response);
+//			return;
+//		}
+//	}
+	CRepeaterHandler *repeater = CRepeaterHandler::findDVRepeater(callsign);
 	if (repeater == NULL) {
 		m_handler.sendNAK("Invalid repeater callsign");
 		return;
@@ -215,13 +215,13 @@ void CRemoteHandler::link(const std::string& callsign, RECONNECT reconnect, cons
 
 	if (respond)
 	    m_handler.sendACK();
-	if (smartGroup)
-		smartGroup->updateReflectorInfo();	// tell QuadNet
+//	if (smartGroup)
+//		smartGroup->updateReflectorInfo();	// tell QuadNet
 }
 
-void CRemoteHandler::unlink(const std::string& callsign, PROTOCOL protocol, const std::string& reflector)
+void CRemoteHandler::unlink(const std::string &callsign, PROTOCOL protocol, const std::string &reflector)
 {
-	CRepeaterHandler* repeater = CRepeaterHandler::findDVRepeater(callsign);
+	CRepeaterHandler *repeater = CRepeaterHandler::findDVRepeater(callsign);
 	if (repeater == NULL) {
 		m_handler.sendNAK("Invalid repeater callsign");
 		return;
@@ -232,9 +232,9 @@ void CRemoteHandler::unlink(const std::string& callsign, PROTOCOL protocol, cons
     m_handler.sendACK();
 }
 
-void CRemoteHandler::logoff(const std::string& callsign, const std::string& user)
+void CRemoteHandler::logoff(const std::string &callsign, const std::string &user)
 {
-	CStarNetHandler* starNet = CStarNetHandler::findStarNet(callsign);
+	CStarNetHandler *starNet = CStarNetHandler::findStarNet(callsign);
 	if (starNet == NULL) {
 		m_handler.sendNAK("Invalid STARnet group callsign");
 		return;

@@ -371,6 +371,29 @@ bool CRemoteProtocolHandler::sendStarNetGroup(const CRemoteStarNetGroup &data)
 		p[i] = data.getLogoff().at(i);
 	p += LONG_CALLSIGN_LENGTH;
 
+	memset(p, ' ', LONG_CALLSIGN_LENGTH);
+	for (unsigned int i = 0U; i < data.getRepeater().size(); i++)
+		p[i] = data.getRepeater().at(i);
+	p += LONG_CALLSIGN_LENGTH;
+
+	memset(p, ' ', 20);
+	for (unsigned int i = 0U; i < data.getInfoText().size(); i++)
+		p[i] = data.getInfoText().at(i);
+	p += 20;
+
+	memset(p, ' ', LONG_CALLSIGN_LENGTH);
+	for (unsigned int i = 0U; i < data.getReflector().size(); i++)
+		p[i] = data.getReflector().at(i);
+	p += LONG_CALLSIGN_LENGTH;
+
+	LINK_STATUS ls = data.getLinkStatus();
+	memcpy(p, &ls, sizeof(enum LINK_STATUS));
+	p += sizeof(enum LINK_STATUS);
+
+	unsigned int ut = data.getUserTimeout();
+	memcpy(p, &ut, sizeof(unsigned int));
+	p += sizeof(unsigned int);
+
 	for (unsigned int n = 0U; n < data.getUserCount(); n++) {
 		CRemoteStarNetUser *user = data.getUser(n);
 

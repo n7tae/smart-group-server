@@ -258,7 +258,7 @@ std::list<std::string> CStarNetHandler::listStarNets()
 
 CRemoteStarNetGroup *CStarNetHandler::getInfo() const
 {
-	CRemoteStarNetGroup *data = new CRemoteStarNetGroup(m_groupCallsign, m_offCallsign);
+	CRemoteStarNetGroup *data = new CRemoteStarNetGroup(m_groupCallsign, m_offCallsign, m_repeater, m_infoText, m_linkReflector, m_linkStatus, m_userTimeout);
 
 	for (auto it=m_users.begin(); it!=m_users.end(); ++it) {
 		CStarNetUser* user = it->second;

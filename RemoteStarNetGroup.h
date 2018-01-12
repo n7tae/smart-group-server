@@ -22,17 +22,24 @@
 #include <string>
 #include <vector>
 
+#include "Defs.h"
 #include "RemoteStarNetUser.h"
 
 class CRemoteStarNetGroup {
 public:
-	CRemoteStarNetGroup(const std::string& callsign, const std::string& logoff);
+	CRemoteStarNetGroup(const std::string& callsign, const std::string& logoff, const std::string &repeater, const std::string &infoText, const std::string &linkReflector,
+			LINK_STATUS linkStatus, unsigned int userTimeout);
 	~CRemoteStarNetGroup();
 
 	void addUser(const std::string& callsign, uint32_t timer, uint32_t timeout);
 
 	std::string getCallsign() const;
 	std::string getLogoff() const;
+	std::string getRepeater() const;
+	std::string getInfoText() const;
+	std::string getReflector() const;
+	LINK_STATUS getLinkStatus() const;
+	unsigned int getUserTimeout() const;
 
 	uint32_t getUserCount() const;
 	CRemoteStarNetUser *getUser(uint32_t n) const;
@@ -40,5 +47,10 @@ public:
 private:
 	std::string m_callsign;
 	std::string m_logoff;
+	std::string m_repeater;
+	std::string m_infoText;
+	std::string m_linkReflector;
+	LINK_STATUS m_linkStatus;
+	unsigned int m_userTimeout;
 	std::vector<CRemoteStarNetUser *>  m_users;
 };

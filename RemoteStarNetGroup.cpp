@@ -19,9 +19,15 @@
 
 #include "RemoteStarNetGroup.h"
 
-CRemoteStarNetGroup::CRemoteStarNetGroup(const std::string& callsign, const std::string& logoff) :
+CRemoteStarNetGroup::CRemoteStarNetGroup(const std::string& callsign, const std::string& logoff, const std::string &repeater, const std::string &infoText,
+											const std::string &linkReflector, LINK_STATUS linkStatus, unsigned int userTimeout) :
 m_callsign(callsign),
 m_logoff(logoff),
+m_repeater(repeater),
+m_infoText(infoText),
+m_linkReflector(linkReflector),
+m_linkStatus(linkStatus),
+m_userTimeout(userTimeout),
 m_users()
 {
 	if (logoff.compare("        "))
@@ -51,6 +57,31 @@ std::string CRemoteStarNetGroup::getCallsign() const
 std::string CRemoteStarNetGroup::getLogoff() const
 {
 	return m_logoff;
+}
+
+std::string CRemoteStarNetGroup::getRepeater() const
+{
+	return m_repeater;
+}
+
+std::string CRemoteStarNetGroup::getInfoText() const
+{
+	return m_infoText;
+}
+
+std::string CRemoteStarNetGroup::getReflector() const
+{
+	return m_linkReflector;
+}
+
+LINK_STATUS CRemoteStarNetGroup::getLinkStatus() const
+{
+	return m_linkStatus;
+}
+
+unsigned int CRemoteStarNetGroup::getUserTimeout() const
+{
+	return m_userTimeout;
 }
 
 uint32_t CRemoteStarNetGroup::getUserCount() const

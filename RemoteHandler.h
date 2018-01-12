@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early
+ *   Copyright (c) 2017-2018 by Thomas A. Early
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 
 class CRemoteHandler {
 public:
-	CRemoteHandler(const std::string& password, unsigned int port, const std::string& address = std::string(""));
+	CRemoteHandler(const std::string &password, unsigned int port, const std::string &address = std::string(""));
 	~CRemoteHandler();
 
 	bool open();
@@ -42,10 +42,10 @@ private:
 	uint32_t               m_random;
 
 	void sendCallsigns();
-	void sendRepeater(const std::string& callsign);
-	void sendStarNetGroup(const std::string& callsign);
-	void link(const std::string& callsign, RECONNECT reconnect, const std::string& reflector, bool respond);
-	void unlink(const std::string& callsign, PROTOCOL protocol, const std::string& reflector);
-	void logoff(const std::string& callsign, const std::string& user);
+	void sendRepeater(const std::string &callsign);
+	void sendStarNetGroup(const std::string &callsign);
+	void link(const std::string &callsign, RECONNECT reconnect, const std::string &reflector, bool respond);
+	void unlink(const std::string &callsign, PROTOCOL protocol, const std::string &reflector);
+	void logoff(const std::string &callsign, const std::string &user);
 	const char *ReconnectText(RECONNECT value);
 };
