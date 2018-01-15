@@ -1,5 +1,6 @@
 /*
  *   Copyright (C) 2012,2013,2015 by Jonathan Naylor G4KLX
+ *   Copyright (c) 2017-2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -42,71 +43,72 @@ class CDCSHandler {
 public:
 	static void initialise(unsigned int maxReflectors);
 
-	static void setDCSProtocolHandlerPool(CDCSProtocolHandlerPool* pool);
-	static void setDCSProtocolIncoming(CDCSProtocolHandler* handler);
+	static void setDCSProtocolHandlerPool(CDCSProtocolHandlerPool *pool);
+	static void setDCSProtocolIncoming(CDCSProtocolHandler *handler);
 	static void setGatewayType(GATEWAY_TYPE type);
 
-	static void link(IReflectorCallback* handler, const std::string& repeater, const std::string& reflector, const in_addr& address);
-	static void unlink(IReflectorCallback* handler, const std::string& reflector = std::string(""), bool exclude = true);
+	static void link(IReflectorCallback *handler, const std::string &repeater, const std::string &reflector, const in_addr &address);
+	static void unlink(IReflectorCallback *handler, const std::string &reflector = std::string(""), bool exclude = true);
+	static void unlink(CDCSHandler *reflector);
 	static void unlink();
 
-	static void writeHeader(IReflectorCallback* handler, CHeaderData& header, DIRECTION direction);
-	static void writeAMBE(IReflectorCallback* handler, CAMBEData& data, DIRECTION direction);
+	static void writeHeader(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction);
+	static void writeAMBE(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction);
 
-	static void process(CAMBEData& header);
-	static void process(CPollData& data);
-	static void process(CConnectData& connect);
+	static void process(CAMBEData &header);
+	static void process(CPollData &data);
+	static void process(CConnectData &connect);
 
-	static void gatewayUpdate(const std::string& reflector, const std::string& address);
+	static void gatewayUpdate(const std::string &reflector, const std::string &address);
 	static void clock(unsigned int ms);
 
 	static bool stateChange();
 	static void writeStatus(FILE *file);
 
-	static void setWhiteList(CCallsignList* list);
-	static void setBlackList(CCallsignList* list);
+	static void setWhiteList(CCallsignList *list);
+	static void setBlackList(CCallsignList *list);
 
 	static void finalise();
 
-	static void getInfo(IReflectorCallback* handler, CRemoteRepeaterData& data);
+	static void getInfo(IReflectorCallback *handler, CRemoteRepeaterData &data);
 
-	static std::string getIncoming(const std::string& callsign);
+	static std::string getIncoming(const std::string &callsign);
 
 protected:
-	CDCSHandler(IReflectorCallback* handler, const std::string& reflector, const std::string& repeater, CDCSProtocolHandler* protoHandler, const in_addr& address, unsigned int port, DIRECTION direction);
+	CDCSHandler(IReflectorCallback *handler, const std::string &reflector, const std::string &repeater, CDCSProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction);
 	~CDCSHandler();
 
-	void processInt(CAMBEData& data);
-	bool processInt(CConnectData& connect, CD_TYPE type);
+	void processInt(CAMBEData &data);
+	bool processInt(CConnectData &connect, CD_TYPE type);
 
-	void writeHeaderInt(IReflectorCallback* handler, CHeaderData& header, DIRECTION direction);
-	void writeAMBEInt(IReflectorCallback* handler, CAMBEData& data, DIRECTION direction);
+	void writeHeaderInt(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction);
+	void writeAMBEInt(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction);
 
 	bool clockInt(unsigned int ms);
-
+	
 private:
 	static unsigned int             m_maxReflectors;
-	static CDCSHandler**            m_reflectors;
+	static CDCSHandler            **m_reflectors;
 
-	static CDCSProtocolHandlerPool* m_pool;
-	static CDCSProtocolHandler*     m_incoming;
+	static CDCSProtocolHandlerPool *m_pool;
+	static CDCSProtocolHandler     *m_incoming;
 
 	static bool                     m_stateChange;
 
 	static GATEWAY_TYPE             m_gatewayType;
 
-	static CCallsignList*           m_whiteList;
-	static CCallsignList*           m_blackList;
+	static CCallsignList           *m_whiteList;
+	static CCallsignList           *m_blackList;
 
 	std::string          m_reflector;
 	std::string          m_repeater;
-	CDCSProtocolHandler* m_handler;
+	CDCSProtocolHandler *m_handler;
 	in_addr              m_yourAddress;
 	unsigned int         m_yourPort;
 	unsigned int         m_myPort;
 	DIRECTION            m_direction;
 	DCS_STATE            m_linkState;
-	IReflectorCallback*  m_destination;
+	IReflectorCallback  *m_destination;
 	time_t               m_time;
 	CTimer               m_pollTimer;
 	CTimer               m_pollInactivityTimer;
@@ -126,4 +128,3 @@ private:
 
 	unsigned int calcBackoff();
 };
-

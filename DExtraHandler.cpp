@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2015 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early
+ *   Copyright (c) 2017-2018 by Thomas A. Early
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -25,19 +25,19 @@
 
 unsigned int                CDExtraHandler::m_maxReflectors = 0U;
 unsigned int                CDExtraHandler::m_maxDongles = 0U;
-CDExtraHandler**            CDExtraHandler::m_reflectors = NULL;
+CDExtraHandler            **CDExtraHandler::m_reflectors = NULL;
 
 std::string                 CDExtraHandler::m_callsign;
-CDExtraProtocolHandlerPool* CDExtraHandler::m_pool = NULL;
-CDExtraProtocolHandler*     CDExtraHandler::m_incoming = NULL;
+CDExtraProtocolHandlerPool *CDExtraHandler::m_pool = NULL;
+CDExtraProtocolHandler     *CDExtraHandler::m_incoming = NULL;
 
 bool                        CDExtraHandler::m_stateChange = false;
 
-CCallsignList*              CDExtraHandler::m_whiteList = NULL;
-CCallsignList*              CDExtraHandler::m_blackList = NULL;
+CCallsignList              *CDExtraHandler::m_whiteList = NULL;
+CCallsignList              *CDExtraHandler::m_blackList = NULL;
 
 
-CDExtraHandler::CDExtraHandler(IReflectorCallback* handler, const std::string& reflector, const std::string& repeater, CDExtraProtocolHandler* protoHandler, const in_addr& address, unsigned int port, DIRECTION direction) :
+CDExtraHandler::CDExtraHandler(IReflectorCallback *handler, const std::string &reflector, const std::string &repeater, CDExtraProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
 m_reflector(reflector),
 m_repeater(repeater),
 m_handler(protoHandler),
@@ -74,7 +74,7 @@ m_header(NULL)
 	}
 }
 
-CDExtraHandler::CDExtraHandler(CDExtraProtocolHandler* protoHandler, const std::string& reflector, const in_addr& address, unsigned int port, DIRECTION direction) :
+CDExtraHandler::CDExtraHandler(CDExtraProtocolHandler *protoHandler, const std::string &reflector, const in_addr &address, unsigned int port, DIRECTION direction) :
 m_reflector(reflector),
 m_repeater(),
 m_handler(protoHandler),
@@ -136,14 +136,14 @@ void CDExtraHandler::setCallsign(const std::string& callsign)
 	m_callsign[LONG_CALLSIGN_LENGTH - 1U] = ' ';
 }
 
-void CDExtraHandler::setDExtraProtocolIncoming(CDExtraProtocolHandler* incoming)
+void CDExtraHandler::setDExtraProtocolIncoming(CDExtraProtocolHandler *incoming)
 {
 	assert(incoming != NULL);
 
 	m_incoming = incoming;
 }
 
-void CDExtraHandler::setDExtraProtocolHandlerPool(CDExtraProtocolHandlerPool* pool)
+void CDExtraHandler::setDExtraProtocolHandlerPool(CDExtraProtocolHandlerPool *pool)
 {
 	assert(pool != NULL);
 
@@ -155,26 +155,26 @@ void CDExtraHandler::setMaxDongles(unsigned int maxDongles)
 	m_maxDongles = maxDongles;
 }
 
-void CDExtraHandler::setWhiteList(CCallsignList* list)
+void CDExtraHandler::setWhiteList(CCallsignList *list)
 {
 	assert(list != NULL);
 
 	m_whiteList = list;
 }
 
-void CDExtraHandler::setBlackList(CCallsignList* list)
+void CDExtraHandler::setBlackList(CCallsignList *list)
 {
 	assert(list != NULL);
 
 	m_blackList = list;
 }
 
-std::string CDExtraHandler::getIncoming(const std::string& callsign)
+std::string CDExtraHandler::getIncoming(const std::string &callsign)
 {
 	std::string incoming;
 
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDExtraHandler* reflector = m_reflectors[i];
+		CDExtraHandler *reflector = m_reflectors[i];
 		if (reflector != NULL && reflector->m_direction == DIR_INCOMING && 0==reflector->m_repeater.compare(callsign)) {
 			incoming.append(reflector->m_reflector);
 			incoming.append("  ");
@@ -184,12 +184,12 @@ std::string CDExtraHandler::getIncoming(const std::string& callsign)
 	return incoming;
 }
 
-void CDExtraHandler::getInfo(IReflectorCallback* handler, CRemoteRepeaterData& data)
+void CDExtraHandler::getInfo(IReflectorCallback *handler, CRemoteRepeaterData &data)
 {
 	assert(handler != NULL);
 
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDExtraHandler* reflector = m_reflectors[i];
+		CDExtraHandler *reflector = m_reflectors[i];
 		if (reflector != NULL) {
 			if (reflector->m_destination == handler) {
 				if (reflector->m_direction == DIR_INCOMING && 0 == reflector->m_repeater.size()) {
@@ -208,8 +208,8 @@ std::string CDExtraHandler::getDongles()
 {
 	std::string dongles;
 
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDExtraHandler* reflector = m_reflectors[i];
+	for (unsigned int i=0U; i<m_maxReflectors; i++) {
+		CDExtraHandler *reflector = m_reflectors[i];
 		if (reflector != NULL && reflector->m_direction == DIR_INCOMING && 0==reflector->m_repeater.size()) {
 			dongles.append("X:");
 			dongles.append(reflector->m_reflector);
@@ -220,13 +220,13 @@ std::string CDExtraHandler::getDongles()
 	return dongles;
 }
 
-void CDExtraHandler::process(CHeaderData& header)
+void CDExtraHandler::process(CHeaderData &header)
 {
 	in_addr   yourAddress = header.getYourAddress();
 	unsigned int yourPort = header.getYourPort();
 
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDExtraHandler* reflector = m_reflectors[i];
+		CDExtraHandler *reflector = m_reflectors[i];
 		if (reflector != NULL) {
 			if (reflector->m_yourAddress.s_addr == yourAddress.s_addr &&
 				reflector->m_yourPort           == yourPort)
@@ -235,13 +235,13 @@ void CDExtraHandler::process(CHeaderData& header)
 	}	
 }
 
-void CDExtraHandler::process(CAMBEData& data)
+void CDExtraHandler::process(CAMBEData &data)
 {
 	in_addr   yourAddress = data.getYourAddress();
 	unsigned int yourPort = data.getYourPort();
 
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDExtraHandler* reflector = m_reflectors[i];
+		CDExtraHandler *reflector = m_reflectors[i];
 		if (reflector != NULL) {
 			if (reflector->m_yourAddress.s_addr == yourAddress.s_addr &&
 				reflector->m_yourPort           == yourPort)
@@ -250,7 +250,7 @@ void CDExtraHandler::process(CAMBEData& data)
 	}	
 }
 
-void CDExtraHandler::process(const CPollData& poll)
+void CDExtraHandler::process(const CPollData &poll)
 {
 	bool found = false;
 
@@ -261,9 +261,9 @@ void CDExtraHandler::process(const CPollData& poll)
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		if (m_reflectors[i] != NULL) {
 			if (0==m_reflectors[i]->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, reflector, 0, LONG_CALLSIGN_LENGTH-1) &&
-			m_reflectors[i]->m_yourAddress.s_addr == yourAddress.s_addr &&
-			m_reflectors[i]->m_yourPort           == yourPort &&
-			m_reflectors[i]->m_linkState          == DEXTRA_LINKED) {
+						m_reflectors[i]->m_yourAddress.s_addr == yourAddress.s_addr &&
+						m_reflectors[i]->m_yourPort           == yourPort &&
+						m_reflectors[i]->m_linkState          == DEXTRA_LINKED) {
 				m_reflectors[i]->m_pollInactivityTimer.start();
 				found = true;
 			}
@@ -292,7 +292,7 @@ void CDExtraHandler::process(const CPollData& poll)
 	// An unmatched poll indicates the need for a new entry
 	printf("New incoming DExtra Dongle from %s\n", reflector.c_str());
 
-	CDExtraHandler* handler = new CDExtraHandler(m_incoming, reflector, yourAddress, yourPort, DIR_INCOMING);
+	CDExtraHandler *handler = new CDExtraHandler(m_incoming, reflector, yourAddress, yourPort, DIR_INCOMING);
 
 	found = false;
 
@@ -314,7 +314,7 @@ void CDExtraHandler::process(const CPollData& poll)
 	}
 }
 
-void CDExtraHandler::process(CConnectData& connect)
+void CDExtraHandler::process(CConnectData &connect)
 {
 	CD_TYPE type = connect.getType();
 
@@ -356,7 +356,7 @@ void CDExtraHandler::process(CConnectData& connect)
 	}
 
 	// Check the validity of our repeater callsign
-	IReflectorCallback* handler = CRepeaterHandler::findDVRepeater(reflectorCallsign);
+	IReflectorCallback *handler = CRepeaterHandler::findDVRepeater(reflectorCallsign);
 	if (handler == NULL) {
 		printf("DExtra connect to unknown reflector %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
 		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, yourAddress, yourPort);
@@ -367,7 +367,7 @@ void CDExtraHandler::process(CConnectData& connect)
 	// A new connect packet indicates the need for a new entry
 	printf("New incoming DExtra link to %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
 
-	CDExtraHandler* dextra = new CDExtraHandler(handler, repeaterCallsign, reflectorCallsign, m_incoming, yourAddress, yourPort, DIR_INCOMING);
+	CDExtraHandler *dextra = new CDExtraHandler(handler, repeaterCallsign, reflectorCallsign, m_incoming, yourAddress, yourPort, DIR_INCOMING);
 
 	bool found = false;
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
@@ -395,13 +395,13 @@ void CDExtraHandler::process(CConnectData& connect)
 	}
 }
 
-void CDExtraHandler::link(IReflectorCallback* handler, const std::string& repeater, const std::string &gateway, const in_addr& address)
+void CDExtraHandler::link(IReflectorCallback *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
 {
-	CDExtraProtocolHandler* protoHandler = m_pool->getHandler();
+	CDExtraProtocolHandler *protoHandler = m_pool->getHandler();
 	if (protoHandler == NULL)
 		return;
 
-	CDExtraHandler* dextra = new CDExtraHandler(handler, gateway, repeater, protoHandler, address, DEXTRA_PORT, DIR_OUTGOING);
+	CDExtraHandler *dextra = new CDExtraHandler(handler, gateway, repeater, protoHandler, address, DEXTRA_PORT, DIR_OUTGOING);
 
 	bool found = false;
 
@@ -422,10 +422,10 @@ void CDExtraHandler::link(IReflectorCallback* handler, const std::string& repeat
 	}
 }
 
-void CDExtraHandler::unlink(IReflectorCallback* handler, const std::string& callsign, bool exclude)
+void CDExtraHandler::unlink(IReflectorCallback *handler, const std::string &callsign, bool exclude)
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDExtraHandler* reflector = m_reflectors[i];
+		CDExtraHandler *reflector = m_reflectors[i];
 
 		if (reflector != NULL) {
 			bool found = false;
@@ -487,25 +487,29 @@ void CDExtraHandler::unlink(IReflectorCallback* handler, const std::string& call
 	}	
 }
 
+void CDExtraHandler::unlink(CDExtraHandler *reflector)
+{
+	if (reflector != NULL) {
+		if (reflector->m_repeater.size()) {
+			printf("Unlinking from DExtra reflector %s\n", reflector->m_reflector.c_str());
+
+			CConnectData connect(reflector->m_repeater, reflector->m_yourAddress, reflector->m_yourPort);
+			reflector->m_handler->writeConnect(connect);
+
+			reflector->m_linkState = DEXTRA_UNLINKING;
+		}
+	}
+}
+
 void CDExtraHandler::unlink()
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDExtraHandler* reflector = m_reflectors[i];
-
-		if (reflector != NULL) {
-			if (reflector->m_repeater.size()) {
-				printf("Unlinking from DExtra reflector %s\n", reflector->m_reflector.c_str());
-
-				CConnectData connect(reflector->m_repeater, reflector->m_yourAddress, reflector->m_yourPort);
-				reflector->m_handler->writeConnect(connect);
-
-				reflector->m_linkState = DEXTRA_UNLINKING;
-			}
-		}
+		CDExtraHandler *reflector = m_reflectors[i];
+		CDExtraHandler::unlink(reflector);
 	}	
 }
 
-void CDExtraHandler::writeHeader(IReflectorCallback* handler, CHeaderData& header, DIRECTION direction)
+void CDExtraHandler::writeHeader(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction)
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		if (m_reflectors[i] != NULL)
@@ -513,7 +517,7 @@ void CDExtraHandler::writeHeader(IReflectorCallback* handler, CHeaderData& heade
 	}	
 }
 
-void CDExtraHandler::writeAMBE(IReflectorCallback* handler, CAMBEData& data, DIRECTION direction)
+void CDExtraHandler::writeAMBE(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		if (m_reflectors[i] != NULL)
@@ -521,13 +525,13 @@ void CDExtraHandler::writeAMBE(IReflectorCallback* handler, CAMBEData& data, DIR
 	}	
 }
 
-void CDExtraHandler::gatewayUpdate(const std::string& reflector, const std::string& address)
+void CDExtraHandler::gatewayUpdate(const std::string &reflector, const std::string &address)
 {
 	std::string gateway = reflector;
 	gateway.resize(LONG_CALLSIGN_LENGTH - 1U, ' ');
 
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDExtraHandler* reflector = m_reflectors[i];
+		CDExtraHandler *reflector = m_reflectors[i];
 		if (reflector != NULL) {
 			if (0==reflector->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, gateway)) {
 				if (address.size()) {
@@ -675,7 +679,7 @@ void CDExtraHandler::processInt(CHeaderData& header)
 	}
 }
 
-void CDExtraHandler::processInt(CAMBEData& data)
+void CDExtraHandler::processInt(CAMBEData &data)
 {
 	if (m_linkState != DEXTRA_LINKED)
 		return;
@@ -708,7 +712,7 @@ void CDExtraHandler::processInt(CAMBEData& data)
 	}
 }
 
-bool CDExtraHandler::processInt(CConnectData& connect, CD_TYPE type)
+bool CDExtraHandler::processInt(CConnectData &connect, CD_TYPE type)
 {
 	in_addr yourAddress   = connect.getYourAddress();
 	unsigned int yourPort = connect.getYourPort();
@@ -856,7 +860,7 @@ bool CDExtraHandler::clockInt(unsigned int ms)
 	return false;
 }
 
-void CDExtraHandler::writeHeaderInt(IReflectorCallback* handler, CHeaderData& header, DIRECTION direction)
+void CDExtraHandler::writeHeaderInt(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction)
 {
 	if (m_linkState != DEXTRA_LINKED)
 		return;
@@ -886,7 +890,7 @@ void CDExtraHandler::writeHeaderInt(IReflectorCallback* handler, CHeaderData& he
 	}
 }
 
-void CDExtraHandler::writeAMBEInt(IReflectorCallback* handler, CAMBEData& data, DIRECTION direction)
+void CDExtraHandler::writeAMBEInt(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
 {
 	if (m_linkState != DEXTRA_LINKED)
 		return;
@@ -928,10 +932,10 @@ bool CDExtraHandler::stateChange()
 void CDExtraHandler::writeStatus(FILE *file)
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDExtraHandler* reflector = m_reflectors[i];
+		CDExtraHandler *reflector = m_reflectors[i];
 		if (reflector != NULL) {
 
-			struct tm* tm = ::gmtime(&reflector->m_time);
+			struct tm *tm = ::gmtime(&reflector->m_time);
 
 			switch (reflector->m_direction) {
 				case DIR_OUTGOING:

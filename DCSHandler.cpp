@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2012-2015 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017-2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,20 +24,20 @@
 #include "Utils.h"
 
 unsigned int             CDCSHandler::m_maxReflectors = 0U;
-CDCSHandler**            CDCSHandler::m_reflectors = NULL;
+CDCSHandler            **CDCSHandler::m_reflectors = NULL;
 
-CDCSProtocolHandlerPool* CDCSHandler::m_pool = NULL;
-CDCSProtocolHandler*     CDCSHandler::m_incoming = NULL;
+CDCSProtocolHandlerPool *CDCSHandler::m_pool = NULL;
+CDCSProtocolHandler     *CDCSHandler::m_incoming = NULL;
 
 bool                     CDCSHandler::m_stateChange = false;
 
 GATEWAY_TYPE             CDCSHandler::m_gatewayType  = GT_REPEATER;
 
-CCallsignList*           CDCSHandler::m_whiteList = NULL;
-CCallsignList*           CDCSHandler::m_blackList = NULL;
+CCallsignList           *CDCSHandler::m_whiteList = NULL;
+CCallsignList           *CDCSHandler::m_blackList = NULL;
 
 
-CDCSHandler::CDCSHandler(IReflectorCallback* handler, const std::string& reflector, const std::string& repeater, CDCSProtocolHandler* protoHandler, const in_addr& address, unsigned int port, DIRECTION direction) :
+CDCSHandler::CDCSHandler(IReflectorCallback *handler, const std::string &reflector, const std::string &repeater, CDCSProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
 m_reflector(reflector),
 m_repeater(repeater),
 m_handler(protoHandler),
@@ -99,14 +99,14 @@ void CDCSHandler::initialise(unsigned int maxReflectors)
 		m_reflectors[i] = NULL;
 }
 
-void CDCSHandler::setDCSProtocolHandlerPool(CDCSProtocolHandlerPool* pool)
+void CDCSHandler::setDCSProtocolHandlerPool(CDCSProtocolHandlerPool *pool)
 {
 	assert(pool != NULL);
 
 	m_pool = pool;
 }
 
-void CDCSHandler::setDCSProtocolIncoming(CDCSProtocolHandler* handler)
+void CDCSHandler::setDCSProtocolIncoming(CDCSProtocolHandler *handler)
 {
 	assert(handler != NULL);
 
@@ -118,26 +118,26 @@ void CDCSHandler::setGatewayType(GATEWAY_TYPE type)
 	m_gatewayType = type;
 }
 
-void CDCSHandler::setWhiteList(CCallsignList* list)
+void CDCSHandler::setWhiteList(CCallsignList *list)
 {
 	assert(list != NULL);
 
 	m_whiteList = list;
 }
 
-void CDCSHandler::setBlackList(CCallsignList* list)
+void CDCSHandler::setBlackList(CCallsignList *list)
 {
 	assert(list != NULL);
 
 	m_blackList = list;
 }
 
-std::string CDCSHandler::getIncoming(const std::string& callsign)
+std::string CDCSHandler::getIncoming(const std::string &callsign)
 {
 	std::string incoming;
 
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler* reflector = m_reflectors[i];
+		CDCSHandler *reflector = m_reflectors[i];
 		if (reflector != NULL && reflector->m_direction == DIR_INCOMING && 0==reflector->m_repeater.compare(callsign)) {
 			incoming.append(reflector->m_reflector);
 			incoming.append("  ");
@@ -147,12 +147,12 @@ std::string CDCSHandler::getIncoming(const std::string& callsign)
 	return incoming;
 }
 
-void CDCSHandler::getInfo(IReflectorCallback* handler, CRemoteRepeaterData& data)
+void CDCSHandler::getInfo(IReflectorCallback *handler, CRemoteRepeaterData &data)
 {
 	assert(handler != NULL);
 
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler* reflector = m_reflectors[i];
+		CDCSHandler *reflector = m_reflectors[i];
 		if (reflector != NULL) {
 			if (reflector->m_destination == handler) {
 				if (reflector->m_direction == DIR_INCOMING && 0==reflector->m_repeater.size()) {
@@ -167,14 +167,14 @@ void CDCSHandler::getInfo(IReflectorCallback* handler, CRemoteRepeaterData& data
 	}
 }
 
-void CDCSHandler::process(CAMBEData& data)
+void CDCSHandler::process(CAMBEData &data)
 {
 	in_addr   yourAddress = data.getYourAddress();
 	unsigned int yourPort = data.getYourPort();
 	unsigned int myPort   = data.getMyPort();
 
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler* reflector = m_reflectors[i];
+		CDCSHandler *reflector = m_reflectors[i];
 		if (reflector != NULL) {
 			if (reflector->m_yourAddress.s_addr == yourAddress.s_addr &&
 				reflector->m_yourPort           == yourPort &&
@@ -186,7 +186,7 @@ void CDCSHandler::process(CAMBEData& data)
 	}	
 }
 
-void CDCSHandler::process(CPollData& poll)
+void CDCSHandler::process(CPollData &poll)
 {
 	std::string   reflector  = poll.getData1();
 	std::string   repeater   = poll.getData2();
@@ -197,7 +197,7 @@ void CDCSHandler::process(CPollData& poll)
 
 	// Check to see if we already have a link
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler* handler = m_reflectors[i];
+		CDCSHandler *handler = m_reflectors[i];
 
 		if (handler != NULL) {
 			if (0==handler->m_reflector.compare(reflector) &&
@@ -228,7 +228,7 @@ void CDCSHandler::process(CPollData& poll)
 	printf("Unknown incoming DCS poll from %s\n", reflector.c_str());
 }
 
-void CDCSHandler::process(CConnectData& connect)
+void CDCSHandler::process(CConnectData &connect)
 {
 	CD_TYPE type = connect.getType();
 
@@ -268,7 +268,7 @@ void CDCSHandler::process(CConnectData& connect)
 	}
 
 	// Check the validity of our repeater callsign
-	IReflectorCallback* handler = CRepeaterHandler::findDVRepeater(reflectorCallsign);
+	IReflectorCallback *handler = CRepeaterHandler::findDVRepeater(reflectorCallsign);
 	if (handler == NULL) {
 		printf("DCS connect to unknown reflector %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
 		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, connect.getYourAddress(), connect.getYourPort());
@@ -279,7 +279,7 @@ void CDCSHandler::process(CConnectData& connect)
 	// A new connect packet indicates the need for a new entry
 	printf("New incoming DCS link to %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
 
-	CDCSHandler* dcs = new CDCSHandler(handler, repeaterCallsign, reflectorCallsign, m_incoming, yourAddress, yourPort, DIR_INCOMING);
+	CDCSHandler *dcs = new CDCSHandler(handler, repeaterCallsign, reflectorCallsign, m_incoming, yourAddress, yourPort, DIR_INCOMING);
 
 	bool found = false;
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
@@ -302,20 +302,20 @@ void CDCSHandler::process(CConnectData& connect)
 	}
 }
 
-void CDCSHandler::link(IReflectorCallback* handler, const std::string& repeater, const std::string &gateway, const in_addr& address)
+void CDCSHandler::link(IReflectorCallback *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		if (m_reflectors[i] != NULL) {
 			if (m_reflectors[i]->m_direction == DIR_OUTGOING && m_reflectors[i]->m_destination == handler && m_reflectors[i]->m_linkState != DCS_UNLINKING)
 				return;
 		}
-	}	
+	}
 
-	CDCSProtocolHandler* protoHandler = m_pool->getHandler();
+	CDCSProtocolHandler *protoHandler = m_pool->getHandler();
 	if (protoHandler == NULL)
 		return;
 
-	CDCSHandler* dcs = new CDCSHandler(handler, gateway, repeater, protoHandler, address, DCS_PORT, DIR_OUTGOING);
+	CDCSHandler *dcs = new CDCSHandler(handler, gateway, repeater, protoHandler, address, DCS_PORT, DIR_OUTGOING);
 
 	bool found = false;
 
@@ -336,10 +336,10 @@ void CDCSHandler::link(IReflectorCallback* handler, const std::string& repeater,
 	}
 }
 
-void CDCSHandler::unlink(IReflectorCallback* handler, const std::string& callsign, bool exclude)
+void CDCSHandler::unlink(IReflectorCallback *handler, const std::string &callsign, bool exclude)
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler* reflector = m_reflectors[i];
+		CDCSHandler *reflector = m_reflectors[i];
 
 		if (reflector != NULL) {
 			bool found = false;
@@ -398,27 +398,33 @@ void CDCSHandler::unlink(IReflectorCallback* handler, const std::string& callsig
 	}	
 }
 
+void CDCSHandler::unlink(CDCSHandler *reflector)
+{
+	if (reflector != NULL) {
+		if (reflector->m_repeater.size()) {
+			printf("Unlinking from DCS reflector %s\n", reflector->m_reflector.c_str());
+
+			CConnectData connect(reflector->m_repeater, reflector->m_reflector, CT_UNLINK, reflector->m_yourAddress, reflector->m_yourPort);
+			reflector->m_handler->writeConnect(connect);
+
+			reflector->m_linkState = DCS_UNLINKING;
+			reflector->m_tryTimer.start(1U);
+			reflector->m_tryCount = 0U;
+		}
+	}
+
+}
+
 void CDCSHandler::unlink()
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		CDCSHandler* reflector = m_reflectors[i];
 
-		if (reflector != NULL) {
-			if (reflector->m_repeater.size()) {
-				printf("Unlinking from DCS reflector %s\n", reflector->m_reflector.c_str());
-
-				CConnectData connect(reflector->m_repeater, reflector->m_reflector, CT_UNLINK, reflector->m_yourAddress, reflector->m_yourPort);
-				reflector->m_handler->writeConnect(connect);
-
-				reflector->m_linkState = DCS_UNLINKING;
-				reflector->m_tryTimer.start(1U);
-				reflector->m_tryCount = 0U;
-			}
-		}
+		CDCSHandler::unlink(reflector);
 	}	
 }
 
-void CDCSHandler::writeHeader(IReflectorCallback* handler, CHeaderData& header, DIRECTION direction)
+void CDCSHandler::writeHeader(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction)
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		if (m_reflectors[i] != NULL)
@@ -426,7 +432,7 @@ void CDCSHandler::writeHeader(IReflectorCallback* handler, CHeaderData& header, 
 	}	
 }
 
-void CDCSHandler::writeAMBE(IReflectorCallback* handler, CAMBEData& data, DIRECTION direction)
+void CDCSHandler::writeAMBE(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
 		if (m_reflectors[i] != NULL)
@@ -434,13 +440,13 @@ void CDCSHandler::writeAMBE(IReflectorCallback* handler, CAMBEData& data, DIRECT
 	}	
 }
 
-void CDCSHandler::gatewayUpdate(const std::string& reflector, const std::string& address)
+void CDCSHandler::gatewayUpdate(const std::string &reflector, const std::string &address)
 {
 	std::string gateway = reflector;
 	gateway.resize(LONG_CALLSIGN_LENGTH - 1U, ' ');
 
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler* reflector = m_reflectors[i];
+		CDCSHandler *reflector = m_reflectors[i];
 		if (reflector != NULL) {
 			if (0 == reflector->m_reflector.compare(0, LONG_CALLSIGN_LENGTH - 1U, gateway)) {
 				if (address.size()) {
@@ -485,7 +491,7 @@ void CDCSHandler::finalise()
 	delete[] m_reflectors;
 }
 
-void CDCSHandler::processInt(CAMBEData& data)
+void CDCSHandler::processInt(CAMBEData &data)
 {
 	// Make a copy of the AMBE data so that any changes made here don't modify the original
 	CAMBEData temp(data);
@@ -605,12 +611,12 @@ void CDCSHandler::processInt(CAMBEData& data)
 	}
 }
 
-bool CDCSHandler::processInt(CConnectData& connect, CD_TYPE type)
+bool CDCSHandler::processInt(CConnectData &connect, CD_TYPE type)
 {
 	in_addr   yourAddress = connect.getYourAddress();
 	unsigned int yourPort = connect.getYourPort();
 	unsigned int   myPort = connect.getMyPort();
-	std::string     repeater = connect.getRepeater();
+	std::string  repeater = connect.getRepeater();
 
 	if (m_yourAddress.s_addr != yourAddress.s_addr || m_yourPort != yourPort || m_myPort != myPort)
 		return false;
@@ -756,7 +762,7 @@ bool CDCSHandler::clockInt(unsigned int ms)
 	return false;
 }
 
-void CDCSHandler::writeHeaderInt(IReflectorCallback* handler, CHeaderData& header, DIRECTION direction)
+void CDCSHandler::writeHeaderInt(IReflectorCallback *handler, CHeaderData& header, DIRECTION direction)
 {
 	if (m_linkState != DCS_LINKED)
 		return;
@@ -781,7 +787,7 @@ void CDCSHandler::writeHeaderInt(IReflectorCallback* handler, CHeaderData& heade
 	m_rptCall2 = header.getRptCall2();
 }
 
-void CDCSHandler::writeAMBEInt(IReflectorCallback* handler, CAMBEData& data, DIRECTION direction)
+void CDCSHandler::writeAMBEInt(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
 {
 	if (m_linkState != DCS_LINKED)
 		return;
@@ -821,9 +827,9 @@ bool CDCSHandler::stateChange()
 void CDCSHandler::writeStatus(FILE *file)
 {
 	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler* reflector = m_reflectors[i];
+		CDCSHandler *reflector = m_reflectors[i];
 		if (reflector != NULL) {
-			struct tm* tm = ::gmtime(&reflector->m_time);
+			struct tm *tm = ::gmtime(&reflector->m_time);
 
 			switch (reflector->m_direction) {
 				case DIR_OUTGOING:
