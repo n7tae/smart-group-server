@@ -37,7 +37,6 @@ CIRCDDB            *CStarNetHandler::m_irc = NULL;
 CCacheManager      *CStarNetHandler::m_cache = NULL;
 std::string         CStarNetHandler::m_gateway;
 std::list<CStarNetHandler *> CStarNetHandler::m_starNets;
-std::string         CStarNetHandler::m_name;
 
 
 CStarNetUser::CStarNetUser(const std::string &callsign, unsigned int timeout) :
@@ -169,11 +168,6 @@ CStarNetUser* CStarNetId::getUser() const
 CTextCollector& CStarNetId::getTextCollector()
 {
 	return m_textCollector;
-}
-
-void CStarNetHandler::initialise(const std::string& name)
-{
-	m_name = name;
 }
 
 void CStarNetHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,

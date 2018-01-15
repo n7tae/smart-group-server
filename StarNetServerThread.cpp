@@ -61,7 +61,6 @@ m_remote(NULL)
 {
 	CHeaderData::initialise();
 	CG2Handler::initialise(0);
-	CStarNetHandler::initialise();
 	if (countDExtra)
 		CDExtraHandler::initialise(countDExtra);
 	if (countDCS)

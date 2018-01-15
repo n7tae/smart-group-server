@@ -104,7 +104,6 @@ public:
 
 class CStarNetHandler : public IReflectorCallback {
 public:
-	static void initialise(const std::string& name = std::string(""));
 	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
 										unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string & eflector);
 	static void setG2Handler(CG2ProtocolHandler *handler);
