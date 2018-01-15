@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2012,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017-2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "DCSProtocolHandlerPool.h"
 #include "Utils.h"
 
-CDCSProtocolHandlerPool::CDCSProtocolHandlerPool(unsigned int n, unsigned int port, const std::string& addr) :
+CDCSProtocolHandlerPool::CDCSProtocolHandlerPool(unsigned int n, unsigned int port, const std::string &addr) :
 m_pool(NULL),
 m_n(n),
 m_index(0U)
@@ -30,7 +30,7 @@ m_index(0U)
 	assert(port > 0U);
 	assert(n > 0U);
 
-	m_pool = new CDCSProtocolHandlerEntry[n];
+	m_pool = new struct SDCSProtocolHandler[n];
 
 	for (unsigned int i = 0U; i < n; i++) {
 		m_pool[i].m_handler = new CDCSProtocolHandler(port + i, addr);
@@ -83,7 +83,7 @@ CDCSProtocolHandler* CDCSProtocolHandlerPool::getHandler(unsigned int port)
 	return NULL;
 }
 
-void CDCSProtocolHandlerPool::release(CDCSProtocolHandler* handler)
+void CDCSProtocolHandlerPool::release(CDCSProtocolHandler *handler)
 {
 	assert(handler != NULL);
 
@@ -114,17 +114,17 @@ DCS_TYPE CDCSProtocolHandlerPool::read()
 	return DC_NONE;
 }
 
-CAMBEData* CDCSProtocolHandlerPool::readData()
+CAMBEData *CDCSProtocolHandlerPool::readData()
 {
 	return m_pool[m_index].m_handler->readData();
 }
 
-CPollData* CDCSProtocolHandlerPool::readPoll()
+CPollData *CDCSProtocolHandlerPool::readPoll()
 {
 	return m_pool[m_index].m_handler->readPoll();
 }
 
-CConnectData* CDCSProtocolHandlerPool::readConnect()
+CConnectData *CDCSProtocolHandlerPool::readConnect()
 {
 	return m_pool[m_index].m_handler->readConnect();
 }

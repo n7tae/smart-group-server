@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2012,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early
+ *   Copyright (c) 2017-2018 by Thomas A. Early
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 #include "DExtraProtocolHandler.h"
 
-class CDExtraProtocolHandlerEntry {
+struct SDExtraProtocolHandler {
 public:
 	CDExtraProtocolHandler* m_handler;
 	unsigned int            m_port;
@@ -32,25 +32,25 @@ public:
 
 class CDExtraProtocolHandlerPool {
 public:
-	CDExtraProtocolHandlerPool(unsigned int n, unsigned int port, const std::string& addr = std::string(""));
+	CDExtraProtocolHandlerPool(unsigned int n, unsigned int port, const std::string &addr = std::string(""));
 	~CDExtraProtocolHandlerPool();
 
 	bool open();
 
-	CDExtraProtocolHandler* getHandler(unsigned int port = 0U);
-	void release(CDExtraProtocolHandler* handler);
+	CDExtraProtocolHandler *getHandler(unsigned int port = 0U);
+	void release(CDExtraProtocolHandler *handler);
 
 	DEXTRA_TYPE   read();
-	CHeaderData*  readHeader();
-	CAMBEData*    readAMBE();
-	CPollData*    readPoll();
-	CConnectData* readConnect();
+	CHeaderData  *readHeader();
+	CAMBEData    *readAMBE();
+	CPollData    *readPoll();
+	CConnectData *readConnect();
 
 	void close();
 
 private:
-	CDExtraProtocolHandlerEntry* m_pool;
-	unsigned int                 m_n;
-	unsigned int                 m_index;
+	struct SDExtraProtocolHandler *m_pool;
+	unsigned int                   m_n;
+	unsigned int                   m_index;
 };
 

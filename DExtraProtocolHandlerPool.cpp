@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2012,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early
+ *   Copyright (c) 2017-2018 by Thomas A. Early
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "DExtraProtocolHandlerPool.h"
 #include "Utils.h"
 
-CDExtraProtocolHandlerPool::CDExtraProtocolHandlerPool(unsigned int n, unsigned int port, const std::string& addr) :
+CDExtraProtocolHandlerPool::CDExtraProtocolHandlerPool(unsigned int n, unsigned int port, const std::string &addr) :
 m_pool(NULL),
 m_n(n),
 m_index(0U)
@@ -30,7 +30,7 @@ m_index(0U)
 	assert(port > 0U);
 	assert(n > 0U);
 
-	m_pool = new CDExtraProtocolHandlerEntry[n];
+	m_pool = new struct SDExtraProtocolHandler[n];
 
 	for (unsigned int i = 0U; i < n; i++) {
 		m_pool[i].m_handler = new CDExtraProtocolHandler(port + i, addr);
@@ -83,7 +83,7 @@ CDExtraProtocolHandler* CDExtraProtocolHandlerPool::getHandler(unsigned int port
 	return NULL;
 }
 
-void CDExtraProtocolHandlerPool::release(CDExtraProtocolHandler* handler)
+void CDExtraProtocolHandlerPool::release(CDExtraProtocolHandler *handler)
 {
 	assert(handler != NULL);
 
@@ -114,22 +114,22 @@ DEXTRA_TYPE CDExtraProtocolHandlerPool::read()
 	return DE_NONE;
 }
 
-CHeaderData* CDExtraProtocolHandlerPool::readHeader()
+CHeaderData *CDExtraProtocolHandlerPool::readHeader()
 {
 	return m_pool[m_index].m_handler->readHeader();
 }
 
-CAMBEData* CDExtraProtocolHandlerPool::readAMBE()
+CAMBEData *CDExtraProtocolHandlerPool::readAMBE()
 {
 	return m_pool[m_index].m_handler->readAMBE();
 }
 
-CPollData* CDExtraProtocolHandlerPool::readPoll()
+CPollData *CDExtraProtocolHandlerPool::readPoll()
 {
 	return m_pool[m_index].m_handler->readPoll();
 }
 
-CConnectData* CDExtraProtocolHandlerPool::readConnect()
+CConnectData *CDExtraProtocolHandlerPool::readConnect()
 {
 	return m_pool[m_index].m_handler->readConnect();
 }

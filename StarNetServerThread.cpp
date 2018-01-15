@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2013,2015 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017,2018 by Thomas Early N7TAE
+ *   Copyright (c) 2017-2018 by Thomas Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
