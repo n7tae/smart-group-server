@@ -23,9 +23,6 @@
 #include "DCSHandler.h"
 #include "Utils.h"
 
-unsigned int             CDCSHandler::m_maxReflectors = 0U;
-CDCSHandler            **CDCSHandler::m_reflectors = NULL;
-
 CDCSProtocolHandlerPool *CDCSHandler::m_pool = NULL;
 CDCSProtocolHandler     *CDCSHandler::m_incoming = NULL;
 
@@ -35,6 +32,7 @@ GATEWAY_TYPE             CDCSHandler::m_gatewayType  = GT_REPEATER;
 
 CCallsignList           *CDCSHandler::m_whiteList = NULL;
 CCallsignList           *CDCSHandler::m_blackList = NULL;
+std::list<CDCSHandler *> m_reflectors;
 
 
 CDCSHandler::CDCSHandler(IReflectorCallback *handler, const std::string &reflector, const std::string &repeater, CDCSProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
@@ -88,17 +86,6 @@ CDCSHandler::~CDCSHandler()
 		m_pool->release(m_handler);
 }
 
-void CDCSHandler::initialise(unsigned int maxReflectors)
-{
-	assert(maxReflectors > 0U);
-
-	m_maxReflectors = maxReflectors;
-
-	m_reflectors = new CDCSHandler*[m_maxReflectors];
-	for (unsigned int i = 0U; i < m_maxReflectors; i++)
-		m_reflectors[i] = NULL;
-}
-
 void CDCSHandler::setDCSProtocolHandlerPool(CDCSProtocolHandlerPool *pool)
 {
 	assert(pool != NULL);
@@ -136,9 +123,9 @@ std::string CDCSHandler::getIncoming(const std::string &callsign)
 {
 	std::string incoming;
 
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler *reflector = m_reflectors[i];
-		if (reflector != NULL && reflector->m_direction == DIR_INCOMING && 0==reflector->m_repeater.compare(callsign)) {
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
+		if (reflector->m_direction == DIR_INCOMING && 0==reflector->m_repeater.compare(callsign)) {
 			incoming.append(reflector->m_reflector);
 			incoming.append("  ");
 		}
@@ -151,17 +138,15 @@ void CDCSHandler::getInfo(IReflectorCallback *handler, CRemoteRepeaterData &data
 {
 	assert(handler != NULL);
 
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler *reflector = m_reflectors[i];
-		if (reflector != NULL) {
-			if (reflector->m_destination == handler) {
-				if (reflector->m_direction == DIR_INCOMING && 0==reflector->m_repeater.size()) {
-					if (reflector->m_linkState != DCS_UNLINKING)
-						data.addLink(reflector->m_reflector, PROTO_DCS, reflector->m_linkState == DCS_LINKED, DIR_INCOMING, true);
-				} else {
-					if (reflector->m_linkState != DCS_UNLINKING)
-						data.addLink(reflector->m_reflector, PROTO_DCS, reflector->m_linkState == DCS_LINKED, reflector->m_direction, false);
-				}
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
+		if (reflector->m_destination == handler) {
+			if (reflector->m_direction == DIR_INCOMING && 0==reflector->m_repeater.size()) {
+				if (reflector->m_linkState != DCS_UNLINKING)
+					data.addLink(reflector->m_reflector, PROTO_DCS, reflector->m_linkState == DCS_LINKED, DIR_INCOMING, true);
+			} else {
+				if (reflector->m_linkState != DCS_UNLINKING)
+					data.addLink(reflector->m_reflector, PROTO_DCS, reflector->m_linkState == DCS_LINKED, reflector->m_direction, false);
 			}
 		}
 	}
@@ -173,15 +158,13 @@ void CDCSHandler::process(CAMBEData &data)
 	unsigned int yourPort = data.getYourPort();
 	unsigned int myPort   = data.getMyPort();
 
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler *reflector = m_reflectors[i];
-		if (reflector != NULL) {
-			if (reflector->m_yourAddress.s_addr == yourAddress.s_addr &&
-				reflector->m_yourPort           == yourPort &&
-				reflector->m_myPort             == myPort) {
-				reflector->processInt(data);
-				return;
-			}
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
+		if (		reflector->m_yourAddress.s_addr == yourAddress.s_addr &&
+					reflector->m_yourPort           == yourPort &&
+					reflector->m_myPort             == myPort) {
+			reflector->processInt(data);
+			return;
 		}
 	}	
 }
@@ -196,32 +179,29 @@ void CDCSHandler::process(CPollData &poll)
 	unsigned int   length = poll.getLength();
 
 	// Check to see if we already have a link
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler *handler = m_reflectors[i];
-
-		if (handler != NULL) {
-			if (0==handler->m_reflector.compare(reflector) &&
-				0==handler->m_repeater.compare(repeater) &&
-				handler->m_yourAddress.s_addr == yourAddress.s_addr &&
-				handler->m_yourPort  == yourPort &&
-				handler->m_myPort    == myPort &&
-				handler->m_direction == DIR_OUTGOING &&
-				handler->m_linkState == DCS_LINKED &&
-				length == 22U) {
-				handler->m_pollInactivityTimer.start();
-				CPollData reply(handler->m_repeater, handler->m_reflector, handler->m_direction, handler->m_yourAddress, handler->m_yourPort);
-				handler->m_handler->writePoll(reply);
-				return;
-			} else if (0==handler->m_reflector.compare(0, LONG_CALLSIGN_LENGTH - 1U, reflector, 0, LONG_CALLSIGN_LENGTH - 1U) &&
-					   handler->m_yourAddress.s_addr == yourAddress.s_addr &&
-					   handler->m_yourPort  == yourPort &&
-					   handler->m_myPort    == myPort &&
-					   handler->m_direction == DIR_INCOMING &&
-					   handler->m_linkState == DCS_LINKED &&
-					   length == 17U) {
-				handler->m_pollInactivityTimer.start();
-				return;
-			}
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *handler = *it;
+		if (		0==handler->m_reflector.compare(reflector) &&
+					0==handler->m_repeater.compare(repeater) &&
+					handler->m_yourAddress.s_addr == yourAddress.s_addr &&
+					handler->m_yourPort  == yourPort &&
+					handler->m_myPort    == myPort &&
+					handler->m_direction == DIR_OUTGOING &&
+					handler->m_linkState == DCS_LINKED &&
+					length == 22U) {
+			handler->m_pollInactivityTimer.start();
+			CPollData reply(handler->m_repeater, handler->m_reflector, handler->m_direction, handler->m_yourAddress, handler->m_yourPort);
+			handler->m_handler->writePoll(reply);
+			return;
+		} else if (0==handler->m_reflector.compare(0, LONG_CALLSIGN_LENGTH - 1U, reflector, 0, LONG_CALLSIGN_LENGTH - 1U) &&
+				   handler->m_yourAddress.s_addr == yourAddress.s_addr &&
+				   handler->m_yourPort  == yourPort &&
+				   handler->m_myPort    == myPort &&
+				   handler->m_direction == DIR_INCOMING &&
+				   handler->m_linkState == DCS_LINKED &&
+				   length == 17U) {
+			handler->m_pollInactivityTimer.start();
+			return;
 		}
 	}
 
@@ -233,16 +213,15 @@ void CDCSHandler::process(CConnectData &connect)
 	CD_TYPE type = connect.getType();
 
 	if (type == CT_ACK || type == CT_NAK || type == CT_UNLINK) {
-		for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-			if (m_reflectors[i] != NULL) {
-				bool res = m_reflectors[i]->processInt(connect, type);
-				if (res) {
-					delete m_reflectors[i];
-					m_reflectors[i] = NULL;
-				}
-			}
+		for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); ) {
+			CDCSHandler *reflector = *it;
+			bool res = reflector->processInt(connect, type);
+			if (res) {
+				delete reflector;
+				it = m_reflectors.erase(it);
+			} else
+				it++;
 		}
-
 		return;
 	}
 
@@ -255,16 +234,15 @@ void CDCSHandler::process(CConnectData &connect)
 	std::string reflectorCallsign = connect.getReflector();
 
 	// Check that it isn't a duplicate
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		if (m_reflectors[i] != NULL) {
-			if (m_reflectors[i]->m_direction          == DIR_INCOMING &&
-			    m_reflectors[i]->m_yourAddress.s_addr == yourAddress.s_addr &&
-			    m_reflectors[i]->m_yourPort           == yourPort &&
-			    m_reflectors[i]->m_myPort             == myPort &&
-			    0==m_reflectors[i]->m_repeater.compare(reflectorCallsign) &&
-			    0==m_reflectors[i]->m_reflector.compare(repeaterCallsign))
-				return;
-		}
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
+		if (		reflector->m_direction          == DIR_INCOMING &&
+					reflector->m_yourAddress.s_addr == yourAddress.s_addr &&
+					reflector->m_yourPort           == yourPort &&
+					reflector->m_myPort             == myPort &&
+					0==reflector->m_repeater.compare(reflectorCallsign) &&
+					0==reflector->m_reflector.compare(repeaterCallsign))
+			return;
 	}
 
 	// Check the validity of our repeater callsign
@@ -280,35 +258,20 @@ void CDCSHandler::process(CConnectData &connect)
 	printf("New incoming DCS link to %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
 
 	CDCSHandler *dcs = new CDCSHandler(handler, repeaterCallsign, reflectorCallsign, m_incoming, yourAddress, yourPort, DIR_INCOMING);
-
-	bool found = false;
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		if (m_reflectors[i] == NULL) {
-			m_reflectors[i] = dcs;
-			found = true;
-			break;
-		}
-	}
-
-	if (found) {
+	if (dcs) {
+		m_reflectors.push_back(dcs);
 		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_ACK, yourAddress, yourPort);
 		m_incoming->writeConnect(reply);
-	} else {
-		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, yourAddress, yourPort);
-		m_incoming->writeConnect(reply);
-
-		printf("No space to add new DCS link, ignoring\n");
-		delete dcs;
 	}
 }
 
 void CDCSHandler::link(IReflectorCallback *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
 {
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		if (m_reflectors[i] != NULL) {
-			if (m_reflectors[i]->m_direction == DIR_OUTGOING && m_reflectors[i]->m_destination == handler && m_reflectors[i]->m_linkState != DCS_UNLINKING)
-				return;
-		}
+	// if the handler is currently unlinking, quit!
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
+		if (reflector->m_direction == DIR_OUTGOING && reflector->m_destination == handler && reflector->m_linkState != DCS_UNLINKING)
+			return;
 	}
 
 	CDCSProtocolHandler *protoHandler = m_pool->getHandler();
@@ -316,30 +279,17 @@ void CDCSHandler::link(IReflectorCallback *handler, const std::string &repeater,
 		return;
 
 	CDCSHandler *dcs = new CDCSHandler(handler, gateway, repeater, protoHandler, address, DCS_PORT, DIR_OUTGOING);
-
-	bool found = false;
-
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		if (m_reflectors[i] == NULL) {
-			m_reflectors[i] = dcs;
-			found = true;
-			break;
-		}
-	}
-
-	if (found) {
+	if (dcs) {
+		m_reflectors.push_back(dcs);
 		CConnectData reply(m_gatewayType, repeater, gateway, CT_LINK1, address, DCS_PORT);
 		protoHandler->writeConnect(reply);
-	} else {
-		printf("No space to add new DCS link, ignoring\n");
-		delete dcs;
 	}
 }
 
 void CDCSHandler::unlink(IReflectorCallback *handler, const std::string &callsign, bool exclude)
 {
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler *reflector = m_reflectors[i];
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
 
 		if (reflector != NULL) {
 			bool found = false;
@@ -417,26 +367,25 @@ void CDCSHandler::unlink(CDCSHandler *reflector)
 
 void CDCSHandler::unlink()
 {
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler* reflector = m_reflectors[i];
-
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler* reflector = *it;
 		CDCSHandler::unlink(reflector);
 	}	
 }
 
 void CDCSHandler::writeHeader(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction)
 {
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		if (m_reflectors[i] != NULL)
-			m_reflectors[i]->writeHeaderInt(handler, header, direction);
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
+		reflector->writeHeaderInt(handler, header, direction);
 	}	
 }
 
 void CDCSHandler::writeAMBE(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
 {
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		if (m_reflectors[i] != NULL)
-			m_reflectors[i]->writeAMBEInt(handler, data, direction);
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
+		reflector->writeAMBEInt(handler, data, direction);
 	}	
 }
 
@@ -445,26 +394,25 @@ void CDCSHandler::gatewayUpdate(const std::string &reflector, const std::string 
 	std::string gateway = reflector;
 	gateway.resize(LONG_CALLSIGN_LENGTH - 1U, ' ');
 
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler *reflector = m_reflectors[i];
-		if (reflector != NULL) {
-			if (0 == reflector->m_reflector.compare(0, LONG_CALLSIGN_LENGTH - 1U, gateway)) {
-				if (address.size()) {
-					// A new address, change the value
-					printf("Changing IP address of DCS gateway or reflector %s to %s\n", reflector->m_reflector.c_str(), address.c_str());
-					reflector->m_yourAddress.s_addr = ::inet_addr(address.c_str());
-				} else {
-					printf("IP address for DCS gateway or reflector %s has been removed\n", reflector->m_reflector.c_str());
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
+		if (0 == reflector->m_reflector.compare(0, LONG_CALLSIGN_LENGTH - 1U, gateway)) {
+			if (address.size()) {
+				// A new address, change the value
+				printf("Changing IP address of DCS gateway or reflector %s to %s\n", reflector->m_reflector.c_str(), address.c_str());
+				reflector->m_yourAddress.s_addr = ::inet_addr(address.c_str());
+			} else {
+				printf("IP address for DCS gateway or reflector %s has been removed\n", reflector->m_reflector.c_str());
 
-					// No address, this probably shouldn't happen....
-					if (reflector->m_direction == DIR_OUTGOING && reflector->m_destination != NULL)
-						reflector->m_destination->linkFailed(DP_DCS, reflector->m_reflector, false);
+				// No address, this probably shouldn't happen....
+				if (reflector->m_direction == DIR_OUTGOING && reflector->m_destination != NULL)
+					reflector->m_destination->linkFailed(DP_DCS, reflector->m_reflector, false);
 
-					m_stateChange = true;
+				m_stateChange = true;
 
-					delete m_reflectors[i];
-					m_reflectors[i] = NULL;
-				}
+				delete reflector;
+				it = m_reflectors.erase(it);
+				it--;
 			}
 		}
 	}
@@ -472,23 +420,23 @@ void CDCSHandler::gatewayUpdate(const std::string &reflector, const std::string 
 
 void CDCSHandler::clock(unsigned int ms)
 {
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		if (m_reflectors[i] != NULL) {
-			bool ret = m_reflectors[i]->clockInt(ms);
-			if (ret) {
-				delete m_reflectors[i];
-				m_reflectors[i] = NULL;
-			}
-		}
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); ) {
+		CDCSHandler *handler = *it;
+		bool ret = handler->clockInt(ms);
+		if (ret) {
+			delete handler;
+			it = m_reflectors.erase(it);
+		} else
+			it++;
 	}
 }
 
 void CDCSHandler::finalise()
 {
-	for (unsigned int i = 0U; i < m_maxReflectors; i++)
-		delete m_reflectors[i];
-
-	delete[] m_reflectors;
+	while (m_reflectors.end() != m_reflectors.begin()) {
+		delete *(m_reflectors.begin());
+		m_reflectors.erase(m_reflectors.begin());
+	}
 }
 
 void CDCSHandler::processInt(CAMBEData &data)
@@ -826,28 +774,26 @@ bool CDCSHandler::stateChange()
 
 void CDCSHandler::writeStatus(FILE *file)
 {
-	for (unsigned int i = 0U; i < m_maxReflectors; i++) {
-		CDCSHandler *reflector = m_reflectors[i];
-		if (reflector != NULL) {
-			struct tm *tm = ::gmtime(&reflector->m_time);
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
+		CDCSHandler *reflector = *it;
+		struct tm *tm = ::gmtime(&reflector->m_time);
 
-			switch (reflector->m_direction) {
-				case DIR_OUTGOING:
-					if (reflector->m_linkState == DCS_LINKED) {
-						fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DCS link - Type: Repeater Rptr: %s Refl: %s Dir: Outgoing\n",
-							tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, 
-							reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
-					}
-					break;
+		switch (reflector->m_direction) {
+			case DIR_OUTGOING:
+				if (reflector->m_linkState == DCS_LINKED) {
+					fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DCS link - Type: Repeater Rptr: %s Refl: %s Dir: Outgoing\n",
+						tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, 
+						reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
+				}
+				break;
 
-				case DIR_INCOMING:
-					if (reflector->m_linkState == DCS_LINKED) {
-						fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DCS link - Type: Repeater Rptr: %s Refl: %s Dir: Incoming\n",
-							tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, 
-							reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
-					}
-					break;
-			}
+			case DIR_INCOMING:
+				if (reflector->m_linkState == DCS_LINKED) {
+					fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DCS link - Type: Repeater Rptr: %s Refl: %s Dir: Incoming\n",
+						tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, 
+						reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
+				}
+				break;
 		}
 	}
 }

@@ -63,8 +63,6 @@ m_remote(NULL)
 	CG2Handler::initialise(0);
 	if (countDExtra)
 		CDExtraHandler::initialise(countDExtra);
-	if (countDCS)
-		CDCSHandler::initialise(countDCS);
 	printf("StarNetServerThread created. DExtra channels: %d, DCS Channels: %d\n", countDExtra, countDCS);
 }
 

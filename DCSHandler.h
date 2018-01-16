@@ -19,9 +19,10 @@
 
 #pragma once
 
+#include <netinet/in.h>
 #include <string>
 #include <cstdio>
-#include <netinet/in.h>
+#include <list>
 
 #include "DCSProtocolHandlerPool.h"
 #include "ReflectorCallback.h"
@@ -41,8 +42,6 @@ enum DCS_STATE {
 
 class CDCSHandler {
 public:
-	static void initialise(unsigned int maxReflectors);
-
 	static void setDCSProtocolHandlerPool(CDCSProtocolHandlerPool *pool);
 	static void setDCSProtocolIncoming(CDCSProtocolHandler *handler);
 	static void setGatewayType(GATEWAY_TYPE type);
@@ -87,8 +86,7 @@ protected:
 	bool clockInt(unsigned int ms);
 	
 private:
-	static unsigned int             m_maxReflectors;
-	static CDCSHandler            **m_reflectors;
+	static std::list<CDCSHandler *> m_reflectors;
 
 	static CDCSProtocolHandlerPool *m_pool;
 	static CDCSProtocolHandler     *m_incoming;
