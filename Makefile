@@ -5,16 +5,16 @@ BINDIR=/usr/local/bin
 CFGDIR=/usr/local/etc
 
 # choose this if you want debugging help
-#CPPFLAGS=-g -ggdb -W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
+#CPPFLAGS=-g -ggdb -W -Wall -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 # or, you can choose this for a much smaller executable without debugging help
-CPPFLAGS=-W -Wall -I/usr/include -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
+CPPFLAGS=-W -Wall -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 
 sgs :  $(OBJS)
-	g++ $(CPPFLAGS) -o sgs $(OBJS) -L/usr/lib -lconfig++ -pthread
+	g++ $(CPPFLAGS) -o sgs $(OBJS) -lconfig++ -pthread
 
 %.o : %.cpp
 	g++ $(CPPFLAGS) -MMD -MD -c $< -o $@

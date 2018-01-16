@@ -32,7 +32,7 @@ GATEWAY_TYPE             CDCSHandler::m_gatewayType  = GT_REPEATER;
 
 CCallsignList           *CDCSHandler::m_whiteList = NULL;
 CCallsignList           *CDCSHandler::m_blackList = NULL;
-std::list<CDCSHandler *> m_reflectors;
+std::list<CDCSHandler *> CDCSHandler::m_reflectors;
 
 
 CDCSHandler::CDCSHandler(IReflectorCallback *handler, const std::string &reflector, const std::string &repeater, CDCSProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
@@ -166,7 +166,7 @@ void CDCSHandler::process(CAMBEData &data)
 			reflector->processInt(data);
 			return;
 		}
-	}	
+	}
 }
 
 void CDCSHandler::process(CPollData &poll)
@@ -262,6 +262,10 @@ void CDCSHandler::process(CConnectData &connect)
 		m_reflectors.push_back(dcs);
 		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_ACK, yourAddress, yourPort);
 		m_incoming->writeConnect(reply);
+	} else {
+		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, yourAddress, yourPort);
+		m_incoming->writeConnect(reply);
+		printf("Could not create new CDCSHandler, ignoring");
 	}
 }
 
@@ -345,7 +349,7 @@ void CDCSHandler::unlink(IReflectorCallback *handler, const std::string &callsig
 				m_stateChange = true;
 			}
 		}
-	}	
+	}
 }
 
 void CDCSHandler::unlink(CDCSHandler *reflector)
@@ -370,7 +374,7 @@ void CDCSHandler::unlink()
 	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
 		CDCSHandler* reflector = *it;
 		CDCSHandler::unlink(reflector);
-	}	
+	}
 }
 
 void CDCSHandler::writeHeader(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction)
@@ -378,7 +382,7 @@ void CDCSHandler::writeHeader(IReflectorCallback *handler, CHeaderData &header, 
 	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
 		CDCSHandler *reflector = *it;
 		reflector->writeHeaderInt(handler, header, direction);
-	}	
+	}
 }
 
 void CDCSHandler::writeAMBE(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
@@ -386,7 +390,7 @@ void CDCSHandler::writeAMBE(IReflectorCallback *handler, CAMBEData &data, DIRECT
 	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); it++) {
 		CDCSHandler *reflector = *it;
 		reflector->writeAMBEInt(handler, data, direction);
-	}	
+	}
 }
 
 void CDCSHandler::gatewayUpdate(const std::string &reflector, const std::string &address)
@@ -433,9 +437,10 @@ void CDCSHandler::clock(unsigned int ms)
 
 void CDCSHandler::finalise()
 {
-	while (m_reflectors.end() != m_reflectors.begin()) {
-		delete *(m_reflectors.begin());
-		m_reflectors.erase(m_reflectors.begin());
+	for (auto it=m_reflectors.begin(); it!=m_reflectors.end(); ) {
+		CDCSHandler *handler = *it;
+		delete handler;
+		it = m_reflectors.erase(it);
 	}
 }
 
@@ -490,7 +495,7 @@ void CDCSHandler::processInt(CAMBEData &data)
 
 				m_destination->process(header, m_direction, AS_DCS);
 			}
-			
+
 			if (id == m_dcsId) {
 				m_pollInactivityTimer.start();
 				m_inactivityTimer.start();
@@ -782,7 +787,7 @@ void CDCSHandler::writeStatus(FILE *file)
 			case DIR_OUTGOING:
 				if (reflector->m_linkState == DCS_LINKED) {
 					fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DCS link - Type: Repeater Rptr: %s Refl: %s Dir: Outgoing\n",
-						tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, 
+						tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
 						reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
 				}
 				break;
@@ -790,7 +795,7 @@ void CDCSHandler::writeStatus(FILE *file)
 			case DIR_INCOMING:
 				if (reflector->m_linkState == DCS_LINKED) {
 					fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DCS link - Type: Repeater Rptr: %s Refl: %s Dir: Incoming\n",
-						tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, 
+						tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
 						reflector->m_repeater.c_str(), reflector->m_reflector.c_str());
 				}
 				break;

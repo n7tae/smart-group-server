@@ -16,7 +16,7 @@
  *   along with this program; if not, write to the Free Software
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
- 
+
 #include <thread>
 #include <chrono>
 #include <sys/types.h>
@@ -61,8 +61,6 @@ m_remote(NULL)
 {
 	CHeaderData::initialise();
 	CG2Handler::initialise(0);
-	if (countDExtra)
-		CDExtraHandler::initialise(countDExtra);
 	printf("StarNetServerThread created. DExtra channels: %d, DCS Channels: %d\n", countDExtra, countDCS);
 }
 
@@ -71,7 +69,7 @@ CStarNetServerThread::~CStarNetServerThread()
 	CHeaderData::finalise();
 	CG2Handler::finalise();
 	CStarNetHandler::finalise();
-	
+
 	if (m_countDExtra)
 		CDExtraHandler::finalise();
 
@@ -143,7 +141,7 @@ void CStarNetServerThread::run()
 		CDExtraHandler::setCallsign(m_callsign);
 		CDExtraHandler::setDExtraProtocolHandlerPool(m_dextraPool);
 	}
-	
+
 	if (m_countDCS) {
 		CDCSHandler::setDCSProtocolHandlerPool(m_dcsPool);
 		CDCSHandler::setGatewayType(GT_STARNET);

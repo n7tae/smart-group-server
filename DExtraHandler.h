@@ -21,6 +21,7 @@
 
 #include <netinet/in.h>
 #include <string>
+#include <list>
 
 #include "DExtraProtocolHandlerPool.h"
 #include "ReflectorCallback.h"
@@ -41,8 +42,6 @@ enum DEXTRA_STATE {
 
 class CDExtraHandler {
 public:
-	static void initialise(unsigned int maxReflectors);
-
 	static void setCallsign(const std::string &callsign);
 	static void setDExtraProtocolHandlerPool(CDExtraProtocolHandlerPool *pool);
 	static void setDExtraProtocolIncoming(CDExtraProtocolHandler *handler);
@@ -92,9 +91,8 @@ protected:
 	bool clockInt(unsigned int ms);
 
 private:
-	static unsigned int                m_maxReflectors;
 	static unsigned int                m_maxDongles;
-	static CDExtraHandler            **m_reflectors;
+	static std::list<CDExtraHandler *> m_reflectors;
 
 	static std::string                 m_callsign;
 	static CDExtraProtocolHandlerPool *m_pool;
