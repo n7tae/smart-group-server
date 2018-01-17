@@ -20,24 +20,16 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 #include "DCSProtocolHandler.h"
 
-struct SDCSProtocolHandler {
-public:
-	CDCSProtocolHandler* m_handler;
-	unsigned int         m_port;
-	bool                 m_inUse;
-};
-
 class CDCSProtocolHandlerPool {
 public:
-	CDCSProtocolHandlerPool(unsigned int n, unsigned int port, const std::string &addr = std::string(""));
+	CDCSProtocolHandlerPool(unsigned int port, const std::string &addr = std::string(""));
 	~CDCSProtocolHandlerPool();
 
-	bool open();
-
-	CDCSProtocolHandler *getHandler(unsigned int port = 0U);
+	CDCSProtocolHandler *getHandler();
 	void release(CDCSProtocolHandler *handler);
 
 	DCS_TYPE      read();
@@ -48,8 +40,9 @@ public:
 	void close();
 
 private:
-	struct SDCSProtocolHandler *m_pool;
-	unsigned int                m_n;
-	unsigned int                m_index;
+	std::map<int,CDCSProtocolHandler *> m_pool;
+	std::map<int,CDCSProtocolHandler *>::iterator m_index;
+	unsigned int m_basePort;
+	std::string m_address;
 };
 
