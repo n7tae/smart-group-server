@@ -25,7 +25,7 @@
 
 CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 {
-	
+
 	if (pathname.size() < 1) {
 		printf("Configuration filename too short!\n");
 		return;
@@ -44,12 +44,12 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		return;
 	}
 
-	if (! get_value(cfg, "ircddb.callsign", m_callsign, 3, 8, ""))
+	if (! get_value(cfg, "gateway.callsign", m_callsign, 3, 8, ""))
 		return;
 	if (0 == m_callsign.size())
 		return;
 	CUtils::ToUpper(m_callsign);
-	get_value(cfg, "ircddb.address", m_address, 0, 20, "");
+	get_value(cfg, "gateway.address", m_address, 0, 20, "");
 	if (! get_value(cfg, "ircddb.hostname", m_ircddbHostname, 5, 30, "rr.openquad.net"))
 		return;
 	if (! get_value(cfg, "ircddb.username", m_ircddbUsername, 3, 8, ""))
@@ -82,7 +82,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 				basename.empty();
 			}
 		}
-		
+
 		sprintf(key, "module.[%d].band", i);
 		get_value(cfg, key, band, 1, 1, "A");
 		CUtils::ToUpper(band);
@@ -90,7 +90,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 			printf("Module %d band is not a letter\n", i);
 			basename.empty();
 		}
-		
+
 		sprintf(key, "module.[%d].subscribe", i);
 		get_value(cfg, key, subscribe, 1, 1, "A");
 		CUtils::ToUpper(subscribe);
@@ -120,7 +120,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		pmod->callsign = basename + subscribe;
 		pmod->logoff = basename + unsubscribe;
 		pmod->band = band;
-		
+
 		sprintf(key, "module.[%d].info", i);
 		get_value(cfg, key, pmod->info, 0, 20, "Smart Group Server");
 		if (pmod->info.size())
@@ -134,7 +134,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		sprintf(key, "module.[%d].usertimout", i);
 		get_value(cfg, key, ivalue, 0, 300, 300);
 		pmod->usertimeout = (unsigned int)ivalue;
-	
+
 		bool bvalue;
 		sprintf(key, "module.[%d].callsignswitch", i);
 		get_value(cfg, key, bvalue, false);
