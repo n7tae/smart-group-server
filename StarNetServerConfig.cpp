@@ -167,7 +167,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 	if (m_remoteEnabled) {
 		get_value(cfg, "remote.password", m_remotePassword, 6, 30, "");
 		int ivalue;
-		get_value(cfg, "remote.port", ivalue, 1000, 65000, 32156);
+		get_value(cfg, "remote.port", ivalue, 1000, 65000, 39999);
 		m_remotePort = (unsigned int)ivalue;
 		printf("Remote enabled: password='%s', port=%d\n", m_remotePassword.c_str(), m_remotePort);
 	} else {
