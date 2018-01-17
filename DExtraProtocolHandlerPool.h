@@ -20,24 +20,16 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 #include "DExtraProtocolHandler.h"
 
-struct SDExtraProtocolHandler {
-public:
-	CDExtraProtocolHandler* m_handler;
-	unsigned int            m_port;
-	bool                    m_inUse;
-};
-
 class CDExtraProtocolHandlerPool {
 public:
-	CDExtraProtocolHandlerPool(unsigned int n, unsigned int port, const std::string &addr = std::string(""));
+	CDExtraProtocolHandlerPool(const unsigned int port, const std::string &addr = std::string(""));
 	~CDExtraProtocolHandlerPool();
 
-	bool open();
-
-	CDExtraProtocolHandler *getHandler(unsigned int port = 0U);
+	CDExtraProtocolHandler *getHandler();
 	void release(CDExtraProtocolHandler *handler);
 
 	DEXTRA_TYPE   read();
@@ -49,8 +41,9 @@ public:
 	void close();
 
 private:
-	struct SDExtraProtocolHandler *m_pool;
-	unsigned int                   m_n;
-	unsigned int                   m_index;
+	std::map<unsigned int, CDExtraProtocolHandler *> m_pool;
+	std::map<unsigned int, CDExtraProtocolHandler *>::iterator m_index;
+	unsigned int m_basePort;
+	std::string m_address;
 };
 

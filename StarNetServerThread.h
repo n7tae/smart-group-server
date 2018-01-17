@@ -37,7 +37,7 @@ public:
 
 	virtual void setCallsign(const std::string& callsign);
 	virtual void setAddress(const std::string& address);
-	
+
 	virtual void addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent,
 							unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
 
@@ -54,9 +54,6 @@ private:
 	bool		m_stopped;
 	std::string	m_callsign;
 	std::string	m_address;
-	
-	CDExtraProtocolHandlerPool *m_dextraPool;
-	CDCSProtocolHandlerPool    *m_dcsPool;
 
 	CG2ProtocolHandler *m_g2Handler;
 	CIRCDDB            *m_irc;
@@ -72,8 +69,8 @@ private:
 	void processIrcDDB();
 	void processG2();
 	void loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarProtocol);
-	
-	void processDExtra();
-	void processDCS();
+
+	void processDExtra(CDExtraProtocolHandlerPool *dextraPool);
+	void processDCS(CDCSProtocolHandlerPool *dcsPool);
 };
 

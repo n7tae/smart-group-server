@@ -22,120 +22,94 @@
 #include "DExtraProtocolHandlerPool.h"
 #include "Utils.h"
 
-CDExtraProtocolHandlerPool::CDExtraProtocolHandlerPool(unsigned int n, unsigned int port, const std::string &addr) :
-m_pool(NULL),
-m_n(n),
-m_index(0U)
+CDExtraProtocolHandlerPool::CDExtraProtocolHandlerPool(const unsigned int port, const std::string &addr) :
+m_basePort(port),
+m_address(addr)
 {
 	assert(port > 0U);
-	assert(n > 0U);
-
-	m_pool = new struct SDExtraProtocolHandler[n];
-
-	for (unsigned int i = 0U; i < n; i++) {
-		m_pool[i].m_handler = new CDExtraProtocolHandler(port + i, addr);
-		m_pool[i].m_port    = port + i;
-		m_pool[i].m_inUse   = false;
-	}
-
-	printf("Allocated UDP ports %u-%u to DExtra\n", port, port + n - 1U);
+	m_index = m_pool.end();
+	printf("DExtra UDP port base = %u\n", port);
 }
 
 CDExtraProtocolHandlerPool::~CDExtraProtocolHandlerPool()
 {
-	for (unsigned int i = 0U; i < m_n; i++)
-		delete m_pool[i].m_handler;
-
-	delete[] m_pool;
+	while (m_pool.end() != m_pool.begin()) {
+		auto it = m_pool.begin();
+		delete it->second;
+		m_pool.erase(it);
+	}
 }
 
-bool CDExtraProtocolHandlerPool::open()
+CDExtraProtocolHandler* CDExtraProtocolHandlerPool::getHandler()
 {
-	for (unsigned int i = 0U; i < m_n; i++) {
-		bool ret = m_pool[i].m_handler->open();
-		if (!ret)
-			return false;
-	}
-
-	return true;
-}
-
-CDExtraProtocolHandler* CDExtraProtocolHandlerPool::getHandler(unsigned int port)
-{
-	if (port == 0U) {
-		for (unsigned int i = 0U; i < m_n; i++) {
-			if (!m_pool[i].m_inUse) {
-				m_pool[i].m_inUse = true;
-				return m_pool[i].m_handler;
-			}
+	unsigned int port = m_basePort;
+	while (m_pool.end() != m_pool.find(port))
+		port++;	// find an unused port
+	CDExtraProtocolHandler *proto = new CDExtraProtocolHandler(port, m_address);
+	if (proto) {
+		if (proto->open())
+			m_pool[port] = proto;
+		else {
+			delete proto;
+			proto = NULL;
+			printf("ERROR: Can't open new DExtra UDP port %u!\n", port);
 		}
-	} else {
-		for (unsigned int i = 0U; i < m_n; i++) {
-			if (m_pool[i].m_port == port) {
-				m_pool[i].m_inUse = true;
-				return m_pool[i].m_handler;
-			}
-		}
-	}
-
-	printf("Cannot find a free DExtra port in the pool\n");
-
-	return NULL;
+	} else
+		printf("ERROR: Can't allocate new CDExtraProtocolHandler at port %u\n", port);
+	return proto;
 }
 
 void CDExtraProtocolHandlerPool::release(CDExtraProtocolHandler *handler)
 {
 	assert(handler != NULL);
-
-	for (unsigned int i = 0U; i < m_n; i++) {
-		if (m_pool[i].m_handler == handler && m_pool[i].m_inUse) {
-			m_pool[i].m_inUse = false;
+	for (auto it=m_pool.begin(); it!=m_pool.end(); it++) {
+		if (it->second == handler) {
+			it->second->close();
+			delete it->second;
+			printf("Releasing CDExtraProtocolHandler on port %u.\n", it->first);
+			m_pool.erase(it);
 			return;
 		}
 	}
-
-	printf("Trying to release an unused DExtra port\n");
+	// we should never get here!
+	printf("ERROR: could not find CDExtraProtocolHander (port=%u) to release!\n", handler->getPort());
 }
 
 DEXTRA_TYPE CDExtraProtocolHandlerPool::read()
 {
-	while (m_index < m_n) {
-		if (m_pool[m_index].m_inUse) {
-			DEXTRA_TYPE type = m_pool[m_index].m_handler->read();
-			if (type != DE_NONE)
-				return type;
-		}
-
+	if (m_index == m_pool.end())
+		m_index = m_pool.begin();
+	while (m_index != m_pool.end()) {
+		DEXTRA_TYPE type = m_index->second->read();
+		if (type != DE_NONE)
+			return type;
 		m_index++;
 	}
-
-	m_index = 0U;
-
 	return DE_NONE;
 }
 
 CHeaderData *CDExtraProtocolHandlerPool::readHeader()
 {
-	return m_pool[m_index].m_handler->readHeader();
+	return m_index->second->readHeader();
 }
 
 CAMBEData *CDExtraProtocolHandlerPool::readAMBE()
 {
-	return m_pool[m_index].m_handler->readAMBE();
+	return m_index->second->readAMBE();
 }
 
 CPollData *CDExtraProtocolHandlerPool::readPoll()
 {
-	return m_pool[m_index].m_handler->readPoll();
+	return m_index->second->readPoll();
 }
 
 CConnectData *CDExtraProtocolHandlerPool::readConnect()
 {
-	return m_pool[m_index].m_handler->readConnect();
+	return m_index->second->readConnect();
 }
 
 void CDExtraProtocolHandlerPool::close()
 {
-	for (unsigned int i = 0U; i < m_n; i++)
-		m_pool[i].m_handler->close();
+	for (auto it=m_pool.begin(); it!=m_pool.end(); it++)
+		it->second->close();
 }

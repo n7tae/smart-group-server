@@ -22,7 +22,7 @@
 #include "DCSProtocolHandlerPool.h"
 #include "Utils.h"
 
-CDCSProtocolHandlerPool::CDCSProtocolHandlerPool(unsigned int port, const std::string &addr) :
+CDCSProtocolHandlerPool::CDCSProtocolHandlerPool(const unsigned int port, const std::string &addr) :
 m_basePort(port),
 m_address(addr)
 {
@@ -52,10 +52,10 @@ CDCSProtocolHandler *CDCSProtocolHandlerPool::getHandler()
 		else {
 			delete proto;
 			proto = NULL;
-			printf("ERROR: Can't open new UDP port %u!\n", port);
+			printf("ERROR: Can't open new DCS UDP port %u!\n", port);
 		}
 	} else
-		printf("ERROR: Can't allocate new DCSProtocolHandler at port %u\n", port);
+		printf("ERROR: Can't allocate new CDCSProtocolHandler at port %u\n", port);
 	return proto;
 }
 
@@ -66,8 +66,7 @@ void CDCSProtocolHandlerPool::release(CDCSProtocolHandler *handler)
 		if (it->second == handler) {
 			it->second->close();
 			delete it->second;
-			unsigned int port = it->first;
-			printf("Releasing CDCSProtocolHandler on port %u.\n", port);
+			printf("Releasing CDCSProtocolHandler on port %u.\n", it->first);
 			m_pool.erase(it);
 			return;
 		}
@@ -78,7 +77,7 @@ void CDCSProtocolHandlerPool::release(CDCSProtocolHandler *handler)
 
 DCS_TYPE CDCSProtocolHandlerPool::read()
 {
-	if (m_pool.end() == m_index)
+	if (m_index == m_pool.end())
 		m_index = m_pool.begin();
 	while (m_index != m_pool.end()) {
 		DCS_TYPE type = m_index->second->read();

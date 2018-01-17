@@ -26,7 +26,7 @@
 
 class CDCSProtocolHandlerPool {
 public:
-	CDCSProtocolHandlerPool(unsigned int port, const std::string &addr = std::string(""));
+	CDCSProtocolHandlerPool(const unsigned int port, const std::string &addr = std::string(""));
 	~CDCSProtocolHandlerPool();
 
 	CDCSProtocolHandler *getHandler();
