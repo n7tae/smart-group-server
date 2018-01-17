@@ -92,7 +92,7 @@ protected:
 
 private:
 	static unsigned int                m_maxDongles;
-	static std::list<CDExtraHandler *> m_reflectors;
+	static std::list<CDExtraHandler *> m_DExtraHandlers;
 
 	static std::string                 m_callsign;
 	static CDExtraProtocolHandlerPool *m_pool;

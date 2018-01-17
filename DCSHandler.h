@@ -84,9 +84,9 @@ protected:
 	void writeAMBEInt(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction);
 
 	bool clockInt(unsigned int ms);
-	
+
 private:
-	static std::list<CDCSHandler *> m_reflectors;
+	static std::list<CDCSHandler *> m_DCSHandlers;
 
 	static CDCSProtocolHandlerPool *m_pool;
 	static CDCSProtocolHandler     *m_incoming;
