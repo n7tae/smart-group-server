@@ -50,6 +50,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		return;
 	CUtils::ToUpper(m_callsign);
 	get_value(cfg, "gateway.address", m_address, 0, 20, "");
+	printf("GATEWAY: callsign='%s' address='%s'\n", m_callsign.c_str(), m_address.c_str());
 	if (! get_value(cfg, "ircddb.hostname", m_ircddbHostname, 5, 30, "rr.openquad.net"))
 		return;
 	if (! get_value(cfg, "ircddb.username", m_ircddbUsername, 3, 8, ""))
@@ -59,8 +60,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 	else
 		CUtils::ToUpper(m_ircddbUsername);
 	get_value(cfg, "ircddb.password", m_ircddbPassword, 1, 30, "");
-	printf("IRCDDB: calsign='%s' address='%s' host='%s' user='%s' password='%s'\n", m_callsign.c_str(), m_address.c_str(), m_ircddbHostname.c_str(),
-																									m_ircddbUsername.c_str(), m_ircddbPassword.c_str());
+	printf("IRCDDB: host='%s' user='%s' password='%s'\n", m_ircddbHostname.c_str(), m_ircddbUsername.c_str(), m_ircddbPassword.c_str());
 
 	// module parameters
 	for (int i=0; i<cfg.lookup("module").getLength(); i++) {
