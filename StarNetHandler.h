@@ -127,6 +127,7 @@ public:
 	bool remoteLink(const std::string &reflector);
 	void updateReflectorInfo();
 	DSTAR_LINKTYPE getLinkType();
+	void setLinkType(DSTAR_LINKTYPE linkType);
 
 	CRemoteStarNetGroup *getInfo() const;
 

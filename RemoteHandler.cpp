@@ -201,7 +201,7 @@ void CRemoteHandler::unlink(const std::string &callsign)
 		m_handler.sendNAK("could not get Smart Group info");
 		return;
 	}
-
+	smartGroup->setLinkType(LT_NONE);
     m_handler.sendACK();
 }
 

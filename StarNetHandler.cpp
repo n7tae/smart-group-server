@@ -1129,3 +1129,8 @@ DSTAR_LINKTYPE CStarNetHandler::getLinkType()
 {
 	return m_linkType;
 }
+
+void CStarNetHandler::setLinkType(DSTAR_LINKTYPE linkType)
+{
+	m_linkType = linkType;
+}
