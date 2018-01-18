@@ -47,9 +47,10 @@ CDExtraProtocolHandler* CDExtraProtocolHandlerPool::getHandler()
 		port++;	// find an unused port
 	CDExtraProtocolHandler *proto = new CDExtraProtocolHandler(port, m_address);
 	if (proto) {
-		if (proto->open())
+		if (proto->open()) {
 			m_pool[port] = proto;
-		else {
+			printf("New CDExtraProtocolHandler now on UDP port %u.\n", port);
+		} else {
 			delete proto;
 			proto = NULL;
 			printf("ERROR: Can't open new DExtra UDP port %u!\n", port);

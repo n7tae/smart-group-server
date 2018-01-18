@@ -23,7 +23,6 @@
 #include "DExtraHandler.h"
 #include "Utils.h"
 
-unsigned int                CDExtraHandler::m_maxDongles = 0U;
 std::list<CDExtraHandler *> CDExtraHandler::m_DExtraHandlers;
 
 std::string                 CDExtraHandler::m_callsign;
@@ -73,42 +72,6 @@ m_header(NULL)
 	}
 }
 
-CDExtraHandler::CDExtraHandler(CDExtraProtocolHandler *protoHandler, const std::string &dextraHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
-m_reflector(dextraHandler),
-m_repeater(),
-m_handler(protoHandler),
-m_yourAddress(address),
-m_yourPort(port),
-m_direction(direction),
-m_linkState(DEXTRA_LINKING),
-m_destination(NULL),
-m_time(),
-m_pollTimer(1000U, 10U),
-m_pollInactivityTimer(1000U, 60U),
-m_tryTimer(1000U, 1U),
-m_tryCount(0U),
-m_dExtraId(0x00U),
-m_dExtraSeq(0x00U),
-m_inactivityTimer(1000U, NETWORK_TIMEOUT),
-m_header(NULL)
-{
-	assert(protoHandler != NULL);
-	assert(port > 0U);
-
-	m_pollInactivityTimer.start();
-
-	m_time = ::time(NULL);
-
-	if (direction == DIR_INCOMING) {
-		m_pollTimer.start();
-		m_stateChange = true;
-		m_linkState = DEXTRA_LINKED;
-	} else {
-		m_linkState = DEXTRA_LINKING;
-		m_tryTimer.start();
-	}
-}
-
 CDExtraHandler::~CDExtraHandler()
 {
 	if (m_direction == DIR_OUTGOING)
@@ -136,11 +99,6 @@ void CDExtraHandler::setDExtraProtocolHandlerPool(CDExtraProtocolHandlerPool *po
 	assert(pool != NULL);
 
 	m_pool = pool;
-}
-
-void CDExtraHandler::setMaxDongles(unsigned int maxDongles)
-{
-	m_maxDongles = maxDongles;
 }
 
 void CDExtraHandler::setWhiteList(CCallsignList *list)
@@ -245,31 +203,6 @@ void CDExtraHandler::process(const CPollData &poll)
 			handler->m_pollInactivityTimer.start();
 			return;
 		}
-	}
-
-	// A repeater poll arriving here is an error
-	if (!poll.isDongle())
-		return;
-
-	// Check to see if we are allowed to accept it
-	unsigned int count = 0U;
-	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
-		CDExtraHandler *handler = *it;
-		if (handler->m_direction == DIR_INCOMING && 0==handler->m_repeater.size())
-			count++;
-	}
-
-	if (count >= m_maxDongles)
-		return;
-
-	// An unmatched poll indicates the need for a new entry
-	printf("New incoming DExtra Dongle from %s\n", dextraHandler.c_str());
-
-	CDExtraHandler *handler = new CDExtraHandler(m_incoming, dextraHandler, yourAddress, yourPort, DIR_INCOMING);
-	if (handler) {
-		m_DExtraHandlers.push_back(handler);
-		CPollData poll(m_callsign, yourAddress, yourPort);
-		m_incoming->writePoll(poll);
 	}
 }
 

@@ -45,7 +45,6 @@ public:
 	static void setCallsign(const std::string &callsign);
 	static void setDExtraProtocolHandlerPool(CDExtraProtocolHandlerPool *pool);
 	static void setDExtraProtocolIncoming(CDExtraProtocolHandler *handler);
-	static void setMaxDongles(unsigned int maxDongles);
 
 	static void link(IReflectorCallback *handler, const std::string &repeater, const std::string &reflector, const in_addr &address);
 	static void unlink(IReflectorCallback *handler, const std::string &reflector = std::string(""), bool exclude = true);
@@ -91,7 +90,6 @@ protected:
 	bool clockInt(unsigned int ms);
 
 private:
-	static unsigned int                m_maxDongles;
 	static std::list<CDExtraHandler *> m_DExtraHandlers;
 
 	static std::string                 m_callsign;

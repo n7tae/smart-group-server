@@ -47,9 +47,10 @@ CDCSProtocolHandler *CDCSProtocolHandlerPool::getHandler()
 		port++;	// find an unused port
 	CDCSProtocolHandler *proto = new CDCSProtocolHandler(port, m_address);
 	if (proto) {
-		if (proto->open())
+		if (proto->open()) {
 			m_pool[port] = proto;
-		else {
+			printf("New CDCSProtocolHandler now on port %u.\n", port);
+		} else {
 			delete proto;
 			proto = NULL;
 			printf("ERROR: Can't open new DCS UDP port %u!\n", port);
