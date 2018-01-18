@@ -77,7 +77,6 @@ public:
 
 protected:
 	CDExtraHandler(IReflectorCallback *handler, const std::string &reflector, const std::string &repeater, CDExtraProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction);
-	CDExtraHandler(CDExtraProtocolHandler *protoHandler, const std::string &reflector, const in_addr &address, unsigned int port, DIRECTION direction);
 	~CDExtraHandler();
 
 	void processInt(CHeaderData &header);

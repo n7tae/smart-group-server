@@ -258,10 +258,10 @@ CRemoteStarNetGroup *CStarNetHandler::getInfo() const
 		CStarNetUser* user = it->second;
 		data->addUser(user->getCallsign(), user->getTimer().getTimer(), user->getTimer().getTimeout());
 	}
-	
+
 	return data;
 }
-														  
+
 void CStarNetHandler::finalise()
 {
 	while (m_starNets.size()) {
@@ -345,7 +345,7 @@ CStarNetHandler::~CStarNetHandler()
 	for (auto it = m_ids.begin(); it != m_ids.end(); it++)
 		delete it->second;
 	m_ids.empty();
-	
+
 	for (auto it = m_users.begin(); it != m_users.end(); ++it)
 		delete it->second;
 	m_users.empty();
@@ -755,21 +755,40 @@ bool CStarNetHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
 	return true;
 }
 
-void CStarNetHandler::linkInt()
+bool CStarNetHandler::remoteLink(const std::string &reflector)
+{
+	if (LT_NONE != m_linkType)
+		return false;
+
+	if (LONG_CALLSIGN_LENGTH != reflector.size())
+		return false;
+	if (0 == reflector.compare(0, 3, "XRF"))
+		m_linkType = LT_DEXTRA;
+	else if (0 == reflector.compare(0, 3, "DCS"))
+		m_linkType = LT_DCS;
+	else
+		return false;
+
+	m_linkReflector.assign(reflector);
+	return linkInt();
+}
+
+bool CStarNetHandler::linkInt()
 {
 	if (LT_NONE == m_linkType)
-		return;
+		return false;
 
-	printf("Linking %s at startup to %s reflector %s\n", m_repeater.c_str(), (LT_DEXTRA==m_linkType)?"DExtra":"DCS", m_linkReflector.c_str());
+	printf("Linking %s to %s reflector %s\n", m_repeater.c_str(), (LT_DEXTRA==m_linkType)?"DExtra":"DCS", m_linkReflector.c_str());
 
 	// Find the repeater to link to
 	CRepeaterData* data = m_cache->findRepeater(m_linkReflector);
 	if (data == NULL) {
 		printf("Cannot find the reflector in the cache, not linking\n");
-		return;
+		return false;
 	}
 
 	m_linkGateway = data->getGateway();
+	bool rtv = true;
 	switch (m_linkType) {
 		case LT_DEXTRA:
 			m_linkStatus  = LS_LINKING_DEXTRA;
@@ -779,10 +798,12 @@ void CStarNetHandler::linkInt()
 			m_linkStatus  = LS_LINKING_DCS;
 			CDCSHandler::link(this, m_repeater, m_linkReflector, data->getAddress());
 			break;
-		case LT_NONE:
+		default:
+			rtv = false;
 			break;
 	}
 	delete data;
+	return rtv;
 }
 
 void CStarNetHandler::clockInt(unsigned int ms)
@@ -803,13 +824,13 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		if (m_offCallsign.size() && m_offCallsign.compare("        "))
 			m_irc->sendHeardWithTXMsg(m_offCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
 		m_announceTimer.start(60U * 60U);		// 1 hour
-		
+
 	}
 	if (m_oldlinkStatus!=m_linkStatus && 7==m_irc->getConnectionState()) {
 		updateReflectorInfo();
 		m_oldlinkStatus = m_linkStatus;
 	}
-	
+
 	// For each incoming id
 	for (std::map<unsigned int, CStarNetId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it) {
 		CStarNetId* tx = it->second;
@@ -885,7 +906,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		CStarNetUser* user = it->second;
 		if (user && user->hasExpired()) {
 			printf("Removing %s from StarNet group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
-			
+
 			logoffUser(m_groupCallsign, user->getCallsign());	// inform QuadNet
 			delete user;
 			m_users.erase(it);
@@ -931,7 +952,7 @@ void CStarNetHandler::updateReflectorInfo()
 	info.resize(20, '_');
 	CUtils::ReplaceChar(info, ' ', '_');
 	parms.push_back(info);
-	
+
 	m_irc->sendSGSInfo(subcommand, parms);
 }
 

@@ -124,10 +124,11 @@ public:
 
 	void process(CHeaderData &header);
 	void process(CAMBEData &data);
+	bool remoteLink(const std::string &reflector);
 	void updateReflectorInfo();
 	DSTAR_LINKTYPE getLinkType();
 
-	CRemoteStarNetGroup* getInfo() const;
+	CRemoteStarNetGroup *getInfo() const;
 
 	bool logoff(const std::string& callsign);
 
@@ -145,7 +146,7 @@ protected:
 												unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector);
 	virtual ~CStarNetHandler();
 
-	void linkInt();
+	bool linkInt();
 	void clockInt(unsigned int ms);
 
 private:

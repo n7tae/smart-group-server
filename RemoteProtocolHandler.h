@@ -55,9 +55,8 @@ public:
 	std::string readRepeater();
 	std::string readStarNetGroup();
 	bool readHash(const std::string &password, uint32_t random);
-	bool readLink(std::string &callsign, RECONNECT &reconnect, std::string &reflector);
-	bool readUnlink(std::string &callsign, PROTOCOL &protocol, std::string &reflector);
-	bool readLinkScr(std::string &callsign, RECONNECT &reconnect, std::string &reflector);
+	bool readLink(std::string &callsign, std::string &reflector);
+	bool readUnlink(std::string &callsign);
 	bool readLogoff(std::string &callsign, std::string &user);
 
 	bool sendACK();

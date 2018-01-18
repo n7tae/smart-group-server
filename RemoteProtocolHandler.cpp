@@ -217,58 +217,27 @@ bool CRemoteProtocolHandler::readLogoff(std::string &callsign, std::string &user
 }
 
 
-bool CRemoteProtocolHandler::readLink(std::string &callsign, RECONNECT &reconnect, std::string &reflector)
+bool CRemoteProtocolHandler::readLink(std::string &callsign, std::string &reflector)
 {
 	if (m_type != RPHT_LINK)
 		return false;
 
 	callsign = std::string((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
 
-	uint32_t temp;
-	memcpy(&temp, m_inBuffer + 3U + LONG_CALLSIGN_LENGTH, sizeof(uint32_t));
-	reconnect = RECONNECT(wxINT32_SWAP_ON_BE(temp));
-
-	reflector = std::string((char *)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH + sizeof(uint32_t)), LONG_CALLSIGN_LENGTH);
+	reflector = std::string((char *)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH), LONG_CALLSIGN_LENGTH);
 
 	if (0==reflector.compare("        "))
-		reflector.clear();
+		return false;
 
 	return true;
 }
 
-bool CRemoteProtocolHandler::readUnlink(std::string &callsign, PROTOCOL &protocol, std::string &reflector)
+bool CRemoteProtocolHandler::readUnlink(std::string &callsign)
 {
 	if (m_type != RPHT_UNLINK)
 		return false;
 
 	callsign = std::string((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
-
-	uint32_t temp;
-	memcpy(&temp, m_inBuffer + 3U + LONG_CALLSIGN_LENGTH, sizeof(uint32_t));
-	protocol = PROTOCOL(wxINT32_SWAP_ON_BE(temp));
-
-	reflector = std::string((char *)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH + sizeof(uint32_t)), LONG_CALLSIGN_LENGTH);
-
-	return true;
-}
-
-bool CRemoteProtocolHandler::readLinkScr(std::string &callsign, RECONNECT &reconnect, std::string &reflector)
-{
-	if (m_type != RPHT_LINKSCR)
-		return false;
-
-	callsign = std::string((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
-
-	reflector = std::string((char *)(m_inBuffer + 3U + LONG_CALLSIGN_LENGTH), LONG_CALLSIGN_LENGTH);
-
-	std::string rec = std::string((char *)(m_inBuffer + 3U + 2U * LONG_CALLSIGN_LENGTH), 1U);
-
-	unsigned long val = stoul(rec);
-
-	reconnect = RECONNECT(val);
-
-	if (0 == reflector.compare("        "))
-		reflector.clear();
 
 	return true;
 }

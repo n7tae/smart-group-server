@@ -44,8 +44,7 @@ private:
 	void sendCallsigns();
 	void sendRepeater(const std::string &callsign);
 	void sendStarNetGroup(const std::string &callsign);
-	void link(const std::string &callsign, RECONNECT reconnect, const std::string &reflector, bool respond);
-	void unlink(const std::string &callsign, PROTOCOL protocol, const std::string &reflector);
+	void link(const std::string &callsign, const std::string &reflector);
+	void unlink(const std::string &callsign);
 	void logoff(const std::string &callsign, const std::string &user);
-	const char *ReconnectText(RECONNECT value);
 };

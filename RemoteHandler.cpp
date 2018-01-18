@@ -88,32 +88,16 @@ void CRemoteHandler::process()
 			break;
 		case RPHT_LINK: {
 				std::string callsign, reflector;
-				RECONNECT reconnect;
-				m_handler.readLink(callsign, reconnect, reflector);
-				if (0 == reflector.size())
-					printf("Remote control user has linked \"%s\" to \"None\" with reconnect %s\n", callsign.c_str(), ReconnectText(reconnect));
-				else
-					printf("Remote control user has linked \"%s\" to \"%s\" with reconnect %s\n", callsign.c_str(), reflector.c_str(), ReconnectText(reconnect));
-				link(callsign, reconnect, reflector, true);
+				m_handler.readLink(callsign, reflector);
+				printf("Remote control user has linked \"%s\" to \"%s\"\n", callsign.c_str(), reflector.c_str());
+				link(callsign, reflector);
 			}
 			break;
 		case RPHT_UNLINK: {
-				std::string callsign, reflector;
-				PROTOCOL protocol;
-				m_handler.readUnlink(callsign, protocol, reflector);
-				printf("Remote control user has unlinked \"%s\" from \"%s\"\n", callsign.c_str(), reflector.c_str());
-				unlink(callsign, protocol, reflector);
-			}
-			break;
-		case RPHT_LINKSCR: {
-				std::string callsign, reflector;
-				RECONNECT reconnect;
-				m_handler.readLinkScr(callsign, reconnect, reflector);
-				if (0 == reflector.size())
-					printf("Remote control user has linked \"%s\" to \"None\" with reconnect %s from localhost\n", callsign.c_str(), ReconnectText(reconnect));
-				else
-					printf("Remote control user has linked \"%s\" to \"%s\" with reconnect %s from localhost\n", callsign.c_str(), reflector.c_str(), ReconnectText(reconnect));
-				link(callsign, reconnect, reflector, false);
+				std::string callsign;
+				m_handler.readUnlink(callsign);
+				printf("Remote control user has unlinked \"%s\"\n", callsign.c_str());
+				unlink(callsign);
 			}
 			break;
 		case RPHT_LOGOFF: {
@@ -152,7 +136,6 @@ void CRemoteHandler::sendRepeater(const std::string &callsign)
 	CRemoteRepeaterData *data = repeater->getInfo();
 	if (data != NULL) {
 		CDExtraHandler::getInfo(repeater, *data);
-//		CDPlusHandler::getInfo(repeater, *data);
 		CDCSHandler::getInfo(repeater, *data);
 		CCCSHandler::getInfo(repeater, *data);
 
@@ -177,57 +160,47 @@ void CRemoteHandler::sendStarNetGroup(const std::string &callsign)
 	delete data;
 }
 
-void CRemoteHandler::link(const std::string &callsign, RECONNECT reconnect, const std::string &reflector, bool respond)
+void CRemoteHandler::link(const std::string &callsign, const std::string &reflector)
 {
-//	CStarNetHandler *smartGroup = CStarNetHandler::findStarNet(callsign);
-//	if (0 == reflector.compare(0, 3, "DCS") || 0 == reflector.compare(0, 3, "XRF")) {
-//		if (NULL == smartGroup) {
-//			m_handler.sendNAK("Invalid smartgroup callsign");
-//			return;
-//		}
-//		DSTAR_LINKTYPE linkType = smartGroup->getLinkType();
-//		if ((0==callsign.compare(0, 3, "XRF") && linkType!=LT_DEXTRA) || (0==callsign.compare(0, 3, "DCS") && linkType!=LT_DCS)) {
-//			std::string response("Can't link ");
-//			response += callsign + " of type ";
-//			switch (linkType) {
-//				case LT_DEXTRA:
-//					response.append("DExtra");
-//					break;
-//				case LT_DCS:
-//					response.append("DCS");
-//					break;
-//				case LT_NONE:
-//					response.append("Unlinked");
-//					break;
-//			}
-//			response += std::string(" to ") + reflector;
-//			m_handler.sendNAK(response);
-//			return;
-//		}
-//	}
-	CRepeaterHandler *repeater = CRepeaterHandler::findDVRepeater(callsign);
-	if (repeater == NULL) {
-		m_handler.sendNAK("Invalid repeater callsign");
+	CStarNetHandler *smartGroup = CStarNetHandler::findStarNet(callsign);
+	if (NULL == smartGroup) {
+		m_handler.sendNAK(std::string("Invalid Smart Group subscribe call ") + callsign);
 		return;
 	}
 
-	repeater->link(reconnect, reflector);
-
-	if (respond)
-	    m_handler.sendACK();
-//	if (smartGroup)
-//		smartGroup->updateReflectorInfo();	// tell QuadNet
+	if (smartGroup->remoteLink(reflector))
+		m_handler.sendACK();
+	else
+		m_handler.sendNAK("link failed");
 }
 
-void CRemoteHandler::unlink(const std::string &callsign, PROTOCOL protocol, const std::string &reflector)
+void CRemoteHandler::unlink(const std::string &callsign)
 {
-	CRepeaterHandler *repeater = CRepeaterHandler::findDVRepeater(callsign);
-	if (repeater == NULL) {
-		m_handler.sendNAK("Invalid repeater callsign");
+	CStarNetHandler *smartGroup = CStarNetHandler::findStarNet(callsign);
+	if (NULL == smartGroup) {
+		m_handler.sendNAK(std::string("Invalid Smart Group subscribe call ") + callsign);
 		return;
 	}
 
-	repeater->unlink(protocol, reflector);
+	CRemoteStarNetGroup *data = smartGroup->getInfo();
+	if (data) {
+		switch (smartGroup->getLinkType()) {
+			case LT_DEXTRA:
+				CDExtraHandler::unlink(smartGroup, data->getReflector(), true);
+				break;
+			case LT_DCS:
+				CDCSHandler::unlink(smartGroup, data->getReflector(), true);
+				break;
+			default:
+				delete data;
+				m_handler.sendNAK("alread unlinked");
+				return;
+		}
+		delete data;
+	} else {
+		m_handler.sendNAK("could not get Smart Group info");
+		return;
+	}
 
     m_handler.sendACK();
 }
@@ -245,48 +218,4 @@ void CRemoteHandler::logoff(const std::string &callsign, const std::string &user
 		m_handler.sendNAK("Invalid STARnet user callsign");
 	else
 		m_handler.sendACK();
-}
-
-const char *CRemoteHandler::ReconnectText(RECONNECT value)
-{
-	const char *ret;
-	switch (value) {
-		case RECONNECT_NEVER:
-			ret = "never";
-			break;
-		case RECONNECT_FIXED:
-			ret = "fixed";
-			break;
-		case RECONNECT_5MINS:
-			ret = "5 mins";
-			break;
-		case RECONNECT_10MINS:
-			ret = "10 mins";
-			break;
-		case RECONNECT_15MINS:
-			ret = "15 mins";
-			break;
-		case RECONNECT_20MINS:
-			ret = "20 mins";
-			break;
-		case RECONNECT_25MINS:
-			ret = "25 mins";
-			break;
-		case RECONNECT_30MINS:
-			ret = "30 mins";
-			break;
-		case RECONNECT_60MINS:
-			ret = "60 mins";
-			break;
-		case RECONNECT_90MINS:
-			ret = "90 mins";
-			break;
-		case RECONNECT_120MINS:
-			ret = "120 mins";
-			break;
-		case RECONNECT_180MINS:
-			ret = "180 mins";
-			break;
-	}
-	return ret;
 }
