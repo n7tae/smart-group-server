@@ -202,6 +202,7 @@ void CRemoteHandler::unlink(const std::string &callsign)
 		return;
 	}
 	smartGroup->setLinkType(LT_NONE);
+	smartGroup->clearReflector();
     m_handler.sendACK();
 }
 

@@ -128,6 +128,7 @@ public:
 	void updateReflectorInfo();
 	DSTAR_LINKTYPE getLinkType();
 	void setLinkType(DSTAR_LINKTYPE linkType);
+	void clearReflector();
 
 	CRemoteStarNetGroup *getInfo() const;
 

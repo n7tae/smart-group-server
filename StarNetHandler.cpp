@@ -1134,3 +1134,8 @@ void CStarNetHandler::setLinkType(DSTAR_LINKTYPE linkType)
 {
 	m_linkType = linkType;
 }
+
+void CStarNetHandler::clearReflector()
+{
+	m_linkReflector.clear();
+}
