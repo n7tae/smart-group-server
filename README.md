@@ -6,6 +6,8 @@ This smart-group-server is based on Jonathan G4KLX's StarNetServer. It was desig
 
 ### What's New
 
+* **V# 180118** Smart Groups can now be linked and unlinked by the sgsremote program. See the README of my sgs-remote git repository. You need to unlink before you link and once you unlink a Smart Group you can link it to either an XRF or a DCS reflector. Also **the format of the configuration file has changed**. The callsign and address parameters have been moved from the ircddb section to a new section called gateway. See the example.cfg file for more information. Finally, the install section of the Makefile has been separated into two pieces, see below.
+
 * **V# 180103** The smart-group-server now supports linking both DExtra and DCS reflectors to different channels *in the same server instance*. The compile time switches for DEXTRA_LINK and DCS_LINK are gone. If you need an unlinked channel, don't define a *reflector* parameter in the configuration.
 
 * **V# 180101** There is no hard limit on how many channels you can have running on a single smart-group-server. There is a practical limit. For instance, you could run out of ports for DExtra or DCS linking. There is also a performance limit when there are so many channels, servicing a single time slice takes longer than a D-Star frame. I don't know when this will happen. Resource allocation is much more efficient. DExtra and DCS resource are only allocated for the channels defined in the configuration file.
@@ -48,7 +50,7 @@ Your callsign parameter in the ircddb section of your configuration file is the 
 
 ## Installing and Uninstalling
 
-To install and start the smart-group-server, type `sudo make install`. This will download the necessary Hosts files for linking to DExtra for DCS reflectors and put all the necessary files in /usr/local and then start the server. See the Makefile for more information. To uninstall it, type `sudo make uninstall`. This will stop the server and remove all files from /usr/local.
+To install and start the smart-group-server, first type `sudo make newhostfiles`. This will download the latest DCS and DExtra host files and install them in /usr/local. Then type `sudo make install`. This will put all the executable and the sgs.cfg configuration file the in /usr/local and then start the server. See the Makefile for more information. To uninstall it, type `sudo make uninstall` and `sudo make removehostfiles`. This will stop the server and remove all files from /usr/local.
 
 73
 
