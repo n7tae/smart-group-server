@@ -186,10 +186,10 @@ void CRemoteHandler::unlink(const std::string &callsign)
 	if (data) {
 		switch (smartGroup->getLinkType()) {
 			case LT_DEXTRA:
-				CDExtraHandler::unlink(smartGroup, data->getReflector(), true);
+				CDExtraHandler::unlink(smartGroup, data->getReflector(), false);
 				break;
 			case LT_DCS:
-				CDCSHandler::unlink(smartGroup, data->getReflector(), true);
+				CDCSHandler::unlink(smartGroup, data->getReflector(), false);
 				break;
 			default:
 				delete data;
