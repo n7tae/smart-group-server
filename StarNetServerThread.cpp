@@ -268,10 +268,10 @@ void CStarNetServerThread::processIrcDDB()
 						break;
 
 					if (address.size()) {
-//						printf("USER: %s %s %s %s\n", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
+						printf("USER: %s %s %s %s\n", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateUser(user, repeater, gateway, address, timestamp, DP_DEXTRA, false, false);
-//					} else {
-//						printf("USER: %s NOT FOUND\n", user.c_str());
+					} else {
+						printf("USER: %s NOT FOUND\n", user.c_str());
 					}
 				}
 				break;
@@ -283,10 +283,10 @@ void CStarNetServerThread::processIrcDDB()
 						break;
 
 					if (address.size()) {
-//						printf("REPEATER: %s %s %s\n", repeater.c_str(), gateway.c_str(), address.c_str());
+						printf("REPEATER: %s %s %s\n", repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateRepeater(repeater, gateway, address, DP_DEXTRA, false, false);
-//					} else {
-//						printf("REPEATER: %s NOT FOUND\n", repeater.c_str());
+					} else {
+						printf("REPEATER: %s NOT FOUND\n", repeater.c_str());
 					}
 				}
 				break;
@@ -302,10 +302,10 @@ void CStarNetServerThread::processIrcDDB()
 					CDCSHandler::gatewayUpdate(gateway, address);
 
 					if (0 == address.size()) {
-//						printf("GATEWAY: %s %s\n", gateway.c_str(), address.c_str());
+						printf("GATEWAY: %s %s\n", gateway.c_str(), address.c_str());
 						m_cache.updateGateway(gateway, address, DP_DEXTRA, false, false);
-//					} else {
-//						printf("GATEWAY: %s NOT FOUND\n", gateway.c_str());
+					} else {
+						printf("GATEWAY: %s NOT FOUND\n", gateway.c_str());
 					}
 				}
 				break;
