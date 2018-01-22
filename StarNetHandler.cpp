@@ -593,7 +593,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 			CStarNetUser* user = it->second;
 			if (user) {
 				printf("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
-				logoffUser(m_groupCallsign, user->getCallsign());	// inform Quadnet
+				logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform Quadnet
 				delete user;
 			}
 		}
@@ -618,7 +618,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 			return false;
 		}
 		printf("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
-		logoffUser(m_groupCallsign, user->getCallsign());	// inform Quadnet
+		logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform Quadnet
 
 		// Find any associated id structure associated with this use, and the logged off user is the
 		// currently relayed one, remove his id.
@@ -841,12 +841,15 @@ void CStarNetHandler::clockInt(unsigned int ms)
 			if (tx->isEnd()) {
 				CUserData* user = m_cache->findUser(callsign);
 				if (user) {
-					if (tx->isLogin())
+					if (tx->isLogin()) {
 						sendAck(*user, "Logged in");
-					else if (tx->isInfo())
+						logUser(LU_ON, m_groupCallsign, callsign);	// inform Quadnet
+					} else if (tx->isInfo()) {
 						sendAck(*user, m_infoText);
-					else if (tx->isLogoff())
+					} else if (tx->isLogoff()) {
 						sendAck(*user, "Logged off");
+						logUser(LU_OFF, m_groupCallsign, callsign);	// inform Quadnet
+					}
 
 					delete user;
 					user = NULL;
@@ -907,7 +910,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		if (user && user->hasExpired()) {
 			printf("Removing %s from StarNet group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
-			logoffUser(m_groupCallsign, user->getCallsign());	// inform QuadNet
+			logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform QuadNet
 			delete user;
 			m_users.erase(it);
 			// The iterator is now invalid, so we'll find the next expiry on the next clock tick with a
@@ -956,9 +959,9 @@ void CStarNetHandler::updateReflectorInfo()
 	m_irc->sendSGSInfo(subcommand, parms);
 }
 
-void CStarNetHandler::logoffUser(const std::string channel, const std::string user)
+void CStarNetHandler::logUser(LOGUSER lu, const std::string channel, const std::string user)
 {
-	std::string cmd("LOGOFF");
+	std::string cmd(LU_OFF==lu ? "LOGOFF" : "LOGON");
 	std::string chn(channel);
 	std::string usr(user);
 	CUtils::ReplaceChar(chn, ' ', '_');

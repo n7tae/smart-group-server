@@ -16,10 +16,10 @@
  *   along with this program; if not, write to the Free Software
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
- 
+
 #pragma once
 
 #include <string>
 
 const std::string VENDOR_NAME("N7TAE");
-const std::string VERSION("180118");
+const std::string VERSION("180122");

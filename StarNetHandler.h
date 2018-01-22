@@ -37,6 +37,10 @@
 #include "IRCDDB.h"
 #include "Timer.h"
 
+enum LOGUSER {
+	LU_ON,
+	LU_OFF
+};
 
 class CStarNetUser {
 public:
@@ -189,5 +193,5 @@ private:
 	void sendToRepeaters(CHeaderData &header) const;
 	void sendToRepeaters(CAMBEData &data) const;
 	void sendAck(const CUserData &user, const std::string &text) const;
-	void logoffUser(const std::string channel, const std::string user);
+	void logUser(LOGUSER lu, const std::string channel, const std::string user);
 };
