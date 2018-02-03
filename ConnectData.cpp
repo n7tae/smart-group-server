@@ -346,19 +346,19 @@ unsigned int CConnectData::getDCSData(unsigned char *data, unsigned int length) 
 				for (unsigned int i = 0U; i < m_reflector.size() && i < (LONG_CALLSIGN_LENGTH - 1U); i++)
 					data[i + 11U] = m_reflector.at(i);
 
-				char shtml[128];
+				char shtml[512];
 				switch (m_gatewayType) {
 					case GT_HOTSPOT:
-						sprintf(shtml, HTML, "hotspot.jpg", "HOTSPOT", VERSION.c_str());
+						snprintf(shtml, 512, HTML, "hotspot.jpg", "HOTSPOT", VERSION.c_str());
 						break;
 					case GT_DONGLE:
-						sprintf(shtml, HTML, "dongle.jpg", "DONGLE", VERSION.c_str());
+						snprintf(shtml, 512, HTML, "dongle.jpg", "DONGLE", VERSION.c_str());
 						break;
 					case GT_STARNET:
-						sprintf(shtml, HTML, "hf.jpg", "STARNET", VERSION.c_str());
+						snprintf(shtml, 512, HTML, "hf.jpg", "STARNET", VERSION.c_str());
 						break;
 					default:
-						sprintf(shtml, HTML, "hf.jpg", "REPEATER", VERSION.c_str());
+						snprintf(shtml, 512, HTML, "hf.jpg", "REPEATER", VERSION.c_str());
 						break;
 				}
 				std::string html(shtml);
