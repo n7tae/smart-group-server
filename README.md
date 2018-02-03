@@ -2,11 +2,11 @@ smart-group-server
 ==================
 ## Introduction
 
-This smart-group-server is based on Jonathan G4KLX's StarNetServer. It was designed expressly for QuadNet. The smart-group-server interact with QuadNet using IRC messages to provide additional information that will typically be display on the STARNET GROUPS web page at openquad.net. The smart-group-server may not function proplerly on other IRCDDB networks.
+This smart-group-server is based on John Hays K7VE original STARnet Digital idea and first coded as Jonathan G4KLX's StarNetServer. It was designed expressly for QuadNet. The smart-group-server interact with QuadNet using new IRC messages to provide additional information that will typically be display on the ROUTING GROUPS web page at openquad.net. The smart-group-server may not function proplerly on other IRCDDB networks.
 
 ### What's New
 
-* **V# 180203** A serious allocation error has been fixed in CConnectData. If I get some time, I will try to push this up to opendv.
+* **V# 180203** A buffer overflow error has been fixed in CConnectData. I introduced this bug when replacing wxWidgets. (I wish the standard library had a format or sprint subroutine for std::string!) Now it's fixed.
 
 * **V# 180118** Smart Groups can now be linked and unlinked by the sgsremote program. See the README of my sgs-remote git repository. You need to unlink before you link and once you unlink a Smart Group you can link it to either an XRF or a DCS reflector. Also **the format of the configuration file has changed**. The callsign and address parameters have been moved from the ircddb section to a new section called gateway. See the example.cfg file for more information. Finally, the install section of the Makefile has been separated into two pieces, see below.
 
