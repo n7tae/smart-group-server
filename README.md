@@ -2,7 +2,7 @@ smart-group-server
 ==================
 ## Introduction
 
-This smart-group-server is based on John Hays K7VE original STARnet Digital idea and first coded as Jonathan G4KLX's StarNetServer. It was designed expressly for QuadNet. The smart-group-server interact with QuadNet using new IRC messages to provide additional information that will typically be display on the ROUTING GROUPS web page at openquad.net. The smart-group-server may not function proplerly on other IRCDDB networks.
+This smart-group-server is based on an original idea by John Hays K7VE for a routing group server he called STARnet Digital. This idea was first coded by Jonathan G4KLX and he called it StarNetServer. This implementation has many improvements and new features compared to its predecessor. It was designed expressly for QuadNet. The smart-group-server interact with QuadNet using new IRC messages to provide additional information that will typically be display on the ROUTING GROUPS web page at openquad.net. The smart-group-server may not function proplerly on other IRCDDB networks.
 
 ### What's New
 
