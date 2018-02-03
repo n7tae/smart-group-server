@@ -6,6 +6,8 @@ This smart-group-server is based on Jonathan G4KLX's StarNetServer. It was desig
 
 ### What's New
 
+* **V# 180203** A serious allocation error has been fixed in CConnectData. If I get some time, I will try to push this up to opendv.
+
 * **V# 180118** Smart Groups can now be linked and unlinked by the sgsremote program. See the README of my sgs-remote git repository. You need to unlink before you link and once you unlink a Smart Group you can link it to either an XRF or a DCS reflector. Also **the format of the configuration file has changed**. The callsign and address parameters have been moved from the ircddb section to a new section called gateway. See the example.cfg file for more information. Finally, the install section of the Makefile has been separated into two pieces, see below.
 
 * **V# 180103** The smart-group-server now supports linking both DExtra and DCS reflectors to different channels *in the same server instance*. The compile time switches for DEXTRA_LINK and DCS_LINK are gone. If you need an unlinked channel, don't define a *reflector* parameter in the configuration.
