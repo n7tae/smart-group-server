@@ -33,10 +33,10 @@ public:
 	void release(CDExtraProtocolHandler *handler);
 
 	DEXTRA_TYPE   read();
-	CHeaderData  *readHeader();
-	CAMBEData    *readAMBE();
-	CPollData    *readPoll();
-	CConnectData *readConnect();
+	CHeaderData  *newHeader();
+	CAMBEData    *newAMBE();
+	CPollData    *newPoll();
+	CConnectData *newConnect();
 
 	void close();
 

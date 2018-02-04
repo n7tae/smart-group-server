@@ -323,7 +323,7 @@ void CStarNetServerThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
 				return;
 
 			case DE_POLL: {
-					CPollData* poll = dextraPool->readPoll();
+					CPollData* poll = dextraPool->newPoll();
 					if (poll != NULL) {
 						CDExtraHandler::process(*poll);
 						delete poll;
@@ -332,7 +332,7 @@ void CStarNetServerThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
 				break;
 
 			case DE_CONNECT: {
-					CConnectData* connect = dextraPool->readConnect();
+					CConnectData* connect = dextraPool->newConnect();
 					if (connect != NULL) {
 						CDExtraHandler::process(*connect);
 						delete connect;
@@ -341,7 +341,7 @@ void CStarNetServerThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
 				break;
 
 			case DE_HEADER: {
-					CHeaderData* header = dextraPool->readHeader();
+					CHeaderData* header = dextraPool->newHeader();
 					if (header != NULL) {
 						// printf("DExtra header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s\n", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str());
 						CDExtraHandler::process(*header);
@@ -351,7 +351,7 @@ void CStarNetServerThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
 				break;
 
 			case DE_AMBE: {
-					CAMBEData* data = dextraPool->readAMBE();
+					CAMBEData* data = dextraPool->newAMBE();
 					if (data != NULL) {
 						CDExtraHandler::process(*data);
 						delete data;

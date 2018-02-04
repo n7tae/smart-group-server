@@ -89,24 +89,24 @@ DEXTRA_TYPE CDExtraProtocolHandlerPool::read()
 	return DE_NONE;
 }
 
-CHeaderData *CDExtraProtocolHandlerPool::readHeader()
+CHeaderData *CDExtraProtocolHandlerPool::newHeader()
 {
-	return m_index->second->readHeader();
+	return m_index->second->newHeader();
 }
 
-CAMBEData *CDExtraProtocolHandlerPool::readAMBE()
+CAMBEData *CDExtraProtocolHandlerPool::newAMBE()
 {
-	return m_index->second->readAMBE();
+	return m_index->second->newAMBE();
 }
 
-CPollData *CDExtraProtocolHandlerPool::readPoll()
+CPollData *CDExtraProtocolHandlerPool::newPoll()
 {
-	return m_index->second->readPoll();
+	return m_index->second->newPoll();
 }
 
-CConnectData *CDExtraProtocolHandlerPool::readConnect()
+CConnectData *CDExtraProtocolHandlerPool::newConnect()
 {
-	return m_index->second->readConnect();
+	return m_index->second->newConnect();
 }
 
 void CDExtraProtocolHandlerPool::close()
