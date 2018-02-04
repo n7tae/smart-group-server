@@ -405,7 +405,7 @@ void CStarNetHandler::process(CHeaderData &header)
 			return;
 
 		printf("Removing %s from StarNet group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
-		logUser(LU_OFF, your, my);	// inform Quadnet
+		logUser(LU_OFF, m_groupCallsign, my);	// inform Quadnet
 		// Remove the user from the user list
 		m_users.erase(my);
 
