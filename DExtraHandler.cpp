@@ -190,18 +190,17 @@ void CDExtraHandler::process(CAMBEData &data)
 
 void CDExtraHandler::process(const CPollData &poll)
 {
-	std::string dextraHandler = poll.getData1();
+	std::string reflector = poll.getData1();
 	in_addr   yourAddress = poll.getYourAddress();
 	unsigned int yourPort = poll.getYourPort();
-	// Check to see if we already have a link
+	// reset all inactivity times from this reflector
 	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
 		CDExtraHandler *handler = *it;
-		if (		0==handler->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, dextraHandler, 0, LONG_CALLSIGN_LENGTH-1) &&
+		if (		0==handler->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, reflector, 0, LONG_CALLSIGN_LENGTH-1) &&
 					handler->m_yourAddress.s_addr == yourAddress.s_addr &&
 					handler->m_yourPort           == yourPort &&
 					handler->m_linkState          == DEXTRA_LINKED) {
 			handler->m_pollInactivityTimer.start();
-			return;
 		}
 	}
 }
