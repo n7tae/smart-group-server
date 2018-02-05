@@ -593,7 +593,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 		for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
 			CStarNetUser* user = it->second;
 			if (user) {
-				printf("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+				printf("Removing %s from Smart Group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 				logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform Quadnet
 				delete user;
 			}
@@ -618,7 +618,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 			printf("Invalid callsign asked to logoff");
 			return false;
 		}
-		printf("Removing %s from StarNet group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+		printf("Removing %s from Smart Group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 		logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform Quadnet
 
 		// Find any associated id structure associated with this use, and the logged off user is the
