@@ -375,7 +375,7 @@ void CStarNetHandler::process(CHeaderData &header)
 		// This is a normal message for logging in/relaying
 		if (user == NULL) {
 			// This is a new user, add them to the list
-			printf("Adding %s to StarNet group %s\n", my.c_str(), m_groupCallsign.c_str());
+			printf("Adding %s to Smart Group %s\n", my.c_str(), your.c_str());
 			logUser(LU_ON, your, my);	// inform Quadnet
 			user = new CStarNetUser(my, m_userTimeout * 60U);
 			m_users[my] = user;
@@ -393,7 +393,8 @@ void CStarNetHandler::process(CHeaderData &header)
 				delete userData;
 				return;
 			}
-			logUser(LU_ON, your, my);	// this ill be an update
+			printf("Updating %s on Smart Group %s\n", my.c_str(), your.c_str());
+			logUser(LU_ON, your, my);	// this will be an update
 			m_ids[id] = new CStarNetId(id, MESSAGE_DELAY, user);
 		}
 	} else {
@@ -404,7 +405,7 @@ void CStarNetHandler::process(CHeaderData &header)
 		if (user == NULL)				// Not a known user, ignore
 			return;
 
-		printf("Removing %s from StarNet group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+		printf("Removing %s from Smart Group %s\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 		logUser(LU_OFF, m_groupCallsign, my);	// inform Quadnet
 		// Remove the user from the user list
 		m_users.erase(my);
