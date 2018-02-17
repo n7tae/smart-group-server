@@ -144,17 +144,15 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 		get_value(cfg, key, pmod->txmsgswitch, true);
 
 		sprintf(key, "module.[%d].reflector", i);
-		if (get_value(cfg, key, basename, 8, 8, "")) {
+		if (! get_value(cfg, key, basename, 8, 8, "")) {
 			printf("reflector %d must be undefined or exactly 8 chars!\n", i);
 			basename.empty();
 		}
+		pmod->reflector.empty();
 		if (basename.size()) {
 			CUtils::ToUpper(basename);
-			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS"))
-							&& isdigit(basename[3]) && isdigit(basename[4]) && isdigit(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
+			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS")) && isdigit(basename[3]) && isdigit(basename[4]) && isdigit(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
 				pmod->reflector = basename;
-			else
-				pmod->reflector.empty();
 		}
 		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' permanent='%s' usertimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'\n",
 			i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->permanent.c_str(), pmod->usertimeout,
