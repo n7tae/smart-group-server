@@ -22,7 +22,6 @@
 #include <netinet/in.h>
 
 #include "G2ProtocolHandler.h"
-#include "RepeaterHandler.h"
 #include "DStarDefines.h"
 #include "HeaderData.h"
 #include "AMBEData.h"
@@ -42,7 +41,7 @@ public:
 	static void finalise();
 
 protected:
-	CG2Handler(CRepeaterHandler* repeater, const in_addr& address, unsigned int id);
+	CG2Handler(const in_addr& address, unsigned int id);
 	~CG2Handler();
 
 	bool clockInt(unsigned int ms);
@@ -53,7 +52,6 @@ private:
 
 	static CG2ProtocolHandler* m_handler;
 
-	CRepeaterHandler* m_repeater;
 	in_addr           m_address;
 	unsigned int      m_id;
 	CTimer            m_inactivityTimer;

@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "SlowDataEncoder.h"
-#include "RepeaterHandler.h"
 #include "StarNetHandler.h"
 #include "DExtraHandler.h"		// DEXTRA_LINK
 #include "DCSHandler.h"			// DCS_LINK
@@ -470,7 +469,6 @@ void CStarNetHandler::process(CHeaderData &header)
 						repeater->m_repeater    = userData->getRepeater();
 						repeater->m_gateway     = userData->getGateway();
 						repeater->m_address     = userData->getAddress();
-						repeater->m_local       = CRepeaterHandler::findDVRepeater(userData->getRepeater());
 						m_repeaters[userData->getRepeater()] = repeater;
 					}
 				}
@@ -692,7 +690,6 @@ bool CStarNetHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 					repeater->m_repeater    = userData->getRepeater();
 					repeater->m_gateway     = userData->getGateway();
 					repeater->m_address     = userData->getAddress();
-					repeater->m_local       = CRepeaterHandler::findDVRepeater(userData->getRepeater());
 					m_repeaters[userData->getRepeater()] = repeater;
 				}
 
@@ -979,10 +976,7 @@ void CStarNetHandler::sendToRepeaters(CHeaderData& header) const
 			header.setYourCall(repeater->m_destination);
 			header.setDestination(repeater->m_address, G2_DV_PORT);
 			header.setRepeaters(repeater->m_gateway, repeater->m_repeater);
-			if (repeater->m_local != NULL)
-				repeater->m_local->process(header, DIR_INCOMING, AS_G2);
-			else
-				m_g2Handler->writeHeader(header);
+			m_g2Handler->writeHeader(header);
 		}
 	}
 }
@@ -993,10 +987,7 @@ void CStarNetHandler::sendToRepeaters(CAMBEData &data) const
 		CStarNetRepeater* repeater = it->second;
 		if (repeater != NULL) {
 			data.setDestination(repeater->m_address, G2_DV_PORT);
-			if (repeater->m_local != NULL)
-				repeater->m_local->process(data, DIR_INCOMING, AS_G2);
-			else
-				m_g2Handler->writeAMBE(data);
+			m_g2Handler->writeAMBE(data);
 		}
 	}
 }

@@ -21,11 +21,9 @@
 #include <cstdlib>
 #include <list>
 
-#include "RepeaterHandler.h"
 #include "StarNetHandler.h"
 #include "RemoteHandler.h"
 #include "DExtraHandler.h"
-//#include "DPlusHandler.h"
 #include "DStarDefines.h"
 #include "DCSHandler.h"
 #include "Utils.h"
@@ -73,14 +71,6 @@ void CRemoteHandler::process()
 				}
 			}
 			break;
-		case RPHT_CALLSIGNS:
-			sendCallsigns();
-			break;
-		case RPHT_REPEATER: {
-				std::string callsign = m_handler.readRepeater();
-				sendRepeater(callsign);
-			}
-			break;
 		case RPHT_STARNET: {
 				std::string callsign = m_handler.readStarNetGroup();
 				sendStarNetGroup(callsign);
@@ -115,34 +105,6 @@ void CRemoteHandler::process()
 void CRemoteHandler::close()
 {
 	m_handler.close();
-}
-
-void CRemoteHandler::sendCallsigns()
-{
-	std::list<std::string> repeaters = CRepeaterHandler::listDVRepeaters();
-	std::list<std::string> starNets  = CStarNetHandler::listStarNets();
-
-	m_handler.sendCallsigns(repeaters, starNets);
-}
-
-void CRemoteHandler::sendRepeater(const std::string &callsign)
-{
-	CRepeaterHandler *repeater = CRepeaterHandler::findDVRepeater(callsign);
-	if (repeater == NULL) {
-		m_handler.sendNAK("Invalid repeater callsign");
-		return;
-	}
-
-	CRemoteRepeaterData *data = repeater->getInfo();
-	if (data != NULL) {
-		CDExtraHandler::getInfo(repeater, *data);
-		CDCSHandler::getInfo(repeater, *data);
-		CCCSHandler::getInfo(repeater, *data);
-
-		m_handler.sendRepeater(*data);
-	}
-
-	delete data;
 }
 
 void CRemoteHandler::sendStarNetGroup(const std::string &callsign)

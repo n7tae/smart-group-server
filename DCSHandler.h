@@ -25,6 +25,7 @@
 #include <list>
 
 #include "DCSProtocolHandlerPool.h"
+#include "RemoteRepeaterData.h"
 #include "ReflectorCallback.h"
 #include "DStarDefines.h"
 #include "CallsignList.h"

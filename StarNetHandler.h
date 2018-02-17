@@ -103,7 +103,6 @@ public:
 	std::string        m_repeater;
 	std::string        m_gateway;
 	in_addr            m_address;
-	IRepeaterCallback* m_local;
 };
 
 class CStarNetHandler : public IReflectorCallback {

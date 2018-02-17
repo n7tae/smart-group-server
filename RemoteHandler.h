@@ -41,8 +41,6 @@ private:
 	CRemoteProtocolHandler m_handler;
 	uint32_t               m_random;
 
-	void sendCallsigns();
-	void sendRepeater(const std::string &callsign);
 	void sendStarNetGroup(const std::string &callsign);
 	void link(const std::string &callsign, const std::string &reflector);
 	void unlink(const std::string &callsign);

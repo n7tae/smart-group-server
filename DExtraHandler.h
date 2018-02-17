@@ -24,6 +24,7 @@
 #include <list>
 
 #include "DExtraProtocolHandlerPool.h"
+#include "RemoteRepeaterData.h"
 #include "ReflectorCallback.h"
 #include "DStarDefines.h"
 #include "CallsignList.h"
@@ -44,7 +45,6 @@ class CDExtraHandler {
 public:
 	static void setCallsign(const std::string &callsign);
 	static void setDExtraProtocolHandlerPool(CDExtraProtocolHandlerPool *pool);
-	static void setDExtraProtocolIncoming(CDExtraProtocolHandler *handler);
 
 	static void link(IReflectorCallback *handler, const std::string &repeater, const std::string &reflector, const in_addr &address);
 	static void unlink(IReflectorCallback *handler, const std::string &reflector = std::string(""), bool exclude = true);
@@ -93,7 +93,6 @@ private:
 
 	static std::string                 m_callsign;
 	static CDExtraProtocolHandlerPool *m_pool;
-	static CDExtraProtocolHandler     *m_incoming;
 
 	static bool                        m_stateChange;
 

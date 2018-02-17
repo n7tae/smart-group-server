@@ -19,7 +19,6 @@
 
 #include <cassert>
 
-#include "RepeaterHandler.h"
 #include "DExtraHandler.h"
 #include "Utils.h"
 
@@ -27,7 +26,6 @@ std::list<CDExtraHandler *> CDExtraHandler::m_DExtraHandlers;
 
 std::string                 CDExtraHandler::m_callsign;
 CDExtraProtocolHandlerPool *CDExtraHandler::m_pool = NULL;
-CDExtraProtocolHandler     *CDExtraHandler::m_incoming = NULL;
 
 bool                        CDExtraHandler::m_stateChange = false;
 
@@ -85,13 +83,6 @@ void CDExtraHandler::setCallsign(const std::string& callsign)
 	m_callsign.assign(callsign);
 	m_callsign.resize(LONG_CALLSIGN_LENGTH, ' ');
 	m_callsign[LONG_CALLSIGN_LENGTH - 1U] = ' ';
-}
-
-void CDExtraHandler::setDExtraProtocolIncoming(CDExtraProtocolHandler *incoming)
-{
-	assert(incoming != NULL);
-
-	m_incoming = incoming;
 }
 
 void CDExtraHandler::setDExtraProtocolHandlerPool(CDExtraProtocolHandlerPool *pool)
@@ -224,55 +215,8 @@ void CDExtraHandler::process(CConnectData &connect)
 	}
 
 	// else if type == CT_LINK1 or type == CT_LINK2
-	in_addr   yourAddress = connect.getYourAddress();
-	unsigned int yourPort = connect.getYourPort();
-
-	std::string repeaterCallsign = connect.getRepeater();
-
-	char band = connect.getReflector().at(LONG_CALLSIGN_LENGTH - 1U);
-
-	std::string reflectorCallsign = m_callsign;
-	reflectorCallsign[LONG_CALLSIGN_LENGTH - 1U] = band;
-
-	// Check that it isn't a duplicate
-	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
-		CDExtraHandler *dextraHandler = *it;
-		if (		dextraHandler->m_direction          == DIR_INCOMING &&
-					dextraHandler->m_yourAddress.s_addr == yourAddress.s_addr &&
-					dextraHandler->m_yourPort           == yourPort &&
-					0==dextraHandler->m_repeater.compare(reflectorCallsign) &&
-					0==dextraHandler->m_reflector.compare(repeaterCallsign))
-			return;
-	}
-
-	// Check the validity of our repeater callsign
-	IReflectorCallback *handler = CRepeaterHandler::findDVRepeater(reflectorCallsign);
-	if (handler == NULL) {
-		printf("DExtra connect to unknown dextraHandler %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
-		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, yourAddress, yourPort);
-		m_incoming->writeConnect(reply);
-		return;
-	}
-
-	// A new connect packet indicates the need for a new entry
-	printf("New incoming DExtra link to %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
-
-	CDExtraHandler *dextra = new CDExtraHandler(handler, repeaterCallsign, reflectorCallsign, m_incoming, yourAddress, yourPort, DIR_INCOMING);
-	if (dextra) {
-		m_DExtraHandlers.push_back(dextra);
-		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_ACK, yourAddress, yourPort);
-		m_incoming->writeConnect(reply);
-
-		std::string callsign = repeaterCallsign;
-		callsign[LONG_CALLSIGN_LENGTH - 1U] = ' ';
-		CPollData poll(callsign, yourAddress, yourPort);
-		m_incoming->writePoll(poll);
-	} else {
-		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, yourAddress, yourPort);
-		m_incoming->writeConnect(reply);
-
-		printf("Could not create new CDExtraHandler, ignoring\n");
-	}
+	// someone tried to link directly to a Smart Group!
+	printf("CDExtraHandler::process(CConnectData) type=CT_LINK%c, SGSchannel=%s, from repeater=%s\n", (type==CT_LINK1) ? '1' : '2', m_callsign.c_str(), connect.getRepeater().c_str());
 }
 
 void CDExtraHandler::link(IReflectorCallback *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
@@ -499,31 +443,6 @@ void CDExtraHandler::processInt(CHeaderData& header)
 				// A repeater connection
 				if (m_repeater.compare(rpt2) && m_repeater.compare(rpt1))
 					return;
-
-				// If we're already processing, ignore the new header
-				if (m_dExtraId != 0x00U)
-					return;
-
-				m_dExtraId  = id;
-				m_dExtraSeq = 0x00U;
-				m_inactivityTimer.start();
-
-				delete m_header;
-
-				m_header = new CHeaderData(header);
-				m_header->setCQCQCQ();
-				m_header->setFlags(0x00U, 0x00U, 0x00U);
-
-				m_destination->process(*m_header, m_direction, AS_DEXTRA);
-			} else {
-				// A Dongle connection
-				// Check the destination callsign
-				m_destination = CRepeaterHandler::findDVRepeater(rpt2);
-				if (m_destination == NULL) {
-					m_destination = CRepeaterHandler::findDVRepeater(rpt1);
-					if (m_destination == NULL)
-						return;
-				}
 
 				// If we're already processing, ignore the new header
 				if (m_dExtraId != 0x00U)

@@ -19,7 +19,6 @@
 
 #include <cassert>
 
-#include "RepeaterHandler.h"
 #include "DCSHandler.h"
 #include "Utils.h"
 
@@ -226,47 +225,8 @@ void CDCSHandler::process(CConnectData &connect)
 	}
 
 	// else if type == CT_LINK1 or type == CT_LINK2
-	in_addr   yourAddress = connect.getYourAddress();
-	unsigned int yourPort = connect.getYourPort();
-	unsigned int   myPort = connect.getMyPort();
-
-	std::string repeaterCallsign = connect.getRepeater();
-	std::string reflectorCallsign = connect.getReflector();
-
-	// Check that it isn't a duplicate
-	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
-		CDCSHandler *dcsHandler = *it;
-		if (		dcsHandler->m_direction          == DIR_INCOMING &&
-					dcsHandler->m_yourAddress.s_addr == yourAddress.s_addr &&
-					dcsHandler->m_yourPort           == yourPort &&
-					dcsHandler->m_myPort             == myPort &&
-					0==dcsHandler->m_repeater.compare(reflectorCallsign) &&
-					0==dcsHandler->m_reflector.compare(repeaterCallsign))
-			return;
-	}
-
-	// Check the validity of our repeater callsign
-	IReflectorCallback *handler = CRepeaterHandler::findDVRepeater(reflectorCallsign);
-	if (handler == NULL) {
-		printf("DCS connect to unknown dcsHandler %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
-		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, connect.getYourAddress(), connect.getYourPort());
-		m_incoming->writeConnect(reply);
-		return;
-	}
-
-	// A new connect packet indicates the need for a new entry
-	printf("New incoming DCS link to %s from %s\n", reflectorCallsign.c_str(), repeaterCallsign.c_str());
-
-	CDCSHandler *dcs = new CDCSHandler(handler, repeaterCallsign, reflectorCallsign, m_incoming, yourAddress, yourPort, DIR_INCOMING);
-	if (dcs) {
-		m_DCSHandlers.push_back(dcs);
-		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_ACK, yourAddress, yourPort);
-		m_incoming->writeConnect(reply);
-	} else {
-		CConnectData reply(repeaterCallsign, reflectorCallsign, CT_NAK, yourAddress, yourPort);
-		m_incoming->writeConnect(reply);
-		printf("Could not create new CDCSHandler, ignoring");
-	}
+	// someone tried to link directly to a Smart Group!
+	printf("CDCSHandler::process(CConnectData) type=CT_LINK%c, from repeater=%s\n", (type==CT_LINK1) ? '1' : '2', connect.getRepeater().c_str());
 }
 
 void CDCSHandler::link(IReflectorCallback *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)

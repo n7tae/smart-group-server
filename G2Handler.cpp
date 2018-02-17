@@ -29,8 +29,7 @@ CG2Handler**        CG2Handler::m_routes = NULL;
 
 CG2ProtocolHandler* CG2Handler::m_handler = NULL;
 
-CG2Handler::CG2Handler(CRepeaterHandler* repeater, const in_addr& address, unsigned int id) :
-m_repeater(repeater),
+CG2Handler::CG2Handler(const in_addr& address, unsigned int id) :
 m_address(address),
 m_id(id),
 m_inactivityTimer(1000U, NETWORK_TIMEOUT)
@@ -77,44 +76,6 @@ void CG2Handler::process(CHeaderData& header)
 		handler->process(header);
 		return;
 	}
-
-	// No need to go any further
-	if (m_maxRoutes == 0U)
-		return;
-
-	in_addr address = header.getYourAddress();
-	unsigned int id = header.getId();
-
-	for (unsigned int i = 0U; i < m_maxRoutes; i++) {
-		CG2Handler* route = m_routes[i];
-		if (route != NULL) {
-			// Is this a duplicate header, ignore it
-			if (route->m_id == id)
-				return;
-		}
-	}	
-
-	// Find the destination repeater
-	CRepeaterHandler* repeater = CRepeaterHandler::findDVRepeater(header.getRptCall2());
-	if (repeater == NULL) {
-		printf("Incoming G2 header from %s to unknown repeater - %s\n", header.getMyCall1().c_str(), header.getRptCall2().c_str());
-		return;		// Not found, ignore
-	}
-
-	CG2Handler* route = new CG2Handler(repeater, address, id);
-
-	for (unsigned int i = 0U; i < m_maxRoutes; i++) {
-		if (m_routes[i] == NULL) {
-			m_routes[i] = route;
-
-			repeater->process(header, DIR_INCOMING, AS_G2);
-			return;
-		}
-	}
-
-	printf("No space to add new G2 route, ignoring\n");
-
-	delete route;
 }
 
 void CG2Handler::process(CAMBEData& data)
@@ -125,29 +86,6 @@ void CG2Handler::process(CAMBEData& data)
 		handler->process(data);
 		return;
 	}
-
-	// No need to go any further
-	if (m_maxRoutes == 0U)
-		return;
-
-	unsigned int id = data.getId();
-
-	for (unsigned int i = 0U; i < m_maxRoutes; i++) {
-		CG2Handler* route = m_routes[i];
-		if (route != NULL) {
-			if (route->m_id == id) {
-				route->m_inactivityTimer.start();
-				route->m_repeater->process(data, DIR_INCOMING, AS_G2);
-
-				if (data.isEnd()) {
-					delete route;
-					m_routes[i] = NULL;
-				}
-
-				return;
-			}
-		}
-	}	
 }
 
 void CG2Handler::clock(unsigned int ms)
