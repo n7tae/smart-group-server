@@ -392,7 +392,7 @@ void CStarNetHandler::process(CHeaderData &header)
 				delete userData;
 				return;
 			}
-			printf("Updating %s on Smart Group %s\n", my.c_str(), your.c_str());
+			//printf("Updating %s on Smart Group %s\n", my.c_str(), your.c_str());
 			logUser(LU_ON, your, my);	// this will be an update
 			m_ids[id] = new CStarNetId(id, MESSAGE_DELAY, user);
 		}
