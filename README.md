@@ -6,6 +6,8 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 
 ### What's New
 
+* **V# 180218** The CRepeaterHandler class has been removed from the project, along with the CDDDataHandler and DCCSHandler classes. A crash bug, where someone would try to link to a Smart Group module, has been fixed.
+
 * **V# 180205** There was a benign bug causing some linked groups not to properly receive polls from X-reflectors, causing these groups to do an unnecessary re-link at the end of each poll inactivity timer. This has been fixed. I introduced this bug when I did major modifications to the C-Handler, C-ProtocolHandler and C-ProtcolHandlerPool classes. The C-ProtocolHandlerPool classes now use a std::list to keep the C-ProtcolHandler instances, instead of a static array. I consider this release the first public release compareable to *Version 1.0.0*.
 
 * **V# 180203** A buffer overflow error has been fixed in CConnectData. I introduced this bug when replacing wxWidgets. (I wish the standard library had a format or sprint subroutine for std::string!) Now it's fixed.
