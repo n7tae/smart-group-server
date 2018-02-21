@@ -36,12 +36,12 @@ int main(int argc, char *argv[])
 		printf("       %s --version\n", argv[0]);
 		return 1;
 	}
-	
+
 	if ('-' == argv[1][0]) {
 		printf("\nSmart Group Server\nVersion %s\nBy %s\n\n", VERSION.c_str(), VENDOR_NAME.c_str());
 		return 0;
 	}
-	
+
 	std::string cfgFile(argv[1]);
 
 	CStarNetServerAppD gateway(cfgFile);
@@ -93,7 +93,7 @@ bool CStarNetServerAppD::createThread()
 	printf("ircDDB host set to %s, username set to %s\n", hostname.c_str(), username.c_str());
 
 	if (hostname.size() && username.size()) {
-		CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_SmartGroupServer") + std::string("-") + VERSION, address); 
+		CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_SmartGroupServer") + std::string("-") + VERSION, address);
 		bool res = ircDDB->open();
 		if (!res) {
 			printf("Cannot initialise the ircDDB protocol handler\n");
@@ -106,9 +106,9 @@ bool CStarNetServerAppD::createThread()
 	for (unsigned int i=0; i<config.getModCount(); i++) {
 		std::string band, callsign, logoff, info, permanent, reflector;
 		unsigned int usertimeout;
-		STARNET_CALLSIGN_SWITCH callsignswitch;
+		CALLSIGN_SWITCH callsignswitch;
 		bool txmsgswitch;
-		
+
 		config.getStarNet(i, band, callsign, logoff, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
 
 		if (callsign.size() && isalnum(callsign[0])) {

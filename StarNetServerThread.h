@@ -39,7 +39,7 @@ public:
 	virtual void setAddress(const std::string& address);
 
 	virtual void addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent,
-							unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
+							unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
 
 	virtual void setRemote(bool enabled, const std::string& password, unsigned int port);
 	virtual void setIRC(CIRCDDB* irc);

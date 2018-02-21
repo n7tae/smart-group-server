@@ -33,7 +33,7 @@ struct Smodule {
 	std::string reflector;
 	bool txmsgswitch;
 	unsigned int usertimeout;
-	STARNET_CALLSIGN_SWITCH callsignswitch;
+	CALLSIGN_SWITCH callsignswitch;
 };
 
 class CStarNetServerConfig {
@@ -45,7 +45,7 @@ public:
 
 	void getIrcDDB(std::string &hostname, std::string &username, std::string &password) const;
 
-	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, STARNET_CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, std::string &reflector) const;
+	void getStarNet(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, std::string &reflector) const;
 
 	void getRemote(bool &enabled, std::string &password, unsigned int &port) const;
 

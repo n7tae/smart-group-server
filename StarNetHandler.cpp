@@ -170,7 +170,7 @@ CTextCollector& CStarNetId::getTextCollector()
 }
 
 void CStarNetHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
-														unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector)
+														unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector)
 {
 	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
 
@@ -282,7 +282,7 @@ void CStarNetHandler::link()
 }
 
 CStarNetHandler::CStarNetHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
-																unsigned int userTimeout, STARNET_CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector) :
+																unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
 m_shortCallsign("SMRT"),

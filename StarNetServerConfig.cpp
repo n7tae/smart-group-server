@@ -240,7 +240,7 @@ void CStarNetServerConfig::getIrcDDB(std::string& hostname, std::string& usernam
 	password = m_ircddbPassword;
 }
 
-void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, STARNET_CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
+void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
 {
 	band           = m_module[mod]->band;
 	callsign       = m_module[mod]->callsign;
