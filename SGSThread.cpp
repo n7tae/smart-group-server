@@ -28,8 +28,8 @@
 #include <cstring>
 #include <cassert>
 
-#include "StarNetServerThread.h"
-#include "StarNetHandler.h"
+#include "SGSThread.h"
+#include "GroupHandler.h"
 #include "DExtraHandler.h"			// DEXTRA LINK
 #include "DCSHandler.h"				// DCS LINK
 #include "HeaderData.h"
@@ -39,7 +39,7 @@
 
 const unsigned int REMOTE_DUMMY_PORT = 65015U;
 
-CStarNetServerThread::CStarNetServerThread(unsigned int countDExtra, unsigned int countDCS) :
+CSGSThread::CSGSThread(unsigned int countDExtra, unsigned int countDCS) :
 m_countDExtra(countDExtra),
 m_countDCS(countDCS),
 m_killed(false),
@@ -59,21 +59,21 @@ m_remote(NULL)
 {
 	CHeaderData::initialise();
 	CG2Handler::initialise(0);
-	printf("StarNetServerThread created. DExtra channels: %d, DCS Channels: %d\n", countDExtra, countDCS);
+	printf("SGSThread created. DExtra channels: %d, DCS Channels: %d\n", countDExtra, countDCS);
 }
 
-CStarNetServerThread::~CStarNetServerThread()
+CSGSThread::~CSGSThread()
 {
 	CHeaderData::finalise();
 	CG2Handler::finalise();
-	CStarNetHandler::finalise();
+	CGroupHandler::finalise();
 	CDExtraHandler::finalise();
 	CDCSHandler::finalise();
 
-	printf("StarNetServerThread destroyed\n");
+	printf("SGSThread destroyed\n");
 }
 
-void CStarNetServerThread::run()
+void CSGSThread::run()
 {
 	m_g2Handler = new CG2ProtocolHandler(G2_DV_PORT, m_address);
 	bool ret = m_g2Handler->open();
@@ -92,7 +92,7 @@ void CStarNetServerThread::run()
 
 	m_stopped = false;
 
-	printf("Starting the StarNet Server thread\n");
+	printf("Starting the Smart Group Server thread\n");
 
 	loadReflectors(DEXTRA_HOSTS_FILE_NAME, DP_DEXTRA);
 	loadReflectors(DCS_HOSTS_FILE_NAME, DP_DCS);
@@ -104,14 +104,14 @@ void CStarNetServerThread::run()
 	CDExtraHandler::setCallsign(m_callsign);
 	CDExtraHandler::setDExtraProtocolHandlerPool(&dextraPool);
 	CDCSHandler::setDCSProtocolHandlerPool(&dcsPool);
-	CDCSHandler::setGatewayType(GT_STARNET);
+	CDCSHandler::setGatewayType(GT_SMARTGROUP);
 
-	CStarNetHandler::setCache(&m_cache);
-	CStarNetHandler::setGateway(m_callsign);
-	CStarNetHandler::setG2Handler(m_g2Handler);
-	CStarNetHandler::setIRC(m_irc);
+	CGroupHandler::setCache(&m_cache);
+	CGroupHandler::setGateway(m_callsign);
+	CGroupHandler::setG2Handler(m_g2Handler);
+	CGroupHandler::setIRC(m_irc);
 	if (m_countDExtra || m_countDCS)
-		CStarNetHandler::link();
+		CGroupHandler::link();
 
 	if (m_remoteEnabled && m_remotePassword.size() && m_remotePort > 0U) {
 		m_remote = new CRemoteHandler(m_remotePassword, m_remotePort);
@@ -144,7 +144,7 @@ void CStarNetServerThread::run()
 			m_statusTimer.clock(ms);
 
 			CG2Handler::clock(ms);
-			CStarNetHandler::clock(ms);
+			CGroupHandler::clock(ms);
 			CDExtraHandler::clock(ms);
 			CDCSHandler::clock(ms);
 
@@ -158,7 +158,7 @@ void CStarNetServerThread::run()
 		printf("Unknown exception raised\n");
 	}
 
-	printf("Stopping the StarNet Server thread\n");
+	printf("Stopping the Smart Group Server thread\n");
 
 	// Unlink from all reflectors
 	CDExtraHandler::unlink();
@@ -180,12 +180,12 @@ void CStarNetServerThread::run()
 	}
 }
 
-void CStarNetServerThread::kill()
+void CSGSThread::kill()
 {
 	m_killed = true;
 }
 
-void CStarNetServerThread::setCallsign(const std::string& callsign)
+void CSGSThread::setCallsign(const std::string& callsign)
 {
 	if (!m_stopped)
 		return;
@@ -193,24 +193,24 @@ void CStarNetServerThread::setCallsign(const std::string& callsign)
 	m_callsign = callsign;
 }
 
-void CStarNetServerThread::setAddress(const std::string& address)
+void CSGSThread::setAddress(const std::string& address)
 {
 	m_address = address;
 }
 
-void CStarNetServerThread::addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
+void CSGSThread::addGroup(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
 {
-	CStarNetHandler::add(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
+	CGroupHandler::add(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
 }
 
-void CStarNetServerThread::setIRC(CIRCDDB* irc)
+void CSGSThread::setIRC(CIRCDDB* irc)
 {
 	assert(irc != NULL);
 
 	m_irc = irc;
 }
 
-void CStarNetServerThread::setRemote(bool enabled, const std::string& password, unsigned int port)
+void CSGSThread::setRemote(bool enabled, const std::string& password, unsigned int port)
 {
 	if (enabled) {
 		m_remoteEnabled  = true;
@@ -223,7 +223,7 @@ void CStarNetServerThread::setRemote(bool enabled, const std::string& password, 
 	}
 }
 
-void CStarNetServerThread::processIrcDDB()
+void CSGSThread::processIrcDDB()
 {
 	// Once per second
 	if (m_statusTimer.hasExpired()) {
@@ -313,7 +313,7 @@ void CStarNetServerThread::processIrcDDB()
 	}
 }
 
-void CStarNetServerThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
+void CSGSThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
 {
 	for (;;) {
 		DEXTRA_TYPE type = dextraPool->read();
@@ -362,7 +362,7 @@ void CStarNetServerThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
 	}
 }
 
-void CStarNetServerThread::processDCS(CDCSProtocolHandlerPool *dcsPool)
+void CSGSThread::processDCS(CDCSProtocolHandlerPool *dcsPool)
 {
 	for (;;) {
 		DCS_TYPE type = dcsPool->read();
@@ -402,7 +402,7 @@ void CStarNetServerThread::processDCS(CDCSProtocolHandlerPool *dcsPool)
 	}
 }
 
-void CStarNetServerThread::processG2()
+void CSGSThread::processG2()
 {
 	for (;;) {
 		G2_TYPE type = m_g2Handler->read();
@@ -433,7 +433,7 @@ void CStarNetServerThread::processG2()
 	}
 }
 
-void CStarNetServerThread::loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarProtocol)
+void CSGSThread::loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarProtocol)
 {
 	std::string filepath(CFG_DIR);
 	filepath += std::string("/") + fname;

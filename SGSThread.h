@@ -30,15 +30,15 @@
 #include "Timer.h"
 #include "Defs.h"
 
-class CStarNetServerThread {
+class CSGSThread {
 public:
-	CStarNetServerThread(unsigned int countDExtra, unsigned int countDCS);
-	virtual ~CStarNetServerThread();
+	CSGSThread(unsigned int countDExtra, unsigned int countDCS);
+	virtual ~CSGSThread();
 
 	virtual void setCallsign(const std::string& callsign);
 	virtual void setAddress(const std::string& address);
 
-	virtual void addStarNet(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent,
+	virtual void addGroup(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, const std::string& permanent,
 							unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
 
 	virtual void setRemote(bool enabled, const std::string& password, unsigned int port);

@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@ RPH_TYPE CRemoteProtocolHandler::readType()
 			sendNAK("You are not logged in");
 			return m_type;
 		}
-		m_type = RPHT_STARNET;
+		m_type = RPHT_SMARTGROUP;
 		return m_type;
 	} else if (memcmp(m_inBuffer, "LNK", 3U) == 0) {
 		if (!m_loggedIn) {
@@ -195,9 +195,9 @@ std::string CRemoteProtocolHandler::readRepeater()
 	return callsign;
 }
 
-std::string CRemoteProtocolHandler::readStarNetGroup()
+std::string CRemoteProtocolHandler::readGroup()
 {
-	if (m_type != RPHT_STARNET)
+	if (m_type != RPHT_SMARTGROUP)
 		return std::string("");
 
 	std::string callsign((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
@@ -242,7 +242,7 @@ bool CRemoteProtocolHandler::readUnlink(std::string &callsign)
 	return true;
 }
 
-bool CRemoteProtocolHandler::sendCallsigns(const std::list<std::string> &repeaters, const std::list<std::string> &starNets)
+bool CRemoteProtocolHandler::sendCallsigns(const std::list<std::string> &repeaters, const std::list<std::string> &groups)
 {
 	unsigned char *p = m_outBuffer;
 
@@ -258,7 +258,7 @@ bool CRemoteProtocolHandler::sendCallsigns(const std::list<std::string> &repeate
 		p += LONG_CALLSIGN_LENGTH;
 	}
 
-	for (auto it=starNets.cbegin(); it!=starNets.cend(); it++) {
+	for (auto it=groups.cbegin(); it!=groups.cend(); it++) {
 		*p++ = 'S';
 
 		memset(p, ' ' , LONG_CALLSIGN_LENGTH);
@@ -323,7 +323,7 @@ bool CRemoteProtocolHandler::sendRepeater(const CRemoteRepeaterData &data)
 	return m_socket.write(m_outBuffer, p - m_outBuffer, m_address, m_port);
 }
 
-bool CRemoteProtocolHandler::sendStarNetGroup(const CRemoteStarNetGroup &data)
+bool CRemoteProtocolHandler::sendGroup(const CRemoteGroup &data)
 {
 	unsigned char *p = m_outBuffer;
 
@@ -364,7 +364,7 @@ bool CRemoteProtocolHandler::sendStarNetGroup(const CRemoteStarNetGroup &data)
 	p += sizeof(unsigned int);
 
 	for (unsigned int n = 0U; n < data.getUserCount(); n++) {
-		CRemoteStarNetUser *user = data.getUser(n);
+		CRemoteUser *user = data.getUser(n);
 
 		memset(p, ' ', LONG_CALLSIGN_LENGTH);
 		for (unsigned int i = 0U; i < user->getCallsign().size(); i++)

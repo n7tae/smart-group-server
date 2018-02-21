@@ -21,7 +21,7 @@
 #include <cstdlib>
 #include <list>
 
-#include "StarNetHandler.h"
+#include "GroupHandler.h"
 #include "RemoteHandler.h"
 #include "DExtraHandler.h"
 #include "DStarDefines.h"
@@ -71,9 +71,9 @@ void CRemoteHandler::process()
 				}
 			}
 			break;
-		case RPHT_STARNET: {
-				std::string callsign = m_handler.readStarNetGroup();
-				sendStarNetGroup(callsign);
+		case RPHT_SMARTGROUP: {
+				std::string callsign = m_handler.readGroup();
+				sendGroup(callsign);
 			}
 			break;
 		case RPHT_LINK: {
@@ -107,24 +107,24 @@ void CRemoteHandler::close()
 	m_handler.close();
 }
 
-void CRemoteHandler::sendStarNetGroup(const std::string &callsign)
+void CRemoteHandler::sendGroup(const std::string &callsign)
 {
-	CStarNetHandler *starNet = CStarNetHandler::findStarNet(callsign);
-	if (starNet == NULL) {
-		m_handler.sendNAK("Invalid STARnet Group callsign");
+	CGroupHandler *group = CGroupHandler::findGroup(callsign);
+	if (group == NULL) {
+		m_handler.sendNAK("Invalid Smart Group callsign");
 		return;
 	}
 
-	CRemoteStarNetGroup *data = starNet->getInfo();
+	CRemoteGroup *data = group->getInfo();
 	if (data != NULL)
-		m_handler.sendStarNetGroup(*data);
+		m_handler.sendGroup(*data);
 
 	delete data;
 }
 
 void CRemoteHandler::link(const std::string &callsign, const std::string &reflector)
 {
-	CStarNetHandler *smartGroup = CStarNetHandler::findStarNet(callsign);
+	CGroupHandler *smartGroup = CGroupHandler::findGroup(callsign);
 	if (NULL == smartGroup) {
 		m_handler.sendNAK(std::string("Invalid Smart Group subscribe call ") + callsign);
 		return;
@@ -138,13 +138,13 @@ void CRemoteHandler::link(const std::string &callsign, const std::string &reflec
 
 void CRemoteHandler::unlink(const std::string &callsign)
 {
-	CStarNetHandler *smartGroup = CStarNetHandler::findStarNet(callsign);
+	CGroupHandler *smartGroup = CGroupHandler::findGroup(callsign);
 	if (NULL == smartGroup) {
 		m_handler.sendNAK(std::string("Invalid Smart Group subscribe call ") + callsign);
 		return;
 	}
 
-	CRemoteStarNetGroup *data = smartGroup->getInfo();
+	CRemoteGroup *data = smartGroup->getInfo();
 	if (data) {
 		switch (smartGroup->getLinkType()) {
 			case LT_DEXTRA:
@@ -170,15 +170,15 @@ void CRemoteHandler::unlink(const std::string &callsign)
 
 void CRemoteHandler::logoff(const std::string &callsign, const std::string &user)
 {
-	CStarNetHandler *starNet = CStarNetHandler::findStarNet(callsign);
-	if (starNet == NULL) {
-		m_handler.sendNAK("Invalid STARnet group callsign");
+	CGroupHandler *pGroup = CGroupHandler::findGroup(callsign);
+	if (pGroup == NULL) {
+		m_handler.sendNAK("Invalid Smart Group callsign");
 		return;
 	}
 
-	bool res = starNet->logoff(user);
+	bool res = pGroup->logoff(user);
 	if (!res)
-		m_handler.sendNAK("Invalid STARnet user callsign");
+		m_handler.sendNAK("Invalid Smart Group user callsign");
 	else
 		m_handler.sendACK();
 }

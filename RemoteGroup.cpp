@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,9 +17,9 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "RemoteStarNetGroup.h"
+#include "RemoteGroup.h"
 
-CRemoteStarNetGroup::CRemoteStarNetGroup(const std::string& callsign, const std::string& logoff, const std::string &repeater, const std::string &infoText,
+CRemoteGroup::CRemoteGroup(const std::string& callsign, const std::string& logoff, const std::string &repeater, const std::string &infoText,
 											const std::string &linkReflector, LINK_STATUS linkStatus, unsigned int userTimeout) :
 m_callsign(callsign),
 m_logoff(logoff),
@@ -34,7 +34,7 @@ m_users()
 		logoff.empty();
 }
 
-CRemoteStarNetGroup::~CRemoteStarNetGroup()
+CRemoteGroup::~CRemoteGroup()
 {
 	while (m_users.size()) {
 		delete m_users.back();
@@ -42,54 +42,54 @@ CRemoteStarNetGroup::~CRemoteStarNetGroup()
 	}
 }
 
-void CRemoteStarNetGroup::addUser(const std::string& callsign, uint32_t timer, uint32_t timeout)
+void CRemoteGroup::addUser(const std::string& callsign, uint32_t timer, uint32_t timeout)
 {
-	CRemoteStarNetUser *user = new CRemoteStarNetUser(callsign, timer, timeout);
+	CRemoteUser *user = new CRemoteUser(callsign, timer, timeout);
 
 	m_users.push_back(user);
 }
 
-std::string CRemoteStarNetGroup::getCallsign() const
+std::string CRemoteGroup::getCallsign() const
 {
 	return m_callsign;
 }
 
-std::string CRemoteStarNetGroup::getLogoff() const
+std::string CRemoteGroup::getLogoff() const
 {
 	return m_logoff;
 }
 
-std::string CRemoteStarNetGroup::getRepeater() const
+std::string CRemoteGroup::getRepeater() const
 {
 	return m_repeater;
 }
 
-std::string CRemoteStarNetGroup::getInfoText() const
+std::string CRemoteGroup::getInfoText() const
 {
 	return m_infoText;
 }
 
-std::string CRemoteStarNetGroup::getReflector() const
+std::string CRemoteGroup::getReflector() const
 {
 	return m_linkReflector;
 }
 
-LINK_STATUS CRemoteStarNetGroup::getLinkStatus() const
+LINK_STATUS CRemoteGroup::getLinkStatus() const
 {
 	return m_linkStatus;
 }
 
-unsigned int CRemoteStarNetGroup::getUserTimeout() const
+unsigned int CRemoteGroup::getUserTimeout() const
 {
 	return m_userTimeout;
 }
 
-uint32_t CRemoteStarNetGroup::getUserCount() const
+uint32_t CRemoteGroup::getUserCount() const
 {
 	return m_users.size();
 }
 
-CRemoteStarNetUser *CRemoteStarNetGroup::getUser(uint32_t n) const
+CRemoteUser *CRemoteGroup::getUser(uint32_t n) const
 {
 	return m_users[n];
 }

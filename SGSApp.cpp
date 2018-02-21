@@ -22,8 +22,8 @@
 #include <fcntl.h>
 #include <string>
 
-#include "StarNetServerConfig.h"
-#include "StarNetServerAppD.h"
+#include "SGSConfig.h"
+#include "SGSApp.h"
 #include "Version.h"
 #include "IRCDDBClient.h"
 #include "Utils.h"
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
 	std::string cfgFile(argv[1]);
 
-	CStarNetServerAppD gateway(cfgFile);
+	CSGSApp gateway(cfgFile);
 
 	if (!gateway.init()) {
 		return 1;
@@ -55,30 +55,30 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-CStarNetServerAppD::CStarNetServerAppD(const std::string &configFile) : m_configFile(configFile), m_thread(NULL)
+CSGSApp::CSGSApp(const std::string &configFile) : m_configFile(configFile), m_thread(NULL)
 {
 }
 
-CStarNetServerAppD::~CStarNetServerAppD()
+CSGSApp::~CSGSApp()
 {
 }
 
-bool CStarNetServerAppD::init()
+bool CSGSApp::init()
 {
 	return createThread();
 }
 
-void CStarNetServerAppD::run()
+void CSGSApp::run()
 {
 	m_thread->run();
 
 	printf("exiting\n");
 }
 
-bool CStarNetServerAppD::createThread()
+bool CSGSApp::createThread()
 {
-	CStarNetServerConfig config(m_configFile);
-	m_thread = new CStarNetServerThread(config.getLinkCount("XRF"), config.getLinkCount("DCS"));
+	CSGSConfig config(m_configFile);
+	m_thread = new CSGSThread(config.getLinkCount("XRF"), config.getLinkCount("DCS"));
 
 	std::string CallSign, address;
 	config.getGateway(CallSign, address);
@@ -109,14 +109,14 @@ bool CStarNetServerAppD::createThread()
 		CALLSIGN_SWITCH callsignswitch;
 		bool txmsgswitch;
 
-		config.getStarNet(i, band, callsign, logoff, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
+		config.getGroup(i, band, callsign, logoff, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
 
 		if (callsign.size() && isalnum(callsign[0])) {
 			std::string repeater(CallSign);
 			repeater.resize(7, ' ');
 			repeater.push_back(band[0]);
-			m_thread->addStarNet(callsign, logoff, repeater, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
-			printf("StarNet %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s\n",
+			m_thread->addGroup(callsign, logoff, repeater, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
+			printf("Smart Group %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s\n",
 				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout,
 				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false", reflector.c_str());
 		}

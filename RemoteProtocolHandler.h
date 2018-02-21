@@ -23,7 +23,7 @@
 #include <cstdint>
 #include <list>
 
-#include "RemoteStarNetGroup.h"
+#include "RemoteGroup.h"
 #include "RemoteRepeaterData.h"
 #include "UDPReaderWriter.h"
 #include "Defs.h"
@@ -34,7 +34,7 @@ enum RPH_TYPE {
 	RPHT_HASH,
 	RPHT_CALLSIGNS,
 	RPHT_REPEATER,
-	RPHT_STARNET,
+	RPHT_SMARTGROUP,
 	RPHT_LINK,
 	RPHT_UNLINK,
 	RPHT_LINKSCR,
@@ -53,7 +53,7 @@ public:
 	RPH_TYPE readType();
 
 	std::string readRepeater();
-	std::string readStarNetGroup();
+	std::string readGroup();
 	bool readHash(const std::string &password, uint32_t random);
 	bool readLink(std::string &callsign, std::string &reflector);
 	bool readUnlink(std::string &callsign);
@@ -62,9 +62,9 @@ public:
 	bool sendACK();
 	bool sendNAK(const std::string &text);
 	bool sendRandom(uint32_t random);
-	bool sendCallsigns(const std::list<std::string> &repeaters, const std::list<std::string> &starNets);
+	bool sendCallsigns(const std::list<std::string> &repeaters, const std::list<std::string> &groups);
 	bool sendRepeater(const CRemoteRepeaterData &data);
-	bool sendStarNetGroup(const CRemoteStarNetGroup &data);
+	bool sendGroup(const CRemoteGroup &data);
 
 	void setLoggedIn(bool set);
 

@@ -19,7 +19,7 @@
 
 #include <cassert>
 
-#include "StarNetHandler.h"
+#include "GroupHandler.h"
 #include "G2Handler.h"
 #include "Utils.h"
 #include "Defs.h"
@@ -70,8 +70,8 @@ void CG2Handler::process(CHeaderData& header)
 		return;
 	}
 
-	// Check to see if this is for StarNet
-	CStarNetHandler* handler = CStarNetHandler::findStarNet(header);
+	// Check to see if this is for Smart Group
+	CGroupHandler* handler = CGroupHandler::findGroup(header);
 	if (handler != NULL) {
 		handler->process(header);
 		return;
@@ -80,8 +80,8 @@ void CG2Handler::process(CHeaderData& header)
 
 void CG2Handler::process(CAMBEData& data)
 {
-	// Check to see if this is for StarNet
-	CStarNetHandler* handler = CStarNetHandler::findStarNet(data);
+	// Check to see if this is for Smart Group
+	CGroupHandler* handler = CGroupHandler::findGroup(data);
 	if (handler != NULL) {
 		handler->process(data);
 		return;

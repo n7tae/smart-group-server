@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010,2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,18 +19,18 @@
 
 #pragma once
 
-#include "StarNetServerThread.h"
+#include "SGSThread.h"
 
-class CStarNetServerAppD
+class CSGSApp
 {
 private:
 	std::string m_configFile;
-	CStarNetServerThread *m_thread;
+	CSGSThread *m_thread;
 	bool createThread();
 
 public:
-	CStarNetServerAppD(const std::string &configFile);
-	~CStarNetServerAppD();
+	CSGSApp(const std::string &configFile);
+	~CSGSApp();
 
 	bool init();
 	void run();

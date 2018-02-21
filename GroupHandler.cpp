@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "SlowDataEncoder.h"
-#include "StarNetHandler.h"
+#include "GroupHandler.h"
 #include "DExtraHandler.h"		// DEXTRA_LINK
 #include "DCSHandler.h"			// DCS_LINK
 #include "Utils.h"
@@ -31,52 +31,52 @@
 const unsigned int MESSAGE_DELAY = 4U;
 
 // define static members
-CG2ProtocolHandler *CStarNetHandler::m_g2Handler = NULL;
-CIRCDDB            *CStarNetHandler::m_irc = NULL;
-CCacheManager      *CStarNetHandler::m_cache = NULL;
-std::string         CStarNetHandler::m_gateway;
-std::list<CStarNetHandler *> CStarNetHandler::m_starNets;
+CG2ProtocolHandler *CGroupHandler::m_g2Handler = NULL;
+CIRCDDB            *CGroupHandler::m_irc = NULL;
+CCacheManager      *CGroupHandler::m_cache = NULL;
+std::string         CGroupHandler::m_gateway;
+std::list<CGroupHandler *> CGroupHandler::m_Groups;
 
 
-CStarNetUser::CStarNetUser(const std::string &callsign, unsigned int timeout) :
+CSGSUser::CSGSUser(const std::string &callsign, unsigned int timeout) :
 m_callsign(callsign),
 m_timer(1000U, timeout)
 {
 	m_timer.start();
 }
 
-CStarNetUser::~CStarNetUser()
+CSGSUser::~CSGSUser()
 {
 }
 
-bool CStarNetUser::clock(unsigned int ms)
+bool CSGSUser::clock(unsigned int ms)
 {
 	m_timer.clock(ms);
 
 	return m_timer.isRunning() && m_timer.hasExpired();
 }
 
-bool CStarNetUser::hasExpired()
+bool CSGSUser::hasExpired()
 {
 	return m_timer.isRunning() && m_timer.hasExpired();
 }
 
-void CStarNetUser::reset()
+void CSGSUser::reset()
 {
 	m_timer.start();
 }
 
-std::string CStarNetUser::getCallsign() const
+std::string CSGSUser::getCallsign() const
 {
 	return m_callsign;
 }
 
-CTimer CStarNetUser::getTimer() const
+CTimer CSGSUser::getTimer() const
 {
 	return m_timer;
 }
 
-CStarNetId::CStarNetId(unsigned int id, unsigned int timeout, CStarNetUser *user) :
+CSGSId::CSGSId(unsigned int id, unsigned int timeout, CSGSUser *user) :
 m_id(id),
 m_timer(1000U, timeout),
 m_login(false),
@@ -91,135 +91,135 @@ m_textCollector()
 	m_timer.start();
 }
 
-CStarNetId::~CStarNetId()
+CSGSId::~CSGSId()
 {
 }
 
-unsigned int CStarNetId::getId() const
+unsigned int CSGSId::getId() const
 {
 	return m_id;
 }
 
-void CStarNetId::reset()
+void CSGSId::reset()
 {
 	m_timer.start();
 }
 
-void CStarNetId::setLogin()
+void CSGSId::setLogin()
 {
 	m_login = true;
 }
 
-void CStarNetId::setInfo()
+void CSGSId::setInfo()
 {
 	if (!m_login && !m_logoff)
 		m_info = true;
 }
 
-void CStarNetId::setLogoff()
+void CSGSId::setLogoff()
 {
 	if (!m_login && !m_info)
 		m_logoff = true;
 }
 
-void CStarNetId::setEnd()
+void CSGSId::setEnd()
 {
 	m_end = true;
 }
 
-bool CStarNetId::clock(unsigned int ms)
+bool CSGSId::clock(unsigned int ms)
 {
 	m_timer.clock(ms);
 
 	return m_timer.isRunning() && m_timer.hasExpired();
 }
 
-bool CStarNetId::hasExpired()
+bool CSGSId::hasExpired()
 {
 	return m_timer.isRunning() && m_timer.hasExpired();
 }
 
-bool CStarNetId::isLogin() const
+bool CSGSId::isLogin() const
 {
 	return m_login;
 }
 
-bool CStarNetId::isInfo() const
+bool CSGSId::isInfo() const
 {
 	return m_info;
 }
 
-bool CStarNetId::isLogoff() const
+bool CSGSId::isLogoff() const
 {
 	return m_logoff;
 }
 
-bool CStarNetId::isEnd() const
+bool CSGSId::isEnd() const
 {
 	return m_end;
 }
 
-CStarNetUser* CStarNetId::getUser() const
+CSGSUser* CSGSId::getUser() const
 {
 	return m_user;
 }
 
-CTextCollector& CStarNetId::getTextCollector()
+CTextCollector& CSGSId::getTextCollector()
 {
 	return m_textCollector;
 }
 
-void CStarNetHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
+void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
 														unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector)
 {
-	CStarNetHandler *starNet = new CStarNetHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
+	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
 
-	if (starNet)
-		m_starNets.push_back(starNet);
+	if (group)
+		m_Groups.push_back(group);
 	else
-		printf("Cannot allocate StarNet group with callsign %s\n", callsign.c_str());
+		printf("Cannot allocate Smart Group with callsign %s\n", callsign.c_str());
 }
 
-void CStarNetHandler::setG2Handler(CG2ProtocolHandler *handler)
+void CGroupHandler::setG2Handler(CG2ProtocolHandler *handler)
 {
 	assert(handler != NULL);
 
 	m_g2Handler = handler;
 }
 
-void CStarNetHandler::setIRC(CIRCDDB *irc)
+void CGroupHandler::setIRC(CIRCDDB *irc)
 {
 	assert(irc != NULL);
 
 	m_irc = irc;
 }
 
-void CStarNetHandler::setCache(CCacheManager *cache)
+void CGroupHandler::setCache(CCacheManager *cache)
 {
 	assert(cache != NULL);
 
 	m_cache = cache;
 }
 
-void CStarNetHandler::setGateway(const std::string &gateway)
+void CGroupHandler::setGateway(const std::string &gateway)
 {
 	m_gateway = gateway;
 }
 
-CStarNetHandler *CStarNetHandler::findStarNet(const std::string &callsign)
+CGroupHandler *CGroupHandler::findGroup(const std::string &callsign)
 {
-	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++) {
+	for (auto it=m_Groups.begin(); it!=m_Groups.end(); it++) {
 		if (0 == (*it)->m_groupCallsign.compare(callsign))
 			return *it;
 	}
 	return NULL;
 }
 
-CStarNetHandler *CStarNetHandler::findStarNet(const CHeaderData &header)
+CGroupHandler *CGroupHandler::findGroup(const CHeaderData &header)
 {
 	std::string your = header.getYourCall();
 
-	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++) {
+	for (auto it=m_Groups.begin(); it!=m_Groups.end(); it++) {
 		if (0 == (*it)->m_groupCallsign.compare(your))
 			return *it;
 		if (0 == (*it)->m_offCallsign.compare(your))
@@ -228,60 +228,60 @@ CStarNetHandler *CStarNetHandler::findStarNet(const CHeaderData &header)
 	return NULL;
 }
 
-CStarNetHandler *CStarNetHandler::findStarNet(const CAMBEData &data)
+CGroupHandler *CGroupHandler::findGroup(const CAMBEData &data)
 {
 	unsigned int id = data.getId();
 
-	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++) {
+	for (auto it=m_Groups.begin(); it!=m_Groups.end(); it++) {
 		if ((*it)->m_id == id)
 			return *it;
 	}
 	return NULL;
 }
 
-std::list<std::string> CStarNetHandler::listStarNets()
+std::list<std::string> CGroupHandler::listGroups()
 {
-	std::list<std::string> starNets;
+	std::list<std::string> groups;
 
-	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++)
-		starNets.push_back((*it)->m_groupCallsign);
+	for (auto it=m_Groups.begin(); it!=m_Groups.end(); it++)
+		groups.push_back((*it)->m_groupCallsign);
 
-	return starNets;
+	return groups;
 }
 
-CRemoteStarNetGroup *CStarNetHandler::getInfo() const
+CRemoteGroup *CGroupHandler::getInfo() const
 {
-	CRemoteStarNetGroup *data = new CRemoteStarNetGroup(m_groupCallsign, m_offCallsign, m_repeater, m_infoText, m_linkReflector, m_linkStatus, m_userTimeout);
+	CRemoteGroup *data = new CRemoteGroup(m_groupCallsign, m_offCallsign, m_repeater, m_infoText, m_linkReflector, m_linkStatus, m_userTimeout);
 
 	for (auto it=m_users.begin(); it!=m_users.end(); ++it) {
-		CStarNetUser* user = it->second;
+		CSGSUser* user = it->second;
 		data->addUser(user->getCallsign(), user->getTimer().getTimer(), user->getTimer().getTimeout());
 	}
 
 	return data;
 }
 
-void CStarNetHandler::finalise()
+void CGroupHandler::finalise()
 {
-	while (m_starNets.size()) {
-		delete m_starNets.front();
-		m_starNets.pop_front();
+	while (m_Groups.size()) {
+		delete m_Groups.front();
+		m_Groups.pop_front();
 	}
 }
 
-void CStarNetHandler::clock(unsigned int ms)
+void CGroupHandler::clock(unsigned int ms)
 {
-	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++)
+	for (auto it=m_Groups.begin(); it!=m_Groups.end(); it++)
 		(*it)->clockInt(ms);
 }
 
-void CStarNetHandler::link()
+void CGroupHandler::link()
 {
-	for (auto it=m_starNets.begin(); it!=m_starNets.end(); it++)
+	for (auto it=m_Groups.begin(); it!=m_Groups.end(); it++)
 		(*it)->linkInt();
 }
 
-CStarNetHandler::CStarNetHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
+CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
 																unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
@@ -339,7 +339,7 @@ m_repeaters()
 	}
 }
 
-CStarNetHandler::~CStarNetHandler()
+CGroupHandler::~CGroupHandler()
 {
 	for (auto it = m_ids.begin(); it != m_ids.end(); it++)
 		delete it->second;
@@ -355,14 +355,14 @@ CStarNetHandler::~CStarNetHandler()
 	m_permanent.erase(m_permanent.begin(), m_permanent.end());
 }
 
-void CStarNetHandler::process(CHeaderData &header)
+void CGroupHandler::process(CHeaderData &header)
 {
 	std::string my   = header.getMyCall1();
 	std::string your = header.getYourCall();
-//printf("CStarNetHandler::Process(CHeaderData) my=%s ur=%s\n", my.c_str(), your.c_str());
+//printf("CGroupHandler::Process(CHeaderData) my=%s ur=%s\n", my.c_str(), your.c_str());
 	unsigned int id = header.getId();
 
-	CStarNetUser* user = m_users[my];
+	CSGSUser* user = m_users[my];
 	bool islogin = false;
 
 	// Ensure that this user is in the cache
@@ -376,10 +376,10 @@ void CStarNetHandler::process(CHeaderData &header)
 			// This is a new user, add them to the list
 			printf("Adding %s to Smart Group %s\n", my.c_str(), your.c_str());
 			logUser(LU_ON, your, my);	// inform Quadnet
-			user = new CStarNetUser(my, m_userTimeout * 60U);
+			user = new CSGSUser(my, m_userTimeout * 60U);
 			m_users[my] = user;
 
-			CStarNetId* tx = new CStarNetId(id, MESSAGE_DELAY, user);
+			CSGSId* tx = new CSGSId(id, MESSAGE_DELAY, user);
 			tx->setLogin();
 			m_ids[id] = tx;
 			islogin = true;
@@ -387,14 +387,14 @@ void CStarNetHandler::process(CHeaderData &header)
 			user->reset();
 
 			// Check that it isn't a duplicate header
-			CStarNetId* tx = m_ids[id];
+			CSGSId* tx = m_ids[id];
 			if (tx != NULL) {
 				delete userData;
 				return;
 			}
 			//printf("Updating %s on Smart Group %s\n", my.c_str(), your.c_str());
 			logUser(LU_ON, your, my);	// this will be an update
-			m_ids[id] = new CStarNetId(id, MESSAGE_DELAY, user);
+			m_ids[id] = new CSGSId(id, MESSAGE_DELAY, user);
 		}
 	} else {
 		delete userData;
@@ -409,7 +409,7 @@ void CStarNetHandler::process(CHeaderData &header)
 		// Remove the user from the user list
 		m_users.erase(my);
 
-		CStarNetId* tx = new CStarNetId(id, MESSAGE_DELAY, user);
+		CSGSId* tx = new CSGSId(id, MESSAGE_DELAY, user);
 		tx->setLogoff();
 		m_ids[id] = tx;
 
@@ -451,8 +451,8 @@ void CStarNetHandler::process(CHeaderData &header)
 	}
 
 	// Build new repeater list
-	for (std::map<std::string, CStarNetUser *>::const_iterator it = m_users.begin(); it != m_users.end(); ++it) {
-		CStarNetUser* user = it->second;
+	for (std::map<std::string, CSGSUser *>::const_iterator it = m_users.begin(); it != m_users.end(); ++it) {
+		CSGSUser* user = it->second;
 		if (user != NULL) {
 			// Find the user in the cache
 			CUserData* userData = m_cache->findUser(user->getCallsign());
@@ -461,10 +461,10 @@ void CStarNetHandler::process(CHeaderData &header)
 				// Check for the excluded repeater
 				if (userData->getRepeater().compare(exclude)) {
 					// Find the users repeater in the repeater list, add it otherwise
-					CStarNetRepeater* repeater = m_repeaters[userData->getRepeater()];
+					CSGSRepeater* repeater = m_repeaters[userData->getRepeater()];
 					if (repeater == NULL) {
 						// Add a new repeater entry
-						repeater = new CStarNetRepeater;
+						repeater = new CSGSRepeater;
 						repeater->m_destination = std::string("/") + userData->getRepeater().substr(0, 6) + userData->getRepeater().back();
 						repeater->m_repeater    = userData->getRepeater();
 						repeater->m_gateway     = userData->getGateway();
@@ -498,17 +498,17 @@ void CStarNetHandler::process(CHeaderData &header)
 		sendFromText(my);
 }
 
-void CStarNetHandler::process(CAMBEData &data)
+void CGroupHandler::process(CAMBEData &data)
 {
 	unsigned int id = data.getId();
 
-	CStarNetId* tx = m_ids[id];
+	CSGSId* tx = m_ids[id];
 	if (tx == NULL)
 		return;
 
 	tx->reset();
 
-	CStarNetUser* user = tx->getUser();
+	CSGSUser* user = tx->getUser();
 	user->reset();
 
 	// If we've just logged in, the LOGOFF and INFO commands are disabled
@@ -522,7 +522,7 @@ void CStarNetHandler::process(CAMBEData &data)
 				std::string TEMP(text.substr(0,6));
 				CUtils::ToUpper(TEMP);
 				if (0 == TEMP.compare("LOGOFF")) {
-					printf("Removing %s from StarNet group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+					printf("Removing %s from Smart Group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 					tx->setLogoff();
 
@@ -562,7 +562,7 @@ void CStarNetHandler::process(CAMBEData &data)
 	if (data.isEnd()) {
 		if (id == m_id) {
 			// Clear the repeater list if we're the relayed id
-			for (std::map<std::string, CStarNetRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+			for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 				delete it->second;
 			m_repeaters.clear();
 			m_id = 0x00U;
@@ -585,11 +585,11 @@ void CStarNetHandler::process(CAMBEData &data)
 	}
 }
 
-bool CStarNetHandler::logoff(const std::string &callsign)
+bool CGroupHandler::logoff(const std::string &callsign)
 {
 	if (0 == callsign.compare("ALL     ")) {
-		for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
-			CStarNetUser* user = it->second;
+		for (std::map<std::string, CSGSUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
+			CSGSUser* user = it->second;
 			if (user) {
 				printf("Removing %s from Smart Group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 				logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform Quadnet
@@ -597,10 +597,10 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 			}
 		}
 
-		for (std::map<unsigned int, CStarNetId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it)
+		for (std::map<unsigned int, CSGSId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it)
 			delete it->second;
 
-		for (std::map<std::string, CStarNetRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+		for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 			delete it->second;
 
 		m_users.clear();
@@ -611,7 +611,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 
 		return true;
 	} else {
-		CStarNetUser* user = m_users[callsign];
+		CSGSUser* user = m_users[callsign];
 		if (user == NULL) {
 			printf("Invalid callsign asked to logoff");
 			return false;
@@ -621,8 +621,8 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 
 		// Find any associated id structure associated with this use, and the logged off user is the
 		// currently relayed one, remove his id.
-		for (std::map<unsigned int, CStarNetId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it) {
-			CStarNetId* id = it->second;
+		for (std::map<unsigned int, CSGSId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it) {
+			CSGSId* id = it->second;
 			if (id != NULL && id->getUser() == user) {
 				if (id->getId() == m_id)
 					m_id = 0x00U;
@@ -641,9 +641,9 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 
 		// If none then clear all the data structures
 		if (count == 0U) {
-			for (std::map<unsigned int, CStarNetId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it)
+			for (std::map<unsigned int, CSGSId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it)
 				delete it->second;
-			for (std::map<std::string, CStarNetRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+			for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 				delete it->second;
 
 			m_ids.clear();
@@ -656,7 +656,7 @@ bool CStarNetHandler::logoff(const std::string &callsign)
 	}
 }
 
-bool CStarNetHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
+bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 {
 	if (m_id != 0x00U)
 		return false;
@@ -674,18 +674,18 @@ bool CStarNetHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 	header.setFlag3(0x00);
 
 	// Build new repeater list
-	for (std::map<std::string, CStarNetUser *>::const_iterator it = m_users.begin(); it != m_users.end(); ++it) {
-		CStarNetUser* user = it->second;
+	for (std::map<std::string, CSGSUser *>::const_iterator it = m_users.begin(); it != m_users.end(); ++it) {
+		CSGSUser* user = it->second;
 		if (user) {
 			// Find the user in the cache
 			CUserData* userData = m_cache->findUser(user->getCallsign());
 
 			if (userData) {
 				// Find the users repeater in the repeater list, add it otherwise
-				CStarNetRepeater* repeater = m_repeaters[userData->getRepeater()];
+				CSGSRepeater* repeater = m_repeaters[userData->getRepeater()];
 				if (repeater == NULL) {
 					// Add a new repeater entry
-					repeater = new CStarNetRepeater;
+					repeater = new CSGSRepeater;
 					repeater->m_destination = std::string("/") + userData->getRepeater().substr(0, 6) + userData->getRepeater().back();
 					repeater->m_repeater    = userData->getRepeater();
 					repeater->m_gateway     = userData->getGateway();
@@ -712,7 +712,7 @@ bool CStarNetHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 			break;
 	}
 
-	CStarNetId *tx = m_ids[m_id];
+	CSGSId *tx = m_ids[m_id];
 	if (tx) {
 		if (!tx->isLogin())
 			sendToRepeaters(header);
@@ -725,7 +725,7 @@ bool CStarNetHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 	return true;
 }
 
-bool CStarNetHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
+bool CGroupHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
 {
 	unsigned int id = data.getId();
 	if (id != m_id)
@@ -733,7 +733,7 @@ bool CStarNetHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
 
 	m_linkTimer.start();
 
-	CStarNetId *tx = m_ids[id];
+	CSGSId *tx = m_ids[id];
 	if (tx) {
 		if (!tx->isLogin())
 			sendToRepeaters(data);
@@ -745,7 +745,7 @@ bool CStarNetHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
 		m_id = 0x00U;
 
 		// Clear the repeater list
-		for (std::map<std::string, CStarNetRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+		for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 			delete it->second;
 		m_repeaters.clear();
 	}
@@ -753,7 +753,7 @@ bool CStarNetHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
 	return true;
 }
 
-bool CStarNetHandler::remoteLink(const std::string &reflector)
+bool CGroupHandler::remoteLink(const std::string &reflector)
 {
 	if (LT_NONE != m_linkType)
 		return false;
@@ -771,7 +771,7 @@ bool CStarNetHandler::remoteLink(const std::string &reflector)
 	return linkInt();
 }
 
-bool CStarNetHandler::linkInt()
+bool CGroupHandler::linkInt()
 {
 	if (LT_NONE == m_linkType)
 		return false;
@@ -804,7 +804,7 @@ bool CStarNetHandler::linkInt()
 	return rtv;
 }
 
-void CStarNetHandler::clockInt(unsigned int ms)
+void CGroupHandler::clockInt(unsigned int ms)
 {
 	m_linkTimer.clock(ms);
 	if (m_linkTimer.isRunning() && m_linkTimer.hasExpired()) {
@@ -812,7 +812,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		m_id = 0x00U;
 
 		// Clear the repeater list
-		for (std::map<std::string, CStarNetRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+		for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 			delete it->second;
 		m_repeaters.clear();
 	}
@@ -830,8 +830,8 @@ void CStarNetHandler::clockInt(unsigned int ms)
 	}
 
 	// For each incoming id
-	for (std::map<unsigned int, CStarNetId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it) {
-		CStarNetId* tx = it->second;
+	for (std::map<unsigned int, CSGSId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it) {
+		CSGSId* tx = it->second;
 
 		if (tx != NULL && tx->clock(ms)) {
 			std::string callsign = tx->getUser()->getCallsign();
@@ -862,7 +862,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 			} else {
 				if (tx->getId() == m_id) {
 					// Clear the repeater list if we're the relayed id
-					for (std::map<std::string, CStarNetRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+					for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 						delete it->second;
 					m_repeaters.clear();
 					m_id = 0x00U;
@@ -890,8 +890,8 @@ void CStarNetHandler::clockInt(unsigned int ms)
 	}
 
 	// Individual user expiry, but not for the permanent entries
-	for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
-		CStarNetUser* user = it->second;
+	for (std::map<std::string, CSGSUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
+		CSGSUser* user = it->second;
 		if (user && m_permanent.find(user->getCallsign()) == m_permanent.end())
 			user->clock(ms);
 	}
@@ -901,10 +901,10 @@ void CStarNetHandler::clockInt(unsigned int ms)
 		return;
 
 	// Individual user expiry
-	for (std::map<std::string, CStarNetUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
-		CStarNetUser* user = it->second;
+	for (std::map<std::string, CSGSUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
+		CSGSUser* user = it->second;
 		if (user && user->hasExpired()) {
-			printf("Removing %s from StarNet group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+			printf("Removing %s from Smart Group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 
 			logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform QuadNet
 			delete user;
@@ -916,7 +916,7 @@ void CStarNetHandler::clockInt(unsigned int ms)
 	}
 }
 
-void CStarNetHandler::updateReflectorInfo()
+void CGroupHandler::updateReflectorInfo()
 {
 	std::string subcommand("REFLECTOR");
 	std::vector<std::string> parms;
@@ -955,7 +955,7 @@ void CStarNetHandler::updateReflectorInfo()
 	m_irc->sendSGSInfo(subcommand, parms);
 }
 
-void CStarNetHandler::logUser(LOGUSER lu, const std::string channel, const std::string user)
+void CGroupHandler::logUser(LOGUSER lu, const std::string channel, const std::string user)
 {
 	std::string cmd(LU_OFF==lu ? "LOGOFF" : "LOGON");
 	std::string chn(channel);
@@ -968,10 +968,10 @@ void CStarNetHandler::logUser(LOGUSER lu, const std::string channel, const std::
 	m_irc->sendSGSInfo(cmd, parms);
 }
 
-void CStarNetHandler::sendToRepeaters(CHeaderData& header) const
+void CGroupHandler::sendToRepeaters(CHeaderData& header) const
 {
-	for (std::map<std::string, CStarNetRepeater *>::const_iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
-		CStarNetRepeater* repeater = it->second;
+	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
+		CSGSRepeater* repeater = it->second;
 		if (repeater != NULL) {
 			header.setYourCall(repeater->m_destination);
 			header.setDestination(repeater->m_address, G2_DV_PORT);
@@ -981,10 +981,10 @@ void CStarNetHandler::sendToRepeaters(CHeaderData& header) const
 	}
 }
 
-void CStarNetHandler::sendToRepeaters(CAMBEData &data) const
+void CGroupHandler::sendToRepeaters(CAMBEData &data) const
 {
-	for (std::map<std::string, CStarNetRepeater *>::const_iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
-		CStarNetRepeater* repeater = it->second;
+	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
+		CSGSRepeater* repeater = it->second;
 		if (repeater != NULL) {
 			data.setDestination(repeater->m_address, G2_DV_PORT);
 			m_g2Handler->writeAMBE(data);
@@ -992,7 +992,7 @@ void CStarNetHandler::sendToRepeaters(CAMBEData &data) const
 	}
 }
 
-void CStarNetHandler::sendFromText(const std::string &my) const
+void CGroupHandler::sendFromText(const std::string &my) const
 {
 	std::string text;
 	switch (m_callsignSwitch) {
@@ -1034,7 +1034,7 @@ void CStarNetHandler::sendFromText(const std::string &my) const
 	}
 }
 
-void CStarNetHandler::sendAck(const CUserData &user, const std::string &text) const
+void CGroupHandler::sendAck(const CUserData &user, const std::string &text) const
 {
 	unsigned int id = CHeaderData::createId();
 
@@ -1078,14 +1078,14 @@ void CStarNetHandler::sendAck(const CUserData &user, const std::string &text) co
 	}
 }
 
-void CStarNetHandler::linkUp(DSTAR_PROTOCOL, const std::string &callsign)
+void CGroupHandler::linkUp(DSTAR_PROTOCOL, const std::string &callsign)
 {
 	printf("%s link to %s established\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());
 
 	m_linkStatus = (LT_DEXTRA == m_linkType) ? LS_LINKED_DEXTRA : LS_LINKED_DCS;
 }
 
-bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string &callsign, bool isRecoverable)
+bool CGroupHandler::linkFailed(DSTAR_PROTOCOL, const std::string &callsign, bool isRecoverable)
 {
 	if (!isRecoverable) {
 		if (m_linkStatus != LS_NONE) {
@@ -1105,7 +1105,7 @@ bool CStarNetHandler::linkFailed(DSTAR_PROTOCOL, const std::string &callsign, bo
 	return false;
 }
 
-void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string &callsign)
+void CGroupHandler::linkRefused(DSTAR_PROTOCOL, const std::string &callsign)
 {
 	if (m_linkStatus != LS_NONE) {
 		printf("%s link to %s was refused\n", (LT_DEXTRA==m_linkType)?"DExtra":"DCS", callsign.c_str());
@@ -1113,22 +1113,22 @@ void CStarNetHandler::linkRefused(DSTAR_PROTOCOL, const std::string &callsign)
 	}
 }
 
-bool CStarNetHandler::singleHeader()
+bool CGroupHandler::singleHeader()
 {
 	return true;
 }
 
-DSTAR_LINKTYPE CStarNetHandler::getLinkType()
+DSTAR_LINKTYPE CGroupHandler::getLinkType()
 {
 	return m_linkType;
 }
 
-void CStarNetHandler::setLinkType(DSTAR_LINKTYPE linkType)
+void CGroupHandler::setLinkType(DSTAR_LINKTYPE linkType)
 {
 	m_linkType = linkType;
 }
 
-void CStarNetHandler::clearReflector()
+void CGroupHandler::clearReflector()
 {
 	m_linkReflector.clear();
 }

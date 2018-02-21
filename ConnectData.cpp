@@ -354,7 +354,7 @@ unsigned int CConnectData::getDCSData(unsigned char *data, unsigned int length) 
 					case GT_DONGLE:
 						snprintf(shtml, 512, HTML, "dongle.jpg", "DONGLE", VERSION.c_str());
 						break;
-					case GT_STARNET:
+					case GT_SMARTGROUP:
 						snprintf(shtml, 512, HTML, "hf.jpg", "Smart Group", VERSION.c_str());
 						break;
 					default:

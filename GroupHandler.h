@@ -25,7 +25,7 @@
 #include <list>
 #include <set>
 
-#include "RemoteStarNetGroup.h"
+#include "RemoteGroup.h"
 #include "G2ProtocolHandler.h"
 #include "ReflectorCallback.h"		// DEXTRA_LINK || DCS_LINK
 #include "RepeaterCallback.h"
@@ -42,10 +42,10 @@ enum LOGUSER {
 	LU_OFF
 };
 
-class CStarNetUser {
+class CSGSUser {
 public:
-	CStarNetUser(const std::string& callsign, unsigned int timeout);
-	~CStarNetUser();
+	CSGSUser(const std::string& callsign, unsigned int timeout);
+	~CSGSUser();
 
 	void reset();
 
@@ -60,10 +60,10 @@ private:
 	CTimer m_timer;
 };
 
-class CStarNetId {
+class CSGSId {
 public:
-	CStarNetId(unsigned int id, unsigned int timeout, CStarNetUser* user);
-	~CStarNetId();
+	CSGSId(unsigned int id, unsigned int timeout, CSGSUser* user);
+	~CSGSId();
 
 	unsigned int getId() const;
 
@@ -82,7 +82,7 @@ public:
 	bool isLogoff() const;
 	bool isEnd() const;
 
-	CStarNetUser* getUser() const;
+	CSGSUser* getUser() const;
 
 	CTextCollector& getTextCollector();
 
@@ -93,11 +93,11 @@ private:
 	bool           m_info;
 	bool           m_logoff;
 	bool           m_end;
-	CStarNetUser*  m_user;
+	CSGSUser      *m_user;
 	CTextCollector m_textCollector;
 };
 
-class CStarNetRepeater {
+class CSGSRepeater {
 public:
 	std::string        m_destination;
 	std::string        m_repeater;
@@ -105,7 +105,7 @@ public:
 	in_addr            m_address;
 };
 
-class CStarNetHandler : public IReflectorCallback {
+class CGroupHandler : public IReflectorCallback {
 public:
 	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
 										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string & eflector);
@@ -115,11 +115,11 @@ public:
 	static void setGateway(const std::string &gateway);
 	static void link();
 
-	static std::list<std::string> listStarNets();
+	static std::list<std::string> listGroups();
 
-	static CStarNetHandler *findStarNet(const std::string &callsign);
-	static CStarNetHandler *findStarNet(const CHeaderData &header);
-	static CStarNetHandler *findStarNet(const CAMBEData &data);
+	static CGroupHandler *findGroup(const std::string &callsign);
+	static CGroupHandler *findGroup(const CHeaderData &header);
+	static CGroupHandler *findGroup(const CAMBEData &data);
 
 	static void finalise();
 
@@ -133,7 +133,7 @@ public:
 	void setLinkType(DSTAR_LINKTYPE linkType);
 	void clearReflector();
 
-	CRemoteStarNetGroup *getInfo() const;
+	CRemoteGroup *getInfo() const;
 
 	bool logoff(const std::string& callsign);
 
@@ -147,15 +147,15 @@ public:
 	virtual bool singleHeader();
 
 protected:
-	CStarNetHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
+	CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
 												unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector);
-	virtual ~CStarNetHandler();
+	virtual ~CGroupHandler();
 
 	bool linkInt();
 	void clockInt(unsigned int ms);
 
 private:
-	static std::list<CStarNetHandler *> m_starNets;
+	static std::list<CGroupHandler *> m_Groups;
 
 	static CG2ProtocolHandler *m_g2Handler;
 	static CIRCDDB            *m_irc;
@@ -184,9 +184,9 @@ private:
 	CALLSIGN_SWITCH  m_callsignSwitch;
 	bool             m_txMsgSwitch;
 
-	std::map<unsigned int, CStarNetId *>      m_ids;
-	std::map<std::string, CStarNetUser *>     m_users;
-	std::map<std::string, CStarNetRepeater *> m_repeaters;
+	std::map<unsigned int, CSGSId *>      m_ids;
+	std::map<std::string, CSGSUser *>     m_users;
+	std::map<std::string, CSGSRepeater *> m_repeaters;
 
 	void sendFromText(const std::string &text) const;
 	void sendToRepeaters(CHeaderData &header) const;

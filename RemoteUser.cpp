@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,30 +17,30 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "RemoteStarNetUser.h"
+#include "RemoteUser.h"
 
-CRemoteStarNetUser::CRemoteStarNetUser(const std::string& callsign, uint32_t timer, uint32_t timeout) :
+CRemoteUser::CRemoteUser(const std::string& callsign, uint32_t timer, uint32_t timeout) :
 m_callsign(callsign),
 m_timer(timer),
 m_timeout(timeout)
 {
 }
 
-CRemoteStarNetUser::~CRemoteStarNetUser()
+CRemoteUser::~CRemoteUser()
 {
 }
 
-std::string CRemoteStarNetUser::getCallsign() const
+std::string CRemoteUser::getCallsign() const
 {
 	return m_callsign;
 }
 
-uint32_t CRemoteStarNetUser::getTimer() const
+uint32_t CRemoteUser::getTimer() const
 {
 	return m_timer;
 }
 
-uint32_t CRemoteStarNetUser::getTimeout() const
+uint32_t CRemoteUser::getTimeout() const
 {
 	return m_timeout;
 }

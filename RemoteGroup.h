@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -23,13 +23,13 @@
 #include <vector>
 
 #include "Defs.h"
-#include "RemoteStarNetUser.h"
+#include "RemoteUser.h"
 
-class CRemoteStarNetGroup {
+class CRemoteGroup {
 public:
-	CRemoteStarNetGroup(const std::string& callsign, const std::string& logoff, const std::string &repeater, const std::string &infoText, const std::string &linkReflector,
+	CRemoteGroup(const std::string& callsign, const std::string& logoff, const std::string &repeater, const std::string &infoText, const std::string &linkReflector,
 			LINK_STATUS linkStatus, unsigned int userTimeout);
-	~CRemoteStarNetGroup();
+	~CRemoteGroup();
 
 	void addUser(const std::string& callsign, uint32_t timer, uint32_t timeout);
 
@@ -42,7 +42,7 @@ public:
 	unsigned int getUserTimeout() const;
 
 	uint32_t getUserCount() const;
-	CRemoteStarNetUser *getUser(uint32_t n) const;
+	CRemoteUser *getUser(uint32_t n) const;
 
 private:
 	std::string m_callsign;
@@ -52,5 +52,5 @@ private:
 	std::string m_linkReflector;
 	LINK_STATUS m_linkStatus;
 	unsigned int m_userTimeout;
-	std::vector<CRemoteStarNetUser *>  m_users;
+	std::vector<CRemoteUser *>  m_users;
 };

@@ -20,10 +20,10 @@
 #include <string>
 
 #include "Utils.h"
-#include "StarNetServerConfig.h"
+#include "SGSConfig.h"
 
 
-CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
+CSGSConfig::CSGSConfig(const std::string &pathname)
 {
 
 	if (pathname.size() < 1) {
@@ -175,7 +175,7 @@ CStarNetServerConfig::CStarNetServerConfig(const std::string &pathname)
 	}
 }
 
-CStarNetServerConfig::~CStarNetServerConfig()
+CSGSConfig::~CSGSConfig()
 {
 	while (m_module.size()) {
 		delete m_module.back();
@@ -183,12 +183,12 @@ CStarNetServerConfig::~CStarNetServerConfig()
 	}
 }
 
-unsigned int CStarNetServerConfig::getModCount()
+unsigned int CSGSConfig::getModCount()
 {
 	return m_module.size();
 }
 
-unsigned int CStarNetServerConfig::getLinkCount(const char *type)
+unsigned int CSGSConfig::getLinkCount(const char *type)
 {
 	unsigned int count = 0;
 	for (unsigned int i=0; i<getModCount(); i++)
@@ -197,7 +197,7 @@ unsigned int CStarNetServerConfig::getLinkCount(const char *type)
 	return count;
 }
 
-bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value)
+bool CSGSConfig::get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value)
 {
 	if (cfg.lookupValue(path, value)) {
 		if (value < min || value > max)
@@ -207,14 +207,14 @@ bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, int &v
 	return true;
 }
 
-bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, bool &value, bool default_value)
+bool CSGSConfig::get_value(const Config &cfg, const char *path, bool &value, bool default_value)
 {
 	if (! cfg.lookupValue(path, value))
 		value = default_value;
 	return true;
 }
 
-bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, std::string &value, int min, int max, const char *default_value)
+bool CSGSConfig::get_value(const Config &cfg, const char *path, std::string &value, int min, int max, const char *default_value)
 {
 	if (cfg.lookupValue(path, value)) {
 		int l = value.length();
@@ -227,20 +227,20 @@ bool CStarNetServerConfig::get_value(const Config &cfg, const char *path, std::s
 	return true;
 }
 
-void CStarNetServerConfig::getGateway(std::string& callsign, std::string& address) const
+void CSGSConfig::getGateway(std::string& callsign, std::string& address) const
 {
 	callsign = m_callsign;
 	address  = m_address;
 }
 
-void CStarNetServerConfig::getIrcDDB(std::string& hostname, std::string& username, std::string& password) const
+void CSGSConfig::getIrcDDB(std::string& hostname, std::string& username, std::string& password) const
 {
 	hostname = m_ircddbHostname;
 	username = m_ircddbUsername;
 	password = m_ircddbPassword;
 }
 
-void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
+void CSGSConfig::getGroup(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
 {
 	band           = m_module[mod]->band;
 	callsign       = m_module[mod]->callsign;
@@ -253,7 +253,7 @@ void CStarNetServerConfig::getStarNet(unsigned int mod, std::string& band, std::
 	reflector      = m_module[mod]->reflector;
 }
 
-void CStarNetServerConfig::getRemote(bool& enabled, std::string& password, unsigned int& port) const
+void CSGSConfig::getRemote(bool& enabled, std::string& password, unsigned int& port) const
 {
 	enabled  = m_remoteEnabled;
 	password = m_remotePassword;
