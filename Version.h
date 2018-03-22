@@ -21,5 +21,5 @@
 
 #include <string>
 
-const std::string VENDOR_NAME("N7TAE");
+const std::string VENDOR_NAME("Thomas A. Early, N7TAE");
 const std::string VERSION("180322");

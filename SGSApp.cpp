@@ -38,7 +38,9 @@ int main(int argc, char *argv[])
 	}
 
 	if ('-' == argv[1][0]) {
-		printf("\nSmart Group Server\nVersion %s\nBy %s\n\n", VERSION.c_str(), VENDOR_NAME.c_str());
+		printf("\nSmart Group Server Version %s Copyright (C) %s\n", VERSION.c_str(), VENDOR_NAME.c_str());
+		printf("Smart Group Server comes with ABSOLUTELY NO WARRANTY; see the LICENSE for details.\n");
+		printf("This is free software, and you are welcome to distribute it\nunder certain conditions that are discussed in the LICENSE file.\n\n");
 		return 0;
 	}
 
