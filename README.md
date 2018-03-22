@@ -2,9 +2,11 @@ smart-group-server
 ==================
 ## Introduction
 
-This smart-group-server is based on an original idea by John Hays K7VE for a routing group server he called **STARnet Digital**. This idea was first coded by Jonathan G4KLX and he called the resulting program **StarNetServer**. This implementation has many improvements and new features compared to its predecessor. The main features for the end-user is that Smart Groups allow a user to "listen first" before transmitting and also be able to see the status of the Smart Groups and users. The most useful feature for provider is that a single smart-group-server can serve bot DCS- **and** DExtra-linked groups and only the required UDP ports are created. In addtion, by using the remote control application, Smart Groups can be unlinked and linked dynamically, freeing and reallocating resources as required.  It was designed expressly for QuadNet. The smart-group-server interact with QuadNet using new IRC messages to provide additional information that will typically be display on the ROUTING GROUPS web page at openquad.net. The smart-group-server may not function proplerly on other IRCDDB networks.
+This smart-group-server is based on an original idea by John Hays K7VE for a routing group server he called **STARnet Digital**. This idea was first coded by Jonathan G4KLX and he called the resulting program **StarNetServer**. This implementation has many improvements and new features compared to its predecessor. The main features for the end-user is that Smart Groups allow a user to "listen first" before transmitting and also be able to see the status of the Smart Groups and users. The smart-group-server can now also handle connections from mobile clients (hotspots that get their internet connection from a cellphone). The most useful feature for provider is that a single smart-group-server can serve both DCS- **and** DExtra-linked groups and only the required UDP ports are created. In addtion, by using the remote control application, Smart Groups can be unlinked and linked dynamically, freeing and reallocating resources as required.  It was designed expressly for QuadNet. The smart-group-server interact with QuadNet using new IRC messages to provide additional information that will typically be display on the ROUTING GROUPS web page at openquad.net. The smart-group-server may not function proplerly on other IRCDDB networks.
 
 ### What's New
+
+* **V# 180322** The smart-group-server is now compatible with mobile hotspots! You should be able to route to any Smart Group from a smart-phone-tethered hotspot. Thanks goes to Colby Ross, W1BSB for helping with this very important new capability!
 
 * **V# 180218** The CRepeaterHandler class has been removed from the project, along with the CDDDataHandler and DCCSHandler classes. A crash bug, where someone would try to link to a Smart Group module, has been fixed.
 
@@ -34,7 +36,7 @@ The smart-group-server is installed as a systemd service. If you want to run thi
 
 This Smart Group Server should have a unique IP address when it logs into QuadNet. That means you probably won't be able to run it from your home if you also have an ircddb gateway running from home. You probably shouldn't run it from your home anyway. The computer your Smart Group Server is running on should have reliable, 24/7 internet access and reliable, 24/7 power. It should also be properly protected from hackers. There are plenty of companies that provide virtual severs that easily fulfill these requirements for verly little money. (You don't need much horse-power for a typical Smart Group Server. For example, a $5/month server on Amazon Lightsail works fine.)
 
-Also the Smart Group Server needs to have a unique callsign in QuadNet. Ideally, you should use a Club callsign, see the Configuring section below.
+Also the Smart Group Server needs to have a unique callsign in QuadNet, one that will not be used by another client on QuadNet. Ideally, you should use a Club callsign, see the Configuring section below.
 
 ## Building
 
@@ -56,7 +58,7 @@ Your callsign parameter in the ircddb section of your configuration file is the 
 
 ## Installing and Uninstalling
 
-To install and start the smart-group-server, first type `sudo make newhostfiles`. This will download the latest DCS and DExtra host files and install them in /usr/local. Then type `sudo make install`. This will put all the executable and the sgs.cfg configuration file the in /usr/local and then start the server. See the Makefile for more information. To uninstall it, type `sudo make uninstall` and `sudo make removehostfiles`. This will stop the server and remove all files from /usr/local.
+To install and start the smart-group-server, first type `sudo make newhostfiles`. This will download the latest DCS and DExtra host files and install them in /usr/local. Then type `sudo make install`. This will put all the executable and the sgs.cfg configuration file the in /usr/local and then start the server. See the Makefile for more information. To uninstall it, type `sudo make uninstall` and `sudo make removehostfiles`. This will stop the server and remove all files from /usr/local. You can then delete the build directory to remove every trace of the smart-group-server.
 
 73
 
