@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010,2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017-2018 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
  */
 
 #pragma once
+
+#include <unordered_map>
 
 #include "UDPReaderWriter.h"
 #include "DStarDefines.h"
@@ -47,6 +49,8 @@ public:
 	void close();
 
 private:
+	std::unordered_map<uint32_t, unsigned int> portmap;
+
 	CUDPReaderWriter m_socket;
 	G2_TYPE          m_type;
 	unsigned char*   m_buffer;
