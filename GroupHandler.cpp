@@ -367,10 +367,8 @@ void CGroupHandler::process(CHeaderData &header)
 
 	// Ensure that this user is in the cache
 	CUserData* userData = m_cache->findUser(my);
-	if (NULL == userData) {
-		printf("USER %s not in m_cache, asking IRC...\n", my.c_str());
+	if (NULL == userData)
 		m_irc->findUser(my);
-	}
 
 	if (0 == your.compare(m_groupCallsign)) {
 		// This is a normal message for logging in/relaying
