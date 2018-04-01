@@ -268,10 +268,12 @@ void CSGSThread::processIrcDDB()
 						break;
 
 					if (address.size()) {
-//						printf("USER: %s %s %s %s\n", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
+						if (std::string::npos != user.find("N7TAE"))
+							printf("USER: %s %s %s %s\n", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateUser(user, repeater, gateway, address, timestamp, DP_DEXTRA, false, false);
-//					} else {
-//						printf("USER: %s NOT FOUND\n", user.c_str());
+					} else {
+						if (std::string::npos != user.find("N7TAE"))
+							printf("USER: %s has no IP address!\n", user.c_str());
 					}
 				}
 				break;

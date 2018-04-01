@@ -362,54 +362,61 @@ void CGroupHandler::process(CHeaderData &header)
 //printf("CGroupHandler::Process(CHeaderData) my=%s ur=%s\n", my.c_str(), your.c_str());
 	unsigned int id = header.getId();
 
-	CSGSUser* user = m_users[my];
+	CSGSUser* group_user = m_users[my];
 	bool islogin = false;
 
 	// Ensure that this user is in the cache
 	CUserData* userData = m_cache->findUser(my);
-	if (userData == NULL)
+	if (NULL == userData) {
+		printf("USER %s not in m_cache, asking IRC...\n", my.c_str());
 		m_irc->findUser(my);
+	}
 
 	if (0 == your.compare(m_groupCallsign)) {
 		// This is a normal message for logging in/relaying
-		if (user == NULL) {
+		if (group_user == NULL) {
 			// This is a new user, add them to the list
 			printf("Adding %s to Smart Group %s\n", my.c_str(), your.c_str());
 			logUser(LU_ON, your, my);	// inform Quadnet
-			user = new CSGSUser(my, m_userTimeout * 60U);
-			m_users[my] = user;
+			group_user = new CSGSUser(my, m_userTimeout * 60U);
+			m_users[my] = group_user;
 
-			CSGSId* tx = new CSGSId(id, MESSAGE_DELAY, user);
+			CSGSId* tx = new CSGSId(id, MESSAGE_DELAY, group_user);
 			tx->setLogin();
 			m_ids[id] = tx;
 			islogin = true;
 		} else {
-			user->reset();
+			group_user->reset();
 
 			// Check that it isn't a duplicate header
 			CSGSId* tx = m_ids[id];
-			if (tx != NULL) {
+			if (tx) {
+				if (std::string::npos != my.find("N7TAE"))
+					printf("Duplicate header from %s, deleting userData...\n", my.c_str());
 				delete userData;
+				userData = NULL;
 				return;
 			}
 			//printf("Updating %s on Smart Group %s\n", my.c_str(), your.c_str());
 			logUser(LU_ON, your, my);	// this will be an update
-			m_ids[id] = new CSGSId(id, MESSAGE_DELAY, user);
+			m_ids[id] = new CSGSId(id, MESSAGE_DELAY, group_user);
 		}
 	} else {
-		delete userData;
-		userData = NULL;
+		if (userData) {
+			delete userData;
+			userData = NULL;
+		}
 
 		// This is a logoff message
-		if (user == NULL)				// Not a known user, ignore
+		if (NULL == group_user)				// Not a known user, ignore
 			return;
 
-		printf("Removing %s from Smart Group %s\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+		printf("Removing %s from Smart Group %s\n", group_user->getCallsign().c_str(), m_groupCallsign.c_str());
 		logUser(LU_OFF, m_groupCallsign, my);	// inform Quadnet
 		// Remove the user from the user list
 		m_users.erase(my);
 
-		CSGSId* tx = new CSGSId(id, MESSAGE_DELAY, user);
+		CSGSId* tx = new CSGSId(id, MESSAGE_DELAY, group_user);
 		tx->setLogoff();
 		m_ids[id] = tx;
 
@@ -418,6 +425,7 @@ void CGroupHandler::process(CHeaderData &header)
 
 	if (m_id != 0x00U) {
 		delete userData;
+		userData = NULL;
 		return;
 	}
 
@@ -442,7 +450,7 @@ void CGroupHandler::process(CHeaderData &header)
 		}
 	}
 
-	// Get the home repeater of the user
+	// Get the home repeater of the user, because we don't want to route this incoming back to him
 	std::string exclude;
 	if (userData != NULL) {
 		exclude = userData->getRepeater();
@@ -450,9 +458,9 @@ void CGroupHandler::process(CHeaderData &header)
 		userData = NULL;
 	}
 
-	// Build new repeater list
-	for (std::map<std::string, CSGSUser *>::const_iterator it = m_users.begin(); it != m_users.end(); ++it) {
-		CSGSUser* user = it->second;
+	// Build new repeater list, based on users that are currently logged in
+	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
+		CSGSUser *user = it->second;
 		if (user != NULL) {
 			// Find the user in the cache
 			CUserData* userData = m_cache->findUser(user->getCallsign());
@@ -461,7 +469,7 @@ void CGroupHandler::process(CHeaderData &header)
 				// Check for the excluded repeater
 				if (userData->getRepeater().compare(exclude)) {
 					// Find the users repeater in the repeater list, add it otherwise
-					CSGSRepeater* repeater = m_repeaters[userData->getRepeater()];
+					CSGSRepeater *repeater = m_repeaters[userData->getRepeater()];
 					if (repeater == NULL) {
 						// Add a new repeater entry
 						repeater = new CSGSRepeater;
@@ -512,9 +520,9 @@ void CGroupHandler::process(CAMBEData &data)
 	user->reset();
 
 	// If we've just logged in, the LOGOFF and INFO commands are disabled
-	if (!tx->isLogin()) {
+	if (! tx->isLogin()) {
 		// If we've already found some slow data, then don't look again
-		if (!tx->isLogoff() && !tx->isInfo()) {
+		if (! tx->isLogoff() && ! tx->isInfo()) {
 			tx->getTextCollector().writeData(data);
 			bool hasText = tx->getTextCollector().hasData();
 			if (hasText) {
@@ -562,7 +570,7 @@ void CGroupHandler::process(CAMBEData &data)
 	if (data.isEnd()) {
 		if (id == m_id) {
 			// Clear the repeater list if we're the relayed id
-			for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+			for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 				delete it->second;
 			m_repeaters.clear();
 			m_id = 0x00U;
@@ -588,7 +596,7 @@ void CGroupHandler::process(CAMBEData &data)
 bool CGroupHandler::logoff(const std::string &callsign)
 {
 	if (0 == callsign.compare("ALL     ")) {
-		for (std::map<std::string, CSGSUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
+		for (auto it = m_users.begin(); it != m_users.end(); ++it) {
 			CSGSUser* user = it->second;
 			if (user) {
 				printf("Removing %s from Smart Group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
@@ -597,10 +605,10 @@ bool CGroupHandler::logoff(const std::string &callsign)
 			}
 		}
 
-		for (std::map<unsigned int, CSGSId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it)
+		for (auto it = m_ids.begin(); it != m_ids.end(); ++it)
 			delete it->second;
 
-		for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+		for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 			delete it->second;
 
 		m_users.clear();
@@ -621,7 +629,7 @@ bool CGroupHandler::logoff(const std::string &callsign)
 
 		// Find any associated id structure associated with this use, and the logged off user is the
 		// currently relayed one, remove his id.
-		for (std::map<unsigned int, CSGSId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it) {
+		for (auto it = m_ids.begin(); it != m_ids.end(); ++it) {
 			CSGSId* id = it->second;
 			if (id != NULL && id->getUser() == user) {
 				if (id->getId() == m_id)
@@ -641,9 +649,9 @@ bool CGroupHandler::logoff(const std::string &callsign)
 
 		// If none then clear all the data structures
 		if (count == 0U) {
-			for (std::map<unsigned int, CSGSId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it)
+			for (auto it = m_ids.begin(); it != m_ids.end(); ++it)
 				delete it->second;
-			for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+			for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 				delete it->second;
 
 			m_ids.clear();
@@ -674,7 +682,7 @@ bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 	header.setFlag3(0x00);
 
 	// Build new repeater list
-	for (std::map<std::string, CSGSUser *>::const_iterator it = m_users.begin(); it != m_users.end(); ++it) {
+	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
 		CSGSUser* user = it->second;
 		if (user) {
 			// Find the user in the cache
@@ -745,7 +753,7 @@ bool CGroupHandler::process(CAMBEData &data, DIRECTION, AUDIO_SOURCE)
 		m_id = 0x00U;
 
 		// Clear the repeater list
-		for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+		for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 			delete it->second;
 		m_repeaters.clear();
 	}
@@ -830,7 +838,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 	}
 
 	// For each incoming id
-	for (std::map<unsigned int, CSGSId *>::iterator it = m_ids.begin(); it != m_ids.end(); ++it) {
+	for (auto it = m_ids.begin(); it != m_ids.end(); ++it) {
 		CSGSId* tx = it->second;
 
 		if (tx != NULL && tx->clock(ms)) {
@@ -890,7 +898,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 	}
 
 	// Individual user expiry, but not for the permanent entries
-	for (std::map<std::string, CSGSUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
+	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
 		CSGSUser* user = it->second;
 		if (user && m_permanent.find(user->getCallsign()) == m_permanent.end())
 			user->clock(ms);
@@ -901,7 +909,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 		return;
 
 	// Individual user expiry
-	for (std::map<std::string, CSGSUser *>::iterator it = m_users.begin(); it != m_users.end(); ++it) {
+	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
 		CSGSUser* user = it->second;
 		if (user && user->hasExpired()) {
 			printf("Removing %s from Smart Group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
