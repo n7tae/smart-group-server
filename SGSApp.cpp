@@ -118,7 +118,7 @@ bool CSGSApp::createThread()
 			repeater.resize(7, ' ');
 			repeater.push_back(band[0]);
 			m_thread->addGroup(callsign, logoff, repeater, info, permanent, usertimeout, callsignswitch, txmsgswitch, reflector);
-			printf("Smart Group %d set to %s/%s on repeater %s, info: \"%s\", permanent: %s, user: %u mins, callsign switch: %s, tx msg switch: %s, reflector: %s\n",
+			printf("Group %d: %s/%s using %s, \"%s\", perm: %s, timeout: %u mins, c/s switch: %s, msg switch: %s, Linked: %s\n",
 				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), permanent.c_str(), usertimeout,
 				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false", reflector.c_str());
 		}
