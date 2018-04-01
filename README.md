@@ -6,6 +6,8 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 
 ### What's New
 
+* **V# 180401** In some situations, the smart-group-server does not "following" a user if he switches repeaters. It was clear that the *last repeater used* cache was not being updated properly. This has been fixed by cleaning up how the user cache is used in the CGroupHandler class.
+
 * **V# 180322** The smart-group-server is now compatible with mobile hotspots! You should be able to route to any Smart Group from a smart-phone-tethered hotspot. Thanks goes to Colby Ross, W1BSB for helping with this very important new capability!
 
 * **V# 180218** The CRepeaterHandler class has been removed from the project, along with the CDDDataHandler and DCCSHandler classes. A crash bug, where someone would try to link to a Smart Group module, has been fixed.

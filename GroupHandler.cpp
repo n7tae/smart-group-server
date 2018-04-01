@@ -391,8 +391,7 @@ void CGroupHandler::process(CHeaderData &header)
 			// Check that it isn't a duplicate header
 			CSGSId* tx = m_ids[id];
 			if (tx) {
-				if (std::string::npos != my.find("N7TAE"))
-					printf("Duplicate header from %s, deleting userData...\n", my.c_str());
+				//printf("Duplicate header from %s, deleting userData...\n", my.c_str());
 				delete userData;
 				userData = NULL;
 				return;
