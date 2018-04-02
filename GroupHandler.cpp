@@ -359,26 +359,28 @@ void CGroupHandler::process(CHeaderData &header)
 {
 	std::string my   = header.getMyCall1();
 	std::string your = header.getYourCall();
-//printf("CGroupHandler::Process(CHeaderData) my=%s ur=%s\n", my.c_str(), your.c_str());
 	unsigned int id = header.getId();
 
-	CSGSUser* group_user = m_users[my];
+	CSGSUser *group_user = m_users[my];	// if not found, m_user[my] will be created and its value will be set to NULL
 	bool islogin = false;
 
-	// Ensure that this user is in the cache
-	CUserData* userData = m_cache->findUser(my);
+	// Ensure that this user is in the cache.
+	CUserData *userData = m_cache->findUser(my);	// userData is a new record (or NULL), so we have to delete or save it
+													// to prevent a memory leak
 	if (NULL == userData)
 		m_irc->findUser(my);
 
 	if (0 == your.compare(m_groupCallsign)) {
 		// This is a normal message for logging in/relaying
 		if (group_user == NULL) {
-			// This is a new user, add them to the list
 			printf("Adding %s to Smart Group %s\n", my.c_str(), your.c_str());
-			logUser(LU_ON, your, my);	// inform Quadnet
+			// This is a new user, add him to the list
 			group_user = new CSGSUser(my, m_userTimeout * 60U);
 			m_users[my] = group_user;
 
+			logUser(LU_ON, your, my);	// inform Quadnet
+
+			// add a new Id for this message
 			CSGSId* tx = new CSGSId(id, MESSAGE_DELAY, group_user);
 			tx->setLogin();
 			m_ids[id] = tx;
@@ -391,7 +393,6 @@ void CGroupHandler::process(CHeaderData &header)
 			if (tx) {
 				//printf("Duplicate header from %s, deleting userData...\n", my.c_str());
 				delete userData;
-				userData = NULL;
 				return;
 			}
 			//printf("Updating %s on Smart Group %s\n", my.c_str(), your.c_str());
@@ -399,14 +400,17 @@ void CGroupHandler::process(CHeaderData &header)
 			m_ids[id] = new CSGSId(id, MESSAGE_DELAY, group_user);
 		}
 	} else {
+		// unsubscribe was sent by someone
 		if (userData) {
 			delete userData;
 			userData = NULL;
 		}
 
 		// This is a logoff message
-		if (NULL == group_user)				// Not a known user, ignore
+		if (NULL == group_user) {	// Not a known user, ignore
+			m_users.erase(my);	// we created it, now we don't need it
 			return;
+		}
 
 		printf("Removing %s from Smart Group %s\n", group_user->getCallsign().c_str(), m_groupCallsign.c_str());
 		logUser(LU_OFF, m_groupCallsign, my);	// inform Quadnet
@@ -422,7 +426,6 @@ void CGroupHandler::process(CHeaderData &header)
 
 	if (m_id != 0x00U) {
 		delete userData;
-		userData = NULL;
 		return;
 	}
 
@@ -449,10 +452,9 @@ void CGroupHandler::process(CHeaderData &header)
 
 	// Get the home repeater of the user, because we don't want to route this incoming back to him
 	std::string exclude;
-	if (userData != NULL) {
+	if (userData) {
 		exclude = userData->getRepeater();
-		delete userData;
-		userData = NULL;
+		delete userData;	// it's gone now
 	}
 
 	// Build new repeater list, based on users that are currently logged in
@@ -460,7 +462,7 @@ void CGroupHandler::process(CHeaderData &header)
 		CSGSUser *user = it->second;
 		if (user != NULL) {
 			// Find the user in the cache
-			CUserData* userData = m_cache->findUser(user->getCallsign());
+			userData = m_cache->findUser(user->getCallsign());
 
 			if (userData) {
 				// Check for the excluded repeater
@@ -470,6 +472,7 @@ void CGroupHandler::process(CHeaderData &header)
 					if (repeater == NULL) {
 						// Add a new repeater entry
 						repeater = new CSGSRepeater;
+						// we zone rroute to all the repeaters, except for the sender who transmitted it
 						repeater->m_destination = std::string("/") + userData->getRepeater().substr(0, 6) + userData->getRepeater().back();
 						repeater->m_repeater    = userData->getRepeater();
 						repeater->m_gateway     = userData->getGateway();

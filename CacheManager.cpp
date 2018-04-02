@@ -31,25 +31,26 @@ CCacheManager::~CCacheManager()
 {
 }
 
+// returns a new CUserData if there is a user and a and gateway
 CUserData *CCacheManager::findUser(const std::string& user)
 {
 	mux.lock();
-	CUserRecord* ur = m_userCache.find(user);
+	CUserRecord *ur = m_userCache.find(user);
 	if (ur == NULL) {
 		mux.unlock();
 		return NULL;
 	}
 
-	CRepeaterRecord* rr = m_repeaterCache.find(ur->getRepeater());
-	std::string gateway;
+	std::string gateway(ur->getRepeater()); // it's not a gateway yet
+	CRepeaterRecord *rr = m_repeaterCache.find(gateway);
 	if (rr == NULL) {
 		gateway = ur->getRepeater();
 		gateway.resize(LONG_CALLSIGN_LENGTH - 1U, ' ');
-		gateway.push_back('G');
+		gateway.push_back('G');	          // now it's a gateway
 	} else
 		gateway = rr->getGateway();
 
-	CGatewayRecord* gr = m_gatewayCache.find(gateway);
+	CGatewayRecord *gr = m_gatewayCache.find(gateway);
 	if (gr == NULL) {
 		mux.unlock();
 		return NULL;
@@ -63,7 +64,7 @@ CUserData *CCacheManager::findUser(const std::string& user)
 CGatewayData *CCacheManager::findGateway(const std::string& gateway)
 {
 	mux.lock();
-	CGatewayRecord* gr = m_gatewayCache.find(gateway);
+	CGatewayRecord *gr = m_gatewayCache.find(gateway);
 	if (gr == NULL)
 		return NULL;
 
@@ -75,7 +76,7 @@ CGatewayData *CCacheManager::findGateway(const std::string& gateway)
 CRepeaterData* CCacheManager::findRepeater(const std::string& repeater)
 {
 	mux.lock();
-    CRepeaterRecord* rr = m_repeaterCache.find(repeater);
+    CRepeaterRecord *rr = m_repeaterCache.find(repeater);
 	std::string gateway;
 	if (rr == NULL) {
 		gateway = repeater;
@@ -85,7 +86,7 @@ CRepeaterData* CCacheManager::findRepeater(const std::string& repeater)
 		gateway = rr->getGateway();
 	}
 
-	CGatewayRecord* gr = m_gatewayCache.find(gateway);
+	CGatewayRecord *gr = m_gatewayCache.find(gateway);
 	if (gr == NULL) {
 		mux.unlock();
 		return NULL;
