@@ -60,7 +60,7 @@ Your callsign parameter in the ircddb section of your configuration file is the 
 
 ## Installing and Uninstalling
 
-To install and start the smart-group-server, first type `sudo make newhostfiles`. This will download the latest DCS and DExtra host files and install them in /usr/local. Then type `sudo make install`. This will put all the executable and the sgs.cfg configuration file the in /usr/local and then start the server. See the Makefile for more information. A very useful way to start it is:
+To install and start the smart-group-server, first type `make newhostfiles`. This will download the latest DCS and DExtra host files and install them. (This command downloads the files to the build directory and then moves them to /usr/local/etc with `sudo`, so it may prompt you for your password.) Then type `sudo make install`. This will put all the executable and the sgs.cfg configuration file the in /usr/local and then start the server. See the Makefile for more information. A very useful way to start it is:
 ```
 sudo make install && sudo journalctl -u sgs.service -f
 ```

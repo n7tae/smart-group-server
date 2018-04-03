@@ -26,14 +26,10 @@ clean:
 
 -include $(DEPS)
 
-# newhostfiles, install, uninstall and removehostfiles need root priviledges
+# install, uninstall and removehostfiles need root priviledges
 newhostfiles :
-	/bin/rm -f $(CFGDIR)/DExtra_Hosts.txt
-	/bin/rm -f $(CFGDIR)/DCS_Hosts.txt
-	/usr/bin/wget ftp://dschost1.w6kd.com/DExtra_Hosts.txt
-	/usr/bin/wget ftp://dschost1.w6kd.com/DCS_Hosts.txt
-	/bin/mv DExtra_Hosts.txt $(CFGDIR)
-	/bin/mv DCS_Hosts.txt $(CFGDIR)
+	/usr/bin/wget http://www.pistar.uk/downloads/DExtra_Hosts.txt && sudo /bin/mv -f DExtra_Hosts.txt $(CFGDIR)
+	/usr/bin/wget http://www.pistar.uk/downloads/DCS_Hosts.txt && sudo /bin/mv -f DCS_Hosts.txt $(CFGDIR)
 
 install : sgs
 	/bin/cp -f sgs $(BINDIR)
