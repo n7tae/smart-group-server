@@ -135,3 +135,5 @@ public:
 
 	virtual void close() = 0;		// Implictely kills any threads in the IRC code
 };
+
+typedef std::vector<CIRCDDB*> CIRCDDB_Array;

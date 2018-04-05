@@ -21,28 +21,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "IRCDDBMultiClient.h"
-#include <wx/wx.h>
+#include <stdio.h>
 
 CIRCDDBMultiClient::CIRCDDBMultiClient(const CIRCDDB_Array& clients) :
 m_clients(),
 m_queriesLock(),
 m_responseQueueLock()
 {
-	for (unsigned int i = 0; i < clients.Count(); i++)	{
+	for (unsigned int i = 0; i < clients.size(); i++)	{
 		if (clients[i] != NULL)
-			m_clients.Add(clients[i]);
+			m_clients.push_back(clients[i]);
 	}
+	m_clients.shrink_to_fit();
 }
 
 CIRCDDBMultiClient::~CIRCDDBMultiClient()
 {
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		delete m_clients[i];
 	}
 
-	while (m_responseQueue.Count() > 0) {
+	while (m_responseQueue.size() > 0) {
 		delete m_responseQueue[0];
-		m_responseQueue.RemoveAt(0);
+		m_responseQueue.erase(m_responseQueue.begin());
 	}
 
 	for (CIRCDDBMultiClientQuery_HashMap::iterator it = m_userQueries.begin(); it != m_userQueries.end(); it++)
@@ -62,7 +63,7 @@ bool CIRCDDBMultiClient::open()
 {
 	bool result = true;
 
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		result = m_clients[i]->open() && result;
 	}
 
@@ -71,30 +72,30 @@ bool CIRCDDBMultiClient::open()
 	return result;
 }
 
-void CIRCDDBMultiClient::rptrQTH(const wxString & callsign, double latitude, double longitude, const wxString & desc1, const wxString & desc2, const wxString & infoURL)
+void CIRCDDBMultiClient::rptrQTH(const std::string & callsign, double latitude, double longitude, const std::string & desc1, const std::string & desc2, const std::string & infoURL)
 {
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		m_clients[i]->rptrQTH(callsign, latitude, longitude, desc1, desc2, infoURL);
 	}
 }
 
-void CIRCDDBMultiClient::rptrQRG(const wxString & callsign, double txFrequency, double duplexShift, double range, double agl)
+void CIRCDDBMultiClient::rptrQRG(const std::string & callsign, double txFrequency, double duplexShift, double range, double agl)
 {
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		m_clients[i]->rptrQRG(callsign, txFrequency, duplexShift, range, agl);
 	}
 }
 
-void CIRCDDBMultiClient::kickWatchdog(const wxString & callsign, const wxString & wdInfo)
+void CIRCDDBMultiClient::kickWatchdog(const std::string & callsign, const std::string & wdInfo)
 {
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		m_clients[i]->kickWatchdog(callsign, wdInfo);
 	}
 }
 
 int CIRCDDBMultiClient::getConnectionState()
 {
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		int state = m_clients[i]->getConnectionState();
 		if (state != 7)
 			return state;
@@ -103,66 +104,66 @@ int CIRCDDBMultiClient::getConnectionState()
 	return 7;
 }
 
-bool CIRCDDBMultiClient::sendHeard(const wxString & myCall, const wxString & myCallExt, const wxString & yourCall, const wxString & rpt1, const wxString & rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3)
+bool CIRCDDBMultiClient::sendHeard(const std::string & myCall, const std::string & myCallExt, const std::string & yourCall, const std::string & rpt1, const std::string & rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3)
 {
 	bool result = true;
 
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		result = m_clients[i]->sendHeard(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3) && result;
 	}
 
 	return result;
 }
 
-bool CIRCDDBMultiClient::sendHeardWithTXMsg(const wxString & myCall, const wxString & myCallExt, const wxString & yourCall, const wxString & rpt1, const wxString & rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const wxString & network_destination, const wxString & tx_message)
+bool CIRCDDBMultiClient::sendHeardWithTXMsg(const std::string & myCall, const std::string & myCallExt, const std::string & yourCall, const std::string & rpt1, const std::string & rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string & network_destination, const std::string & tx_message)
 {
 	bool result = true;
 
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		result = m_clients[i]->sendHeardWithTXMsg(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, network_destination, tx_message) && result;
 	}
 
 	return result;
 }
 
-bool CIRCDDBMultiClient::sendHeardWithTXStats(const wxString & myCall, const wxString & myCallExt, const wxString & yourCall, const wxString & rpt1, const wxString & rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors)
+bool CIRCDDBMultiClient::sendHeardWithTXStats(const std::string & myCall, const std::string & myCallExt, const std::string & yourCall, const std::string & rpt1, const std::string & rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors)
 {
 	bool result = true;
 
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		result = m_clients[i]->sendHeardWithTXStats(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, num_dv_frames, num_dv_silent_frames, num_bit_errors) && result;
 	}
 
 	return result;
 }
 
-bool CIRCDDBMultiClient::findGateway(const wxString & gatewayCallsign)
+bool CIRCDDBMultiClient::findGateway(const std::string & gatewayCallsign)
 {
-	pushQuery(IDRT_GATEWAY, gatewayCallsign, new CIRCDDBMultiClientQuery(wxEmptyString, wxEmptyString, gatewayCallsign, wxEmptyString, wxEmptyString, IDRT_GATEWAY));
+	pushQuery(IDRT_GATEWAY, gatewayCallsign, new CIRCDDBMultiClientQuery("", "", gatewayCallsign, "", "", IDRT_GATEWAY));
 	bool result = true;
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		result = m_clients[i]->findGateway(gatewayCallsign) && result;
 	}
 
 	return result;
 }
 
-bool CIRCDDBMultiClient::findRepeater(const wxString & repeaterCallsign)
+bool CIRCDDBMultiClient::findRepeater(const std::string & repeaterCallsign)
 {
-	pushQuery(IDRT_REPEATER, repeaterCallsign, new CIRCDDBMultiClientQuery(wxEmptyString, repeaterCallsign, wxEmptyString, wxEmptyString, wxEmptyString, IDRT_REPEATER));
+	pushQuery(IDRT_REPEATER, repeaterCallsign, new CIRCDDBMultiClientQuery("", repeaterCallsign, "", "", "", IDRT_REPEATER));
 	bool result = true;
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		result = m_clients[i]->findRepeater(repeaterCallsign) && result;
 	}
 
 	return result;
 }
 
-bool CIRCDDBMultiClient::findUser(const wxString & userCallsign)
+bool CIRCDDBMultiClient::findUser(const std::string & userCallsign)
 {
-	pushQuery(IDRT_USER, userCallsign, new CIRCDDBMultiClientQuery(userCallsign, wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString, IDRT_USER));
+	pushQuery(IDRT_USER, userCallsign, new CIRCDDBMultiClientQuery(userCallsign, "", "", "", "", IDRT_USER));
 	bool result = true;
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		result = m_clients[i]->findUser(userCallsign) && result;
 	}
 
@@ -172,8 +173,9 @@ bool CIRCDDBMultiClient::findUser(const wxString & userCallsign)
 IRCDDB_RESPONSE_TYPE CIRCDDBMultiClient::getMessageType()
 {
 	//procees the inner clients at each call
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
-		wxString user = wxEmptyString, repeater = wxEmptyString, gateway = wxEmptyString, address = wxEmptyString, timestamp = wxEmptyString, key = wxEmptyString;
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
+		std::string user = "", repeater = "", gateway = "", address = "", timestamp = "", key = "";
+
 		IRCDDB_RESPONSE_TYPE type = m_clients[i]->getMessageType();
 
 		switch (type) {
@@ -181,7 +183,6 @@ IRCDDB_RESPONSE_TYPE CIRCDDBMultiClient::getMessageType()
 				if (!m_clients[i]->receiveUser(user, repeater, gateway, address, timestamp))
 					type = IDRT_NONE;
 				key = user;
-				//wxLogMessage(wxT("After receive user : %s %s %s %s %s client idx %d"), user, repeater, gateway, address, timestamp, i);
 				break;
 			}
 			case IDRT_GATEWAY: {
@@ -204,13 +205,14 @@ IRCDDB_RESPONSE_TYPE CIRCDDBMultiClient::getMessageType()
 
 		if (type != IDRT_NONE)
 		{
-			wxMutexLocker locker(m_queriesLock);
+			m_queriesLock.lock();
+
 			bool canAddToQueue = false;
 			bool wasQuery = false;
 			CIRCDDBMultiClientQuery * item = popQuery(type, key);
 			if (item != NULL) {//is this a response to a query we've sent ?
 				item->Update(user, repeater, gateway, address, timestamp);//update item (if needed)
-				canAddToQueue = (item->incrementResponseCount() >= m_clients.Count()); //did all the clients respond or did we have an answer ?
+				canAddToQueue = (item->incrementResponseCount() >= m_clients.size()); //did all the clients respond or did we have an answer ?
 				wasQuery = true;
 			}
 			else {
@@ -218,29 +220,30 @@ IRCDDB_RESPONSE_TYPE CIRCDDBMultiClient::getMessageType()
 				canAddToQueue = true;
 			}
 
-			//wxLogMessage(wxT("After process : %s %s %s %s %s canAdd %d wasQuery %d"), user, repeater, gateway, address, timestamp, (int)canAddToQueue, (int)wasQuery);
 			if (canAddToQueue) {
-				wxMutexLocker responselocker(m_responseQueueLock);
-				m_responseQueue.Add(item);
+				m_responseQueueLock.lock();
+				m_responseQueue.push_back(item);
+				m_responseQueueLock.unlock();
 			}
 			else if (wasQuery)
 				pushQuery(type, key, item);
+
+			m_queriesLock.unlock();
 		}
 	}
 
-	{   //this is an artificial scope, I'm not sure if compiler optimization would move instantiation of locker or not hence this
-		//finally send the first item we queued
-		wxMutexLocker locker(m_responseQueueLock);
-		if (m_responseQueue.Count() == 0)
-			return IDRT_NONE;
+        IRCDDB_RESPONSE_TYPE result = IDRT_NONE;
 
-		return m_responseQueue[0]->getType();
-	}
+	m_responseQueueLock.lock();
+	if (m_responseQueue.size() != 0) result = m_responseQueue[0]->getType();
+	m_responseQueueLock.unlock();
+
+	return result;
 }
 
-bool CIRCDDBMultiClient::receiveRepeater(wxString & repeaterCallsign, wxString & gatewayCallsign, wxString & address)
+bool CIRCDDBMultiClient::receiveRepeater(std::string & repeaterCallsign, std::string & gatewayCallsign, std::string & address)
 {
-	CIRCDDBMultiClientQuery * item = checkAndGetNextResponse(IDRT_REPEATER, wxT("CIRCDDBMultiClient::receiveRepeater: unexpected response type"));
+	CIRCDDBMultiClientQuery * item = checkAndGetNextResponse(IDRT_REPEATER, "CIRCDDBMultiClient::receiveRepeater: unexpected response type");
 	if (item == NULL)
 		return false;
 
@@ -251,9 +254,9 @@ bool CIRCDDBMultiClient::receiveRepeater(wxString & repeaterCallsign, wxString &
 	return true;
 }
 
-bool CIRCDDBMultiClient::receiveGateway(wxString & gatewayCallsign, wxString & address)
+bool CIRCDDBMultiClient::receiveGateway(std::string & gatewayCallsign, std::string & address)
 {
-	CIRCDDBMultiClientQuery * item = checkAndGetNextResponse(IDRT_GATEWAY, wxT("CIRCDDBMultiClient::receiveGateway: unexpected response type"));
+	CIRCDDBMultiClientQuery * item = checkAndGetNextResponse(IDRT_GATEWAY, "CIRCDDBMultiClient::receiveGateway: unexpected response type");
 	if (item == NULL)
 		return false;
 
@@ -263,15 +266,15 @@ bool CIRCDDBMultiClient::receiveGateway(wxString & gatewayCallsign, wxString & a
 	return true;
 }
 
-bool CIRCDDBMultiClient::receiveUser(wxString & userCallsign, wxString & repeaterCallsign, wxString & gatewayCallsign, wxString & address)
+bool CIRCDDBMultiClient::receiveUser(std::string & userCallsign, std::string & repeaterCallsign, std::string & gatewayCallsign, std::string & address)
 {
-	wxString dummy;
+	std::string dummy;
 	return receiveUser(userCallsign, repeaterCallsign, gatewayCallsign, address, dummy);
 }
 
-bool CIRCDDBMultiClient::receiveUser(wxString & userCallsign, wxString & repeaterCallsign, wxString & gatewayCallsign, wxString & address, wxString & timeStamp)
+bool CIRCDDBMultiClient::receiveUser(std::string & userCallsign, std::string & repeaterCallsign, std::string & gatewayCallsign, std::string & address, std::string & timeStamp)
 {
-	CIRCDDBMultiClientQuery * item = checkAndGetNextResponse(IDRT_USER, wxT("CIRCDDBMultiClient::receiveUser: unexpected response type"));
+	CIRCDDBMultiClientQuery * item = checkAndGetNextResponse(IDRT_USER, "CIRCDDBMultiClient::receiveUser: unexpected response type");
 	if (item == NULL) {
 		//wxLogMessage(wxT("CIRCDDBMultiClient::receiveUser NO USER IN QUEUE"));
 		return false;
@@ -279,59 +282,63 @@ bool CIRCDDBMultiClient::receiveUser(wxString & userCallsign, wxString & repeate
 
 	//wxLogMessage(wxT("CIRCDDBMultiClient::receiveUser : %s"), item->toString());
 
-	userCallsign = item->getUser().Clone();
-	repeaterCallsign = item->getRepeater().Clone();
-	gatewayCallsign = item->getGateway().Clone();
-	address = item->getAddress().Clone();
-	timeStamp = item->getTimestamp().Clone();
+	userCallsign = item->getUser();
+	repeaterCallsign = item->getRepeater();
+	gatewayCallsign = item->getGateway();
+	address = item->getAddress();
+	timeStamp = item->getTimestamp();
 	delete item;
 	return true;
 }
 
 void CIRCDDBMultiClient::close()
 {
-	for (unsigned int i = 0; i < m_clients.Count(); i++) {
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
 		m_clients[i]->close();
 	}
 }
 
-CIRCDDBMultiClientQuery * CIRCDDBMultiClient::checkAndGetNextResponse(IRCDDB_RESPONSE_TYPE expectedType, wxString errorMessage)
+CIRCDDBMultiClientQuery * CIRCDDBMultiClient::checkAndGetNextResponse(IRCDDB_RESPONSE_TYPE expectedType, std::string errorMessage)
 {
 	CIRCDDBMultiClientQuery * item = NULL;
-	wxMutexLocker locker(m_responseQueueLock);
+	m_responseQueueLock.lock();
 
-	if (m_responseQueue.Count() == 0 || m_responseQueue[0]->getType() != expectedType)	{
-		wxLogError(errorMessage);
+	if (m_responseQueue.size() == 0 || m_responseQueue[0]->getType() != expectedType) {
+		printf(errorMessage.c_str());
 	}
 	else {
 		item = m_responseQueue[0];
-		m_responseQueue.RemoveAt(0);
+		m_responseQueue.erase(m_responseQueue.begin());
 	}
-
+	m_responseQueueLock.unlock();
 	return item;
 }
 
-void CIRCDDBMultiClient::pushQuery(IRCDDB_RESPONSE_TYPE type, const wxString& key, CIRCDDBMultiClientQuery * query)
+void CIRCDDBMultiClient::pushQuery(IRCDDB_RESPONSE_TYPE type, const std::string& key, CIRCDDBMultiClientQuery * query)
 {
 	CIRCDDBMultiClientQuery_HashMap * queries = getQueriesHashMap(type);
-	wxMutexLocker locker(m_queriesLock);
+	m_queriesLock.lock();
+
 	if (queries != NULL && (*queries)[key] == NULL)
 		(*queries)[key] = query;
 	else
 		delete query;
+
+	m_queriesLock.unlock();
 }
 
 
-CIRCDDBMultiClientQuery * CIRCDDBMultiClient::popQuery(IRCDDB_RESPONSE_TYPE type, const wxString & key)
+CIRCDDBMultiClientQuery * CIRCDDBMultiClient::popQuery(IRCDDB_RESPONSE_TYPE type, const std::string & key)
 {
 	CIRCDDBMultiClientQuery_HashMap * queries = getQueriesHashMap(type);
-	wxMutexLocker locker(m_queriesLock);
+	m_queriesLock.lock();
 
 	CIRCDDBMultiClientQuery * item = NULL;
 
 	if (queries != NULL && (item = (*queries)[key]) != NULL)
 		queries->erase(key);
 	
+	m_queriesLock.unlock();
 	return item;
 }
 

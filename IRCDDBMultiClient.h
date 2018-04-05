@@ -21,12 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#if !defined(_IRCDDBMULTICLIENT_H)
-#define _IRCDDBMULTICLIENT_H
+#pragma once
 
 #include "IRCDDB.h"
-#include <wx/wx.h>
-#include <wx/thread.h>
+#include <string>
+#include <vector>
+#include <map>
+#include <sstream> 
+#include <mutex>
 
 //Small data container to keep track of queries with sent to the inner clients
 class CIRCDDBMultiClientQuery
@@ -92,14 +94,14 @@ public:
 	void Update(const std::string& user, const std::string& repeater, const std::string& gateway, const std::string& address, const std::string& timestamp)
 	{
 		//wxLogMessage(wxT("Before : %s"), toString());
-		if (timestamp.empty() || timestamp.conpqre(m_timestamp) >= 0) {
+		if (timestamp.empty() || timestamp.compare(m_timestamp) >= 0) {
 			m_user = user;
 			m_repeater = repeater;
 			m_gateway = gateway;
 			m_timestamp = timestamp;
 
-			if(m_address.IsEmpty() && !address.IsEmpty())
-				m_address = address.Clone();
+			if(m_address.empty() && !address.empty())
+				m_address = address;
 		}
 		//wxLogMessage(wxT("After : %s"), toString());
 	}
@@ -111,7 +113,9 @@ public:
 
 	std::string toString()
 	{
-		return std::string::Format(wxT("%s %s %s %s %s"), m_user, m_repeater, m_gateway, m_address, m_timestamp);
+		std::stringstream strStream;
+		strStream << m_user << " " << m_repeater << " " << m_gateway << " " << m_address << " " << m_timestamp;
+		return strStream.str();
 	}
 
 private:
@@ -124,8 +128,8 @@ private:
 	unsigned int m_responseCount;
 };
 
-WX_DECLARE_STRING_HASH_MAP(CIRCDDBMultiClientQuery*, CIRCDDBMultiClientQuery_HashMap);
-WX_DEFINE_ARRAY_PTR(CIRCDDBMultiClientQuery*, CIRCDDBMultiClientQuery_Array);
+typedef std::map<std::string, CIRCDDBMultiClientQuery*> CIRCDDBMultiClientQuery_HashMap;
+typedef std::vector<CIRCDDBMultiClientQuery*> CIRCDDBMultiClientQuery_Array;
 
 class CIRCDDBMultiClient : public CIRCDDB
 {
@@ -156,7 +160,7 @@ public:
 
 private :
 	CIRCDDB_Array m_clients;
-	wxMutex m_queriesLock, m_responseQueueLock;
+	std::mutex m_queriesLock, m_responseQueueLock;
 
 	CIRCDDBMultiClientQuery_HashMap m_userQueries;
 	CIRCDDBMultiClientQuery_HashMap m_repeaterQueries;
@@ -168,5 +172,4 @@ private :
 	CIRCDDBMultiClientQuery * popQuery(IRCDDB_RESPONSE_TYPE type, const std::string& key);
 	CIRCDDBMultiClientQuery_HashMap * getQueriesHashMap(IRCDDB_RESPONSE_TYPE type);
 };
-#endif
 
