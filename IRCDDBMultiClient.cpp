@@ -137,6 +137,13 @@ bool CIRCDDBMultiClient::sendHeardWithTXStats(const std::string & myCall, const 
 	return result;
 }
 
+void CIRCDDBMultiClient::sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms)
+{
+	for (unsigned int i = 0; i < m_clients.size(); i++) {
+		m_clients[i]->sendSGSInfo(subcommand, parms);
+	}
+}
+
 bool CIRCDDBMultiClient::findGateway(const std::string & gatewayCallsign)
 {
 	pushQuery(IDRT_GATEWAY, gatewayCallsign, new CIRCDDBMultiClientQuery("", "", gatewayCallsign, "", "", IDRT_GATEWAY));
