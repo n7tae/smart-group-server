@@ -24,9 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 
 CIRCDDBMultiClient::CIRCDDBMultiClient(const CIRCDDB_Array& clients) :
-m_clients(),
-m_queriesLock(),
-m_responseQueueLock()
+m_clients()//,
+//m_queriesLock(),
+//m_responseQueueLock()
 {
 	for (unsigned int i = 0; i < clients.size(); i++)	{
 		if (clients[i] != NULL)
@@ -212,7 +212,7 @@ IRCDDB_RESPONSE_TYPE CIRCDDBMultiClient::getMessageType()
 
 		if (type != IDRT_NONE)
 		{
-			m_queriesLock.lock();
+			//m_queriesLock.lock();
 
 			bool canAddToQueue = false;
 			bool wasQuery = false;
@@ -228,22 +228,22 @@ IRCDDB_RESPONSE_TYPE CIRCDDBMultiClient::getMessageType()
 			}
 
 			if (canAddToQueue) {
-				m_responseQueueLock.lock();
+				//m_responseQueueLock.lock();
 				m_responseQueue.push_back(item);
-				m_responseQueueLock.unlock();
+				//m_responseQueueLock.unlock();
 			}
 			else if (wasQuery)
 				pushQuery(type, key, item);
 
-			m_queriesLock.unlock();
+			//m_queriesLock.unlock();
 		}
 	}
 
         IRCDDB_RESPONSE_TYPE result = IDRT_NONE;
 
-	m_responseQueueLock.lock();
+	//m_responseQueueLock.lock();
 	if (m_responseQueue.size() != 0) result = m_responseQueue[0]->getType();
-	m_responseQueueLock.unlock();
+	//m_responseQueueLock.unlock();
 
 	return result;
 }
@@ -308,7 +308,7 @@ void CIRCDDBMultiClient::close()
 CIRCDDBMultiClientQuery * CIRCDDBMultiClient::checkAndGetNextResponse(IRCDDB_RESPONSE_TYPE expectedType, std::string errorMessage)
 {
 	CIRCDDBMultiClientQuery * item = NULL;
-	m_responseQueueLock.lock();
+	//m_responseQueueLock.lock();
 
 	if (m_responseQueue.size() == 0 || m_responseQueue[0]->getType() != expectedType) {
 		printf(errorMessage.c_str());
@@ -317,35 +317,35 @@ CIRCDDBMultiClientQuery * CIRCDDBMultiClient::checkAndGetNextResponse(IRCDDB_RES
 		item = m_responseQueue[0];
 		m_responseQueue.erase(m_responseQueue.begin());
 	}
-	m_responseQueueLock.unlock();
+	//m_responseQueueLock.unlock();
 	return item;
 }
 
 void CIRCDDBMultiClient::pushQuery(IRCDDB_RESPONSE_TYPE type, const std::string& key, CIRCDDBMultiClientQuery * query)
 {
 	CIRCDDBMultiClientQuery_HashMap * queries = getQueriesHashMap(type);
-	m_queriesLock.lock();
+	//m_queriesLock.lock();
 
 	if (queries != NULL && (*queries)[key] == NULL)
 		(*queries)[key] = query;
 	else
 		delete query;
 
-	m_queriesLock.unlock();
+	//m_queriesLock.unlock();
 }
 
 
 CIRCDDBMultiClientQuery * CIRCDDBMultiClient::popQuery(IRCDDB_RESPONSE_TYPE type, const std::string & key)
 {
 	CIRCDDBMultiClientQuery_HashMap * queries = getQueriesHashMap(type);
-	m_queriesLock.lock();
+	//m_queriesLock.lock();
 
 	CIRCDDBMultiClientQuery * item = NULL;
 
 	if (queries != NULL && (item = (*queries)[key]) != NULL)
 		queries->erase(key);
 	
-	m_queriesLock.unlock();
+	//m_queriesLock.unlock();
 	return item;
 }
 
