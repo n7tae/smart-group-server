@@ -13,7 +13,7 @@ SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 
-sgs :  $(OBJS)
+sgs :  GitVersion.h $(OBJS)
 	g++ $(CPPFLAGS) -o sgs $(OBJS) -lconfig++ -pthread
 
 %.o : %.cpp
@@ -22,7 +22,7 @@ sgs :  $(OBJS)
 .PHONY: clean
 
 clean:
-	$(RM) $(OBJS) $(DEPS) sgs
+	$(RM) GitVersion.h $(OBJS) $(DEPS) sgs
 
 -include $(DEPS)
 
@@ -50,3 +50,10 @@ uninstall :
 removehostfiles :
 	/bin/rm -f $(CFGDIR)/DExtra_Hosts.txt
 	/bin/rm -f $(CFGDIR)/DCS_Hosts.txt
+
+GitVersion.h:
+ifneq ("$(wildcard .git/index)","")
+	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
+else
+	echo "const char *gitversion = \"0000000000000000000000000000000000000000\";" > $@
+endif
