@@ -33,7 +33,7 @@ newhostfiles :
 
 install : sgs
 	/bin/cp -f sgs $(BINDIR)
-	/bin/cp -f sgs.cfg $(CFGDIR)
+	/bin/cp -i example.cfg $(CFGDIR)/sgs.cfg 
 	/bin/cp -f sgs.service /lib/systemd/system
 	systemctl enable sgs.service
 	systemctl daemon-reload
