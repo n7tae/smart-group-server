@@ -18,6 +18,8 @@
  */
 
 #include <string>
+#include <sstream>
+#include <iostream>
 
 #include "Utils.h"
 #include "SGSConfig.h"
@@ -51,23 +53,53 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 	CUtils::ToUpper(m_callsign);
 	get_value(cfg, "gateway.address", m_address, 0, 20, "");
 	printf("GATEWAY: callsign='%s' address='%s'\n", m_callsign.c_str(), m_address.c_str());
-	if (! get_value(cfg, "ircddb.hostname", m_ircddbHostname, 5, 30, "rr.openquad.net"))
-		return;
-	if (! get_value(cfg, "ircddb.username", m_ircddbUsername, 3, 8, ""))
-		return;
-	if (0 == m_ircddbUsername.size())
-		m_ircddbUsername = m_callsign;
-	else
-		CUtils::ToUpper(m_ircddbUsername);
-	get_value(cfg, "ircddb.password", m_ircddbPassword, 1, 30, "");
-	printf("IRCDDB: host='%s' user='%s' password='%s'\n", m_ircddbHostname.c_str(), m_ircddbUsername.c_str(), m_ircddbPassword.c_str());
+
+	//ircDDB Networks
+	for(int i = 0; i < cfg.lookup("ircddb").getLength(); i++) {
+		SircDDB * ircddb = new SircDDB();
+		std::stringstream key;
+		key << "ircddb.[" << i << "].hostname";
+		if(! get_value(cfg, key.str(), ircddb->hostname, 5, 30, "") || ircddb->hostname == "") {//do not allow hostname to be empty
+			delete ircddb;
+			continue;
+		}
+
+		key.str("");key.clear();
+		key << "ircddb.[" << i << "].username";
+		if (! get_value(cfg, key.str(), ircddb->username, 3, 8, m_callsign)) {//default user name to callsign
+			delete ircddb;
+			continue;
+		}
+		CUtils::ToUpper(ircddb->username);
+
+		key.str("");key.clear();
+		key << "ircddb.[" << i << "].password";
+		if(!get_value(cfg, key.str(), ircddb->password, 1, 30, "")) {
+			delete ircddb;
+			continue;
+		}
+
+		ircddb->isQuadNet = ircddb->hostname.find("oepnquad.net") != std::string::npos;
+		this->m_ircDDB.push_back(ircddb);
+		std::cout << "IRCDDB: host=" << ircddb->hostname << " user=" << ircddb->username << " password=" << ircddb->password << "\n";
+	}
+
+	if(this->m_ircDDB.size() == 0) {//no ircddb network specified? Default to openquad!
+		SircDDB * ircddb  = new SircDDB();
+		ircddb->hostname  = "rr.openquad.net";
+		ircddb->password  = "";
+		ircddb->username  = m_callsign;
+		ircddb->isQuadNet = true;
+		this->m_ircDDB.push_back(ircddb);
+		std::cout << "No ircDDB networks configure'd, defaulting to IRCDDB: host=" << ircddb->hostname << " user=" << ircddb->username << " password=" << ircddb->password << "\n";
+	}
 
 	// module parameters
 	for (int i=0; i<cfg.lookup("module").getLength(); i++) {
-		char key[32];
+		std::stringstream key;
 		std::string basename, subscribe, unsubscribe, band;
-		snprintf(key, 32, "module.[%d].basename", i);
-		if (get_value(cfg, key, basename, 1, 7, "")) {
+		key << "module.[" << i << "].basename";
+		if (get_value(cfg, key.str(), basename, 1, 7, "")) {
 			bool isokay = true;
 			for (std::string::iterator it=basename.begin(); it!=basename.end(); it++) {
 				if (! isalnum(*it)) {
@@ -83,23 +115,27 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 			}
 		}
 
-		sprintf(key, "module.[%d].band", i);
-		get_value(cfg, key, band, 1, 1, "A");
+		key.str("");key.clear();
+		key << "module.[" << i << "].band";
+		get_value(cfg, key.str(), band, 1, 1, "A");
 		CUtils::ToUpper(band);
 		if (! isalpha(band[0])) {
 			printf("Module %d band is not a letter\n", i);
 			basename.empty();
 		}
 
-		sprintf(key, "module.[%d].subscribe", i);
-		get_value(cfg, key, subscribe, 1, 1, "A");
+		key.str("");key.clear();
+		key << "module.[" << i << "].subscribe";
+		get_value(cfg, key.str(), subscribe, 1, 1, "A");
 		CUtils::ToUpper(subscribe);
 		if (subscribe[0] != ' ' && ('A' > subscribe[0] || subscribe[0] > 'Z')) {
 			printf("subscribe suffix not space or letter\n");
 			basename.empty();
 		}
-		sprintf(key, "module.[%d].unsubscribe", i);
-		get_value(cfg, key, unsubscribe, 1, 1, "T");
+
+		key.str("");key.clear();
+		key << "module.[" << i << "].unsubscribe";
+		get_value(cfg, key.str(), unsubscribe, 1, 1, "T");
 		CUtils::ToUpper(unsubscribe);
 		if ('A' > unsubscribe[0] || unsubscribe[0] > 'Z') {
 			printf("unsubscribe suffix not a letter\n");
@@ -121,30 +157,36 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		pmod->logoff = basename + unsubscribe;
 		pmod->band = band;
 
-		sprintf(key, "module.[%d].info", i);
-		get_value(cfg, key, pmod->info, 0, 20, "Smart Group Server");
+		key.str("");key.clear();
+		key << "module.[" << i << "].info";
+		get_value(cfg, key.str(), pmod->info, 0, 20, "Smart Group Server");
 		if (pmod->info.size())
 			pmod->info.resize(20, ' ');
 
-		sprintf(key, "module.[%d].permanent", i);
-		get_value(cfg, key, pmod->permanent, 0, 120, "");
+		key.str("");key.clear();
+		key << "module.[" << i << "].permanent";
+		get_value(cfg, key.str(), pmod->permanent, 0, 120, "");
 		CUtils::ToUpper(pmod->permanent);
 
 		int ivalue;
-		sprintf(key, "module.[%d].usertimeout", i);
-		get_value(cfg, key, ivalue, 0, 300, 300);
+		key.str("");key.clear();
+		key << "module.[" << i << "].usertimeout";
+		get_value(cfg, key.str(), ivalue, 0, 300, 300);
 		pmod->usertimeout = (unsigned int)ivalue;
 
 		bool bvalue;
-		sprintf(key, "module.[%d].callsignswitch", i);
-		get_value(cfg, key, bvalue, false);
+		key.str("");key.clear();
+		key << "module.[" << i << "].callsignswitch";
+		get_value(cfg, key.str(), bvalue, false);
 		pmod->callsignswitch = bvalue ? SCS_GROUP_CALLSIGN : SCS_USER_CALLSIGN;
 
-		sprintf(key, "module.[%d].txmsgswitch", i);
-		get_value(cfg, key, pmod->txmsgswitch, true);
+		key.str("");key.clear();
+		key << "module.[" << i << "].txmsgswitch";
+		get_value(cfg, key.str(), pmod->txmsgswitch, true);
 
-		sprintf(key, "module.[%d].reflector", i);
-		if (! get_value(cfg, key, basename, 8, 8, "")) {
+		key.str("");key.clear();
+		key << "module.[" << i << "].reflector";
+		if (! get_value(cfg, key.str(), basename, 8, 8, "")) {
 			printf("reflector %d must be undefined or exactly 8 chars!\n", i);
 			basename.empty();
 		}
@@ -181,11 +223,21 @@ CSGSConfig::~CSGSConfig()
 		delete m_module.back();
 		m_module.pop_back();
 	}
+
+	while(m_ircDDB.size()) {
+		delete m_ircDDB.back();
+		m_ircDDB.pop_back();
+	}
 }
 
 unsigned int CSGSConfig::getModCount()
 {
 	return m_module.size();
+}
+
+unsigned int CSGSConfig::getIrcDDBCount()
+{
+	return m_ircDDB.size();
 }
 
 unsigned int CSGSConfig::getLinkCount(const char *type)
@@ -197,7 +249,7 @@ unsigned int CSGSConfig::getLinkCount(const char *type)
 	return count;
 }
 
-bool CSGSConfig::get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value)
+bool CSGSConfig::get_value(const Config &cfg, const std::string &path, int &value, int min, int max, int default_value)
 {
 	if (cfg.lookupValue(path, value)) {
 		if (value < min || value > max)
@@ -207,19 +259,19 @@ bool CSGSConfig::get_value(const Config &cfg, const char *path, int &value, int 
 	return true;
 }
 
-bool CSGSConfig::get_value(const Config &cfg, const char *path, bool &value, bool default_value)
+bool CSGSConfig::get_value(const Config &cfg, const std::string &path, bool &value, bool default_value)
 {
 	if (! cfg.lookupValue(path, value))
 		value = default_value;
 	return true;
 }
 
-bool CSGSConfig::get_value(const Config &cfg, const char *path, std::string &value, int min, int max, const char *default_value)
+bool CSGSConfig::get_value(const Config &cfg, const std::string &path, std::string &value, int min, int max, const std::string &default_value)
 {
 	if (cfg.lookupValue(path, value)) {
 		int l = value.length();
 		if (l<min || l>max) {
-			printf("%s=%s has  invalid length\n", path, value.c_str());
+			std::cout << path << "=" << value << " has an inalid length, must be between " << min << " and " << " max\n";
 			return false;
 		}
 	} else
@@ -233,11 +285,12 @@ void CSGSConfig::getGateway(std::string& callsign, std::string& address) const
 	address  = m_address;
 }
 
-void CSGSConfig::getIrcDDB(std::string& hostname, std::string& username, std::string& password) const
+void CSGSConfig::getIrcDDB(unsigned int ircddb, std::string& hostname, std::string& username, std::string& password, bool &isQuadNet) const
 {
-	hostname = m_ircddbHostname;
-	username = m_ircddbUsername;
-	password = m_ircddbPassword;
+	hostname  = m_ircDDB[ircddb]->hostname;
+	username  = m_ircDDB[ircddb]->username;
+	password  = m_ircDDB[ircddb]->password;
+	isQuadNet = m_ircDDB[ircddb]->isQuadNet;
 }
 
 void CSGSConfig::getGroup(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const

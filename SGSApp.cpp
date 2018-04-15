@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string>
+#include <iostream>
 
 #include "SGSConfig.h"
 #include "SGSApp.h"
@@ -96,23 +97,24 @@ bool CSGSApp::createThread()
 
 	printf("Gateway callsign set to %s, local address set to %s\n", CallSign.c_str(), address.c_str());
 
-	std::string hostname, username, password;
-	config.getIrcDDB(hostname, username, password);
-	printf("ircDDB host set to %s, username set to %s\n", hostname.c_str(), username.c_str());
-
-	if (hostname.size() && username.size()) {
+	CIRCDDB_Array clients;
+	for(unsigned int i=0; i < config.getIrcDDBCount(); i++) {
+		std::string hostname, username, password;
+		bool isQuadNet;
+		config.getIrcDDB(i, hostname, username, password, isQuadNet);
+		std::cout << "ircDDB " << i << " set to " << hostname << " username set to " << username << "\n";
 		CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_SmartGroupServer") + std::string("-") + VERSION, address);
-		CIRCDDB_Array clients;
 		clients.push_back(ircDDB);
-		CIRCDDBMultiClient* multiClient = new CIRCDDBMultiClient(clients);
-		bool res = multiClient->open();
-		if (!res) {
-			printf("Cannot initialise the ircDDB protocol handler\n");
-			return false;
-		}
-
-		m_thread->setIRC(multiClient);
 	}
+	
+	CIRCDDBMultiClient* multiClient = new CIRCDDBMultiClient(clients);
+	bool res = multiClient->open();
+	if (!res) {
+		printf("Cannot initialise the ircDDB protocol handler\n");
+		return false;
+	}
+
+	m_thread->setIRC(multiClient);
 
 	for (unsigned int i=0; i<config.getModCount(); i++) {
 		std::string band, callsign, logoff, info, permanent, reflector;

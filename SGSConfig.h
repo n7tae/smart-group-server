@@ -36,6 +36,13 @@ struct Smodule {
 	CALLSIGN_SWITCH callsignswitch;
 };
 
+struct SircDDB {
+	std::string hostname;
+	std::string username;
+	std::string password;
+	bool isQuadNet;
+};
+
 class CSGSConfig {
 public:
 	CSGSConfig(const std::string &pathname);
@@ -43,7 +50,7 @@ public:
 
 	void getGateway(std::string &callsign, std::string &address) const;
 
-	void getIrcDDB(std::string &hostname, std::string &username, std::string &password) const;
+	void getIrcDDB(unsigned int ircddb, std::string &hostname, std::string &username, std::string &password, bool &isQuadNet) const;
 
 	void getGroup(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, std::string &permanent, unsigned int &userTimeout, CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, std::string &reflector) const;
 
@@ -51,19 +58,18 @@ public:
 
 	unsigned int getModCount();
 	unsigned int getLinkCount(const char *type);
+	unsigned int getIrcDDBCount();
 
 private:
-	bool get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value);
-	bool get_value(const Config &cfg, const char *path, bool &value, bool default_value);
-	bool get_value(const Config &cfg, const char *path, std::string &value, int min, int max, const char *default_value);
+	bool get_value(const Config &cfg, const std::string &path, int &value, int min, int max, int default_value);
+	bool get_value(const Config &cfg, const std::string &path, bool &value, bool default_value);
+	bool get_value(const Config &cfg, const std::string &path, std::string &value, int min, int max, const std::string &default_value);
 
 	std::string m_fileName;
 	std::string m_callsign;
 	std::string m_address;
-	std::string m_ircddbHostname;
-	std::string m_ircddbUsername;
-	std::string m_ircddbPassword;
 	std::vector<struct Smodule *> m_module;
+	std::vector<struct SircDDB *> m_ircDDB;
 
 	bool m_remoteEnabled;
 	std::string m_remotePassword;
