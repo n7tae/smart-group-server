@@ -30,7 +30,9 @@ struct CIRCDDBClientPrivate
 	IRCDDBApp *app;
 };
 
-CIRCDDBClient::CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo, const std::string& localAddr ) : d(new CIRCDDBClientPrivate)
+CIRCDDBClient::CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo, const std::string& localAddr, bool isQuadNet ) :
+d(new CIRCDDBClientPrivate),
+m_isQuadNet(isQuadNet)
 {
 	std::string update_channel("#dstar");
 	d->app = new IRCDDBApp(update_channel);
@@ -115,11 +117,13 @@ bool CIRCDDBClient::sendHeard( const std::string& myCall, const std::string& myC
 void CIRCDDBClient::sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms)
 {
 	printf("CIRCDDBClient::sendSGSInfo subcommand %s parms", subcommand.c_str());
-	for(unsigned int i=0; i < parms.size();i++)
-		printf(" %s", parms[i].c_str());
+	if(m_isQuadNet) {
+		for(unsigned int i=0; i < parms.size();i++)
+			printf(" %s", parms[i].c_str());
 
-	printf("\n");
-	d->app->sendSGSInfo(subcommand, parms);
+		printf("\n");
+		d->app->sendSGSInfo(subcommand, parms);
+	}
 }
 
 // Send heard data, a false return implies a network error

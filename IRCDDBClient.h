@@ -33,7 +33,7 @@ struct CIRCDDBPrivate;
 class CIRCDDBClient : public CIRCDDB{
 public:
 	CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo,
-		const std::string& localAddr = std::string(""));
+		const std::string& localAddr = std::string(""), bool isQuadNet = false);
 	~CIRCDDBClient();
 
 	// A false return implies a network error, or unable to log in
@@ -132,6 +132,7 @@ public:
 
 private:
 	struct CIRCDDBClientPrivate * const d;
+	bool m_isQuadNet;
 };
 
 
