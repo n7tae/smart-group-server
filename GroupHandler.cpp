@@ -531,6 +531,7 @@ void CGroupHandler::process(CAMBEData &data)
 				CUtils::ToUpper(TEMP);
 				if (0 == TEMP.compare("LOGOFF")) {
 					printf("Removing %s from Smart Group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+					logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform quadnet
 
 					tx->setLogoff();
 

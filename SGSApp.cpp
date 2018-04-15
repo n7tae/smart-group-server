@@ -28,6 +28,7 @@
 #include "IRCDDBMultiClient.h"
 #include "IRCDDBClient.h"
 #include "Utils.h"
+#include "GitVersion.h"
 
 int main(int argc, char *argv[])
 {
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
 	}
 
 	if ('-' == argv[1][0]) {
-		printf("\nSmart Group Server Version %s Copyright (C) %s\n", VERSION.c_str(), VENDOR_NAME.c_str());
+		printf("\nSmart Group Server Version %s (GitID #%.7s) Copyright (C) %s\n", VERSION.c_str(), gitversion, VENDOR_NAME.c_str());
 		printf("Smart Group Server comes with ABSOLUTELY NO WARRANTY; see the LICENSE for details.\n");
 		printf("This is free software, and you are welcome to distribute it\nunder certain conditions that are discussed in the LICENSE file.\n\n");
 		return 0;
@@ -80,6 +81,10 @@ void CSGSApp::run()
 
 bool CSGSApp::createThread()
 {
+	printf("\nSmart Group Server Version %s (GitID #%.7s) Copyright (C) %s\n", VERSION.c_str(), gitversion, VENDOR_NAME.c_str());
+	printf("Smart Group Server comes with ABSOLUTELY NO WARRANTY; see the LICENSE for details.\n");
+	printf("This is free software, and you are welcome to distribute it\nunder certain conditions that are discussed in the LICENSE file.\n\n");
+
 	CSGSConfig config(m_configFile);
 	m_thread = new CSGSThread(config.getLinkCount("XRF"), config.getLinkCount("DCS"));
 
