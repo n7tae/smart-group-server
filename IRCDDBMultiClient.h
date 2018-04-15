@@ -161,8 +161,8 @@ public:
 
 private :
 	CIRCDDB_Array m_clients;
-	std::mutex m_queriesLock;
-	std::mutex m_responseQueueLock;
+	std::recursive_mutex m_queriesLock;
+	std::recursive_mutex m_responseQueueLock;
 
 	CIRCDDBMultiClientQuery_HashMap m_userQueries;
 	CIRCDDBMultiClientQuery_HashMap m_repeaterQueries;

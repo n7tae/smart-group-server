@@ -212,14 +212,12 @@ IRCDDB_RESPONSE_TYPE CIRCDDBMultiClient::getMessageType()
 
 		if (type != IDRT_NONE)
 		{
-			printf("getMessageType lock queries\n");
 			m_queriesLock.lock();
-			printf("a");
 
 			bool canAddToQueue = false;
 			bool wasQuery = false;
 			CIRCDDBMultiClientQuery * item = popQuery(type, key);
-			printf("b");
+
 			if (item != NULL) {//is this a response to a query we've sent ?
 				item->Update(user, repeater, gateway, address, timestamp);//update item (if needed)
 				canAddToQueue = (item->incrementResponseCount() >= m_clients.size()); //did all the clients respond or did we have an answer ?
@@ -231,27 +229,22 @@ IRCDDB_RESPONSE_TYPE CIRCDDBMultiClient::getMessageType()
 			}
 
 			if (canAddToQueue) {
-				printf("getMessageType lock add response\n");
 				m_responseQueueLock.lock();
 				m_responseQueue.push_back(item);
 				m_responseQueueLock.unlock();
-				printf("getMessageType unlock add response\n");
 			}
 			else if (wasQuery)
 				pushQuery(type, key, item);
 
 			m_queriesLock.unlock();
-			printf("getMessageType unlock queries\n");
 		}
 	}
 
         IRCDDB_RESPONSE_TYPE result = IDRT_NONE;
 
-	//printf("getMessageType lock get type\n");
 	m_responseQueueLock.lock();
 	if (m_responseQueue.size() != 0) result = m_responseQueue[0]->getType();
 	m_responseQueueLock.unlock();
-	//printf("getMessageType unlock get type\n");
 
 	return result;
 }
@@ -345,17 +338,15 @@ void CIRCDDBMultiClient::pushQuery(IRCDDB_RESPONSE_TYPE type, const std::string&
 
 CIRCDDBMultiClientQuery * CIRCDDBMultiClient::popQuery(IRCDDB_RESPONSE_TYPE type, const std::string & key)
 {
-		printf("0 %s\n", key.c_str());
 	CIRCDDBMultiClientQuery_HashMap * queries = getQueriesHashMap(type);
 	m_queriesLock.lock();
 
 	CIRCDDBMultiClientQuery * item = NULL;
-	printf("1");
 	if (queries != NULL && queries->count(key) != 0) {
 		item = queries->at(key);
 		queries->erase(key);
 	}
-		printf("2");
+
 	m_queriesLock.unlock();
 	return item;
 }
