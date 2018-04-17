@@ -32,8 +32,8 @@ newhostfiles :
 	/usr/bin/wget http://www.pistar.uk/downloads/DCS_Hosts.txt && sudo /bin/mv -f DCS_Hosts.txt $(CFGDIR)
 
 install : sgs
-	/bin/cp -f sgs $(BINDIR)
 	/bin/cp -f sgs.cfg $(CFGDIR)
+	/bin/cp -f sgs $(BINDIR)
 	/bin/cp -f sgs.service /lib/systemd/system
 	systemctl enable sgs.service
 	systemctl daemon-reload
