@@ -79,7 +79,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 			continue;
 		}
 
-		ircddb->isQuadNet = ircddb->hostname.find("oepnquad.net") != std::string::npos;
+		ircddb->isQuadNet = ircddb->hostname.find("openquad.net") != std::string::npos;
 		this->m_ircDDB.push_back(ircddb);
 		std::cout << "IRCDDB: host=" << ircddb->hostname << " user=" << ircddb->username << " password=" << ircddb->password << "\n";
 	}
