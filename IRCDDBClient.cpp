@@ -117,11 +117,11 @@ bool CIRCDDBClient::sendHeard( const std::string& myCall, const std::string& myC
 void CIRCDDBClient::sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms)
 {
 	printf("CIRCDDBClient::sendSGSInfo subcommand %s parms", subcommand.c_str());
-	if(m_isQuadNet) {
-		for(unsigned int i=0; i < parms.size();i++)
-			printf(" %s", parms[i].c_str());
+	for(unsigned int i=0; i < parms.size();i++)
+		printf(" %s", parms[i].c_str());
+	printf("\n");
 
-		printf("\n");
+	if(m_isQuadNet) {
 		d->app->sendSGSInfo(subcommand, parms);
 	}
 }
