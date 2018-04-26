@@ -27,7 +27,7 @@
 #include "Version.h"
 #include "Utils.h"
 
-const char *HTML = "<table border=\"0\" width=\"95%%\"><tr><td width=\"4%%\"><img border=\"0\" src=%s></td><td width=\"96%%\"><font size=\"2\"><b>%s</b> ircDDB Gateway %s</font></td></tr></table>";
+const char *HTML = "<table border=\"0\" width=\"95%%\"><tr><td width=\"4%%\"><img border=\"0\" src=%s></td><td width=\"96%%\"><font size=\"2\"><b>%s</b> SGS %s</font></td></tr></table>";
 
 CConnectData::CConnectData(GATEWAY_TYPE gatewayType, const std::string& repeater, const std::string& reflector, CD_TYPE type, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort) :
 m_gatewayType(gatewayType),
