@@ -74,7 +74,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 
 		key.str("");key.clear();
 		key << "ircddb.[" << i << "].password";
-		if(!get_value(cfg, key.str(), ircddb->password, 1, 30, "")) {
+		if(!get_value(cfg, key.str(), ircddb->password, 0, 30, "")) {
 			delete ircddb;
 			continue;
 		}
@@ -271,7 +271,7 @@ bool CSGSConfig::get_value(const Config &cfg, const std::string &path, std::stri
 	if (cfg.lookupValue(path, value)) {
 		int l = value.length();
 		if (l<min || l>max) {
-			std::cout << path << "=" << value << " has an inalid length, must be between " << min << " and " << " max\n";
+			std::cout << path << "=" << value << " has an inalid length, must be between " << min << " and " <<  max << " actual " << l << "\n";
 			return false;
 		}
 	} else
