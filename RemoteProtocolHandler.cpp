@@ -185,16 +185,6 @@ bool CRemoteProtocolHandler::readHash(const std::string &password, uint32_t rand
 	return res;
 }
 
-std::string CRemoteProtocolHandler::readRepeater()
-{
-	if (m_type != RPHT_REPEATER)
-		return std::string("");
-
-	std::string callsign((char *)(m_inBuffer + 3U), LONG_CALLSIGN_LENGTH);
-
-	return callsign;
-}
-
 std::string CRemoteProtocolHandler::readGroup()
 {
 	if (m_type != RPHT_SMARTGROUP)
@@ -268,57 +258,6 @@ bool CRemoteProtocolHandler::sendCallsigns(const std::list<std::string> &repeate
 	}
 
 	// CUtils::dump(wxT("Outgoing"), m_outBuffer, p - m_outBuffer);
-
-	return m_socket.write(m_outBuffer, p - m_outBuffer, m_address, m_port);
-}
-
-bool CRemoteProtocolHandler::sendRepeater(const CRemoteRepeaterData &data)
-{
-	unsigned char *p = m_outBuffer;
-
-	memcpy(p, "RPT", 3U);
-	p += 3U;
-
-	memset(p, ' ', LONG_CALLSIGN_LENGTH);
-	for (unsigned int i = 0U; i < data.getCallsign().size(); i++)
-		p[i] = data.getCallsign().at(i);
-	p += LONG_CALLSIGN_LENGTH;
-
-	uint32_t reconnect = wxINT32_SWAP_ON_BE(data.getReconnect());
-	memcpy(p, &reconnect, sizeof(uint32_t));
-	p += sizeof(uint32_t);
-
-	memset(p, ' ', LONG_CALLSIGN_LENGTH);
-	for (unsigned int i = 0U; i < data.getReflector().size(); i++)
-		p[i] = data.getReflector().at(i);
-	p += LONG_CALLSIGN_LENGTH;
-
-	for (unsigned int n = 0U; n < data.getLinkCount(); n++) {
-		CRemoteLinkData *link = data.getLink(n);
-
-		memset(p, ' ', LONG_CALLSIGN_LENGTH);
-		for (unsigned int i = 0U; i < link->getCallsign().size(); i++)
-			p[i] = link->getCallsign().at(i);
-		p += LONG_CALLSIGN_LENGTH;
-
-		uint32_t protocol = wxINT32_SWAP_ON_BE(link->getProtocol());
-		memcpy(p, &protocol, sizeof(uint32_t));
-		p += sizeof(uint32_t);
-
-		uint32_t linked = wxINT32_SWAP_ON_BE(link->isLinked());
-		memcpy(p, &linked, sizeof(uint32_t));
-		p += sizeof(uint32_t);
-
-		uint32_t direction = wxINT32_SWAP_ON_BE(link->getDirection());
-		memcpy(p, &direction, sizeof(uint32_t));
-		p += sizeof(uint32_t);
-
-		uint32_t dongle = wxINT32_SWAP_ON_BE(link->isDongle());
-		memcpy(p, &dongle, sizeof(uint32_t));
-		p += sizeof(uint32_t);
-	}
-
-	// CUtils::dump("Outgoing", m_outBuffer, p - m_outBuffer);
 
 	return m_socket.write(m_outBuffer, p - m_outBuffer, m_address, m_port);
 }

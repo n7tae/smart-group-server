@@ -24,7 +24,6 @@
 #include <list>
 
 #include "RemoteGroup.h"
-#include "RemoteRepeaterData.h"
 #include "UDPReaderWriter.h"
 #include "Defs.h"
 
@@ -52,7 +51,6 @@ public:
 
 	RPH_TYPE readType();
 
-	std::string readRepeater();
 	std::string readGroup();
 	bool readHash(const std::string &password, uint32_t random);
 	bool readLink(std::string &callsign, std::string &reflector);
@@ -63,7 +61,6 @@ public:
 	bool sendNAK(const std::string &text);
 	bool sendRandom(uint32_t random);
 	bool sendCallsigns(const std::list<std::string> &repeaters, const std::list<std::string> &groups);
-	bool sendRepeater(const CRemoteRepeaterData &data);
 	bool sendGroup(const CRemoteGroup &data);
 
 	void setLoggedIn(bool set);

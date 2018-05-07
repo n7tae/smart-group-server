@@ -133,24 +133,6 @@ std::string CDCSHandler::getIncoming(const std::string &callsign)
 	return incoming;
 }
 
-void CDCSHandler::getInfo(IReflectorCallback *handler, CRemoteRepeaterData &data)
-{
-	assert(handler != NULL);
-
-	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
-		CDCSHandler *dcsHandler = *it;
-		if (dcsHandler->m_destination == handler) {
-			if (dcsHandler->m_direction == DIR_INCOMING && 0==dcsHandler->m_repeater.size()) {
-				if (dcsHandler->m_linkState != DCS_UNLINKING)
-					data.addLink(dcsHandler->m_reflector, PROTO_DCS, dcsHandler->m_linkState == DCS_LINKED, DIR_INCOMING, true);
-			} else {
-				if (dcsHandler->m_linkState != DCS_UNLINKING)
-					data.addLink(dcsHandler->m_reflector, PROTO_DCS, dcsHandler->m_linkState == DCS_LINKED, dcsHandler->m_direction, false);
-			}
-		}
-	}
-}
-
 void CDCSHandler::process(CAMBEData &data)
 {
 	in_addr   yourAddress = data.getYourAddress();

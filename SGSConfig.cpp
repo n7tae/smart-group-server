@@ -132,7 +132,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 
 		int ivalue;
 		sprintf(key, "module.[%d].usertimout", i);
-		get_value(cfg, key, ivalue, 0, 300, 300);
+		get_value(cfg, key, ivalue, 0, 600, 300);
 		pmod->usertimeout = (unsigned int)ivalue;
 
 		bool bvalue;

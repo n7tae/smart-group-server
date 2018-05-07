@@ -121,24 +121,6 @@ std::string CDExtraHandler::getIncoming(const std::string &callsign)
 	return incoming;
 }
 
-void CDExtraHandler::getInfo(IReflectorCallback *handler, CRemoteRepeaterData &data)
-{
-	assert(handler != NULL);
-
-	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
-		CDExtraHandler *dextraHandler = *it;
-		if (dextraHandler->m_destination == handler) {
-			if (dextraHandler->m_direction == DIR_INCOMING && 0 == dextraHandler->m_repeater.size()) {
-				if (dextraHandler->m_linkState != DEXTRA_UNLINKING)
-					data.addLink(dextraHandler->m_reflector, PROTO_DEXTRA, dextraHandler->m_linkState == DEXTRA_LINKED, DIR_INCOMING, true);
-			} else {
-				if (dextraHandler->m_linkState != DEXTRA_UNLINKING)
-					data.addLink(dextraHandler->m_reflector, PROTO_DEXTRA, dextraHandler->m_linkState == DEXTRA_LINKED, dextraHandler->m_direction, false);
-			}
-		}
-	}
-}
-
 std::string CDExtraHandler::getDongles()
 {
 	std::string dongles;

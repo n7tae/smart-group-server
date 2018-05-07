@@ -25,7 +25,6 @@
 #include <list>
 
 #include "DCSProtocolHandlerPool.h"
-#include "RemoteRepeaterData.h"
 #include "ReflectorCallback.h"
 #include "DStarDefines.h"
 #include "CallsignList.h"
@@ -69,8 +68,6 @@ public:
 	static void setBlackList(CCallsignList *list);
 
 	static void finalise();
-
-	static void getInfo(IReflectorCallback *handler, CRemoteRepeaterData &data);
 
 	static std::string getIncoming(const std::string &callsign);
 
