@@ -472,7 +472,7 @@ void CGroupHandler::process(CHeaderData &header)
 					if (repeater == NULL) {
 						// Add a new repeater entry
 						repeater = new CSGSRepeater;
-						// we zone rroute to all the repeaters, except for the sender who transmitted it
+						// we zone route to all the repeaters, except for the sender who transmitted it
 						repeater->m_destination = std::string("/") + userData->getRepeater().substr(0, 6) + userData->getRepeater().back();
 						repeater->m_repeater    = userData->getRepeater();
 						repeater->m_gateway     = userData->getGateway();

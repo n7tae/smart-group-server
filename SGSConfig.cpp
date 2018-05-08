@@ -90,6 +90,10 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 			printf("Module %d band is not a letter\n", i);
 			basename.empty();
 		}
+		if (band[0] == 'G') {
+			printf("Module %d: Band G is reserved for the Gateway\n", i);
+			basename.empty();
+		}
 
 		sprintf(key, "module.[%d].subscribe", i);
 		get_value(cfg, key, subscribe, 1, 1, "A");
