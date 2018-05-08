@@ -131,7 +131,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		CUtils::ToUpper(pmod->permanent);
 
 		int ivalue;
-		sprintf(key, "module.[%d].usertimout", i);
+		sprintf(key, "module.[%d].usertimeout", i);
 		get_value(cfg, key, ivalue, 0, 600, 300);
 		pmod->usertimeout = (unsigned int)ivalue;
 
