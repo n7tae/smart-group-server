@@ -80,7 +80,6 @@ CSGSId::CSGSId(unsigned int id, unsigned int timeout, CSGSUser *user) :
 m_id(id),
 m_timer(1000U, timeout),
 m_login(false),
-m_info(false),
 m_logoff(false),
 m_end(false),
 m_user(user),
@@ -110,15 +109,9 @@ void CSGSId::setLogin()
 	m_login = true;
 }
 
-void CSGSId::setInfo()
-{
-	if (!m_login && !m_logoff)
-		m_info = true;
-}
-
 void CSGSId::setLogoff()
 {
-	if (!m_login && !m_info)
+	if (!m_login)
 		m_logoff = true;
 }
 
@@ -142,11 +135,6 @@ bool CSGSId::hasExpired()
 bool CSGSId::isLogin() const
 {
 	return m_login;
-}
-
-bool CSGSId::isInfo() const
-{
-	return m_info;
 }
 
 bool CSGSId::isLogoff() const
@@ -519,46 +507,6 @@ void CGroupHandler::process(CAMBEData &data)
 	CSGSUser* user = tx->getUser();
 	user->reset();
 
-	// If we've just logged in, the LOGOFF and INFO commands are disabled
-	if (! tx->isLogin()) {
-		// If we've already found some slow data, then don't look again
-		if (! tx->isLogoff() && ! tx->isInfo()) {
-			tx->getTextCollector().writeData(data);
-			bool hasText = tx->getTextCollector().hasData();
-			if (hasText) {
-				std::string text = tx->getTextCollector().getData();
-				std::string TEMP(text.substr(0,6));
-				CUtils::ToUpper(TEMP);
-				if (0 == TEMP.compare("LOGOFF")) {
-					printf("Removing %s from Smart Group %s, logged off\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
-
-					tx->setLogoff();
-
-					// Ensure that this user is in the cache in time for the logoff ack
-					CUserData* cacheUser = m_cache->findUser(user->getCallsign());
-					if (cacheUser == NULL)
-						m_irc->findUser(user->getCallsign());
-
-					delete cacheUser;
-					cacheUser = NULL;
-				}
-				TEMP = text.substr(0, 4);
-				CUtils::ToUpper(TEMP);
-				if (0 == TEMP.compare("INFO")) {
-					tx->setInfo();
-
-					// Ensure that this user is in the cache in time for the info text
-					CUserData* cacheUser = m_cache->findUser(user->getCallsign());
-					if (cacheUser == NULL)
-						m_irc->findUser(user->getCallsign());
-
-					delete cacheUser;
-					cacheUser = NULL;
-				}
-			}
-		}
-	}
-
 	if (id == m_id && !tx->isLogin()) {
 		if (LT_DEXTRA == m_linkType)
 			CDExtraHandler::writeAMBE(this, data, DIR_OUTGOING);
@@ -581,9 +529,6 @@ void CGroupHandler::process(CAMBEData &data)
 			tx->setEnd();
 		} else if (tx->isLogoff()) {
 			m_users.erase(user->getCallsign());
-			tx->reset();
-			tx->setEnd();
-		} else if (tx->isInfo()) {
 			tx->reset();
 			tx->setEnd();
 		} else {
@@ -849,8 +794,6 @@ void CGroupHandler::clockInt(unsigned int ms)
 				if (user) {
 					if (tx->isLogin()) {
 						sendAck(*user, "Logged in");
-					} else if (tx->isInfo()) {
-						sendAck(*user, m_infoText);
 					} else if (tx->isLogoff()) {
 						sendAck(*user, "Logged off");
 					}
@@ -881,9 +824,6 @@ void CGroupHandler::clockInt(unsigned int ms)
 					tx->setEnd();
 				} else if (tx->isLogoff()) {
 					m_users.erase(callsign);
-					tx->reset();
-					tx->setEnd();
-				} else if (tx->isInfo()) {
 					tx->reset();
 					tx->setEnd();
 				} else {

@@ -78,7 +78,6 @@ public:
 	bool hasExpired();
 
 	bool isLogin() const;
-	bool isInfo() const;
 	bool isLogoff() const;
 	bool isEnd() const;
 
@@ -90,7 +89,6 @@ private:
 	unsigned int   m_id;
 	CTimer         m_timer;
 	bool           m_login;
-	bool           m_info;
 	bool           m_logoff;
 	bool           m_end;
 	CSGSUser      *m_user;
