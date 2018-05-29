@@ -763,11 +763,18 @@ void CGroupHandler::clockInt(unsigned int ms)
 {
 	m_pingTimer.clock(ms);
 	if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
-		for (auto it=m_repeaters.begin(); it!=m_repeaters.end(); it++) {
-			CSGSRepeater *repeater = it->second;
-			m_g2Handler->writePing(repeater->m_address);
+		for (auto it = m_users.begin(); it != m_users.end(); it++) {
+			CSGSUser *user = it->second;
+			if (user != NULL) {
+				// Find the user in the cache
+				CUserData *userData = m_cache->findUser(user->getCallsign());
+				if (userData) {
+					m_g2Handler->writePing(userData->getAddress());
+					delete userData;
+				}
+			}
+			m_pingTimer.start();
 		}
-		m_pingTimer.start();
 	}
 
 	m_linkTimer.clock(ms);
