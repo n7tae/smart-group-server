@@ -773,8 +773,8 @@ void CGroupHandler::clockInt(unsigned int ms)
 					delete userData;
 				}
 			}
-			m_pingTimer.start();
 		}
+		m_pingTimer.start();
 	}
 
 	m_linkTimer.clock(ms);
