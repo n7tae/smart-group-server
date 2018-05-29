@@ -284,6 +284,7 @@ m_oldlinkStatus(LS_INIT),
 m_linkTimer(1000U, NETWORK_TIMEOUT),
 m_id(0x00U),
 m_announceTimer(1000U, 2U * 60U),		// 2 minutes
+m_pingTimer(1000U, 10U),
 m_userTimeout(userTimeout),
 m_callsignSwitch(callsignSwitch),
 m_txMsgSwitch(txMsgSwitch),
@@ -292,6 +293,7 @@ m_users(),
 m_repeaters()
 {
 	m_announceTimer.start();
+	m_pingTimer.start();
 
 	// set link type
 	if (m_linkReflector.size())
@@ -759,16 +761,26 @@ bool CGroupHandler::linkInt()
 
 void CGroupHandler::clockInt(unsigned int ms)
 {
+	m_pingTimer.clock(ms);
+	if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
+		for (auto it=m_repeaters.begin(); it!=m_repeaters.end(); it++) {
+			CSGSRepeater *repeater = it->second;
+			m_g2Handler->writePing(repeater->m_address);
+		}
+		m_pingTimer.start();
+	}
+
 	m_linkTimer.clock(ms);
 	if (m_linkTimer.isRunning() && m_linkTimer.hasExpired()) {
 		m_linkTimer.stop();
 		m_id = 0x00U;
 
 		// Clear the repeater list
-		for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+		for (auto it=m_repeaters.begin(); it!=m_repeaters.end(); it++)
 			delete it->second;
 		m_repeaters.clear();
 	}
+
 	m_announceTimer.clock(ms);
 	if (m_announceTimer.hasExpired()) {
 		m_irc->sendHeardWithTXMsg(m_groupCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
@@ -777,6 +789,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 		m_announceTimer.start(60U * 60U);		// 1 hour
 
 	}
+
 	if (m_oldlinkStatus!=m_linkStatus && 7==m_irc->getConnectionState()) {
 		updateReflectorInfo();
 		m_oldlinkStatus = m_linkStatus;

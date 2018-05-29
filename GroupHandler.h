@@ -175,13 +175,12 @@ private:
 	LINK_STATUS    m_oldlinkStatus;
 	CTimer         m_linkTimer;
 	DSTAR_LINKTYPE m_linkType;
-
 	unsigned int   m_id;
 	CTimer         m_announceTimer;
+	CTimer         m_pingTimer;
 	unsigned int   m_userTimeout;
 	CALLSIGN_SWITCH  m_callsignSwitch;
-	bool             m_txMsgSwitch;
-
+	bool           m_txMsgSwitch;
 	std::map<unsigned int, CSGSId *>      m_ids;
 	std::map<std::string, CSGSUser *>     m_users;
 	std::map<std::string, CSGSRepeater *> m_repeaters;

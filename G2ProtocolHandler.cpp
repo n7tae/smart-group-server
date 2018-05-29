@@ -18,6 +18,7 @@
  */
 
 #include <string>
+#include <cstring>
 #include "G2ProtocolHandler.h"
 #include "Utils.h"
 
@@ -83,6 +84,16 @@ bool CG2ProtocolHandler::writeAMBE(const CAMBEData& data)
 	unsigned int port = (portmap.end()==found) ? data.getYourPort() : found->second;
 
 	return m_socket.write(buffer, length, addr, port);
+}
+
+bool CG2ProtocolHandler::writePing(in_addr addr)
+{
+	unsigned char test[4];
+	memcpy(test, "PING", 4);
+	auto found = portmap.find(addr.s_addr);
+	unsigned int port = (portmap.end()==found) ? G2_DV_PORT : found->second;
+
+	return m_socket.write(test, 4, addr, port);
 }
 
 G2_TYPE CG2ProtocolHandler::read()

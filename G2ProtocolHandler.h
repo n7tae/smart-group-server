@@ -41,6 +41,7 @@ public:
 
 	bool writeHeader(const CHeaderData& header);
 	bool writeAMBE(const CAMBEData& data);
+	bool writePing(in_addr address);
 
 	G2_TYPE read();
 	CHeaderData* readHeader();
