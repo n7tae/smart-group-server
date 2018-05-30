@@ -766,12 +766,9 @@ void CGroupHandler::clockInt(unsigned int ms)
 		for (auto it = m_users.begin(); it != m_users.end(); it++) {
 			CSGSUser *user = it->second;
 			if (user != NULL) {
-				// Find the user in the cache
-				CUserData *userData = m_cache->findUser(user->getCallsign());
-				if (userData) {
-					m_g2Handler->writePing(userData->getAddress());
-					delete userData;
-				}
+				in_addr addr;
+				if (m_cache->findUserAddress(user->getCallsign(), addr))
+					m_g2Handler->writePing(addr);
 			}
 		}
 		m_pingTimer.start();

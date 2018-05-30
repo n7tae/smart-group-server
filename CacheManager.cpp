@@ -61,6 +61,36 @@ CUserData *CCacheManager::findUser(const std::string& user)
 	return userdata;
 }
 
+// sets the IP address of the user and returns true if found
+bool CCacheManager::findUserAddress(const std::string &user, in_addr &addr)
+{
+	mux.lock();
+	CUserRecord *ur = m_userCache.find(user);
+	if (ur == NULL) {
+		mux.unlock();
+		return false;
+	}
+
+	std::string gateway(ur->getRepeater()); // it's not a gateway yet
+	CRepeaterRecord *rr = m_repeaterCache.find(gateway);
+	if (rr == NULL) {
+		gateway = ur->getRepeater();
+		gateway.resize(LONG_CALLSIGN_LENGTH - 1U, ' ');
+		gateway.push_back('G');	          // now it's a gateway
+	} else
+		gateway = rr->getGateway();
+
+	CGatewayRecord *gr = m_gatewayCache.find(gateway);
+	if (gr == NULL) {
+		mux.unlock();
+		return false;
+	}
+
+	addr = gr->getAddress();
+	mux.unlock();
+	return true;
+}
+
 CGatewayData *CCacheManager::findGateway(const std::string& gateway)
 {
 	mux.lock();

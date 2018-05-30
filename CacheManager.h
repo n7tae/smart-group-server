@@ -138,6 +138,7 @@ public:
 	CUserData*     findUser(const std::string& user);
 	CGatewayData*  findGateway(const std::string& gateway);
 	CRepeaterData* findRepeater(const std::string& repeater);
+	bool findUserAddress(const std::string &user, in_addr &addr);
 
 	void updateUser(const std::string& user, const std::string& repeater, const std::string& gateway, const std::string& address, const std::string& timeStamp, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock);
 	void updateRepeater(const std::string& repeater, const std::string& gateway, const std::string& address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock);
