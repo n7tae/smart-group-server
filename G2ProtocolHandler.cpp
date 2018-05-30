@@ -117,29 +117,25 @@ bool CG2ProtocolHandler::readPackets()
 		return false;
 
 	m_length = length;
+	bool isdsvt = ((27==length || 56==length) && 0==memcmp(m_buffer, "DSVT", 4)) ? true : false;
+	if (isdsvt) {
+		m_type = (m_buffer[14] & 0x80U) ? GT_HEADER : GT_AMBE;
+	}
 
 	// save the incoming port (this is to enable mobile hotspots)
 	if (portmap.end() == portmap.find(m_address.s_addr)) {
-		printf("new address %s on port %u\n", inet_ntoa(m_address), m_port);
+		if (GT_HEADER == m_type)
+			printf("%.6s at %s is on port %u\n", m_buffer+42, inet_ntoa(m_address), m_port);
 		portmap[m_address.s_addr] = m_port;
 	} else {
 		if (portmap[m_address.s_addr] != m_port) {
-			printf("new port for %s is %u, was %u\n", inet_ntoa(m_address), m_port, portmap[m_address.s_addr]);
+			if (GT_HEADER == m_type)
+				printf("%.6s at %s is now on port %u, was %u\n", m_buffer+42, inet_ntoa(m_address), m_port, portmap[m_address.s_addr]);
 			portmap[m_address.s_addr] = m_port;
 		}
 	}
 
-	if (m_buffer[0] != 'D' || m_buffer[1] != 'S' || m_buffer[2] != 'V' || m_buffer[3] != 'T') {
-		return true;
-	} else {
-		// Header or data packet type?
-		if ((m_buffer[14] & 0x80) == 0x80)
-			m_type = GT_HEADER;
-		else
-			m_type = GT_AMBE;
-
-		return false;
-	}
+	return isdsvt ? false : true;
 }
 
 CHeaderData* CG2ProtocolHandler::readHeader()
