@@ -49,11 +49,11 @@ void CUserCache::update(const std::string& user, const std::string& repeater, co
 	if (rec == NULL)
 		// A brand new record is needed
 		m_cache[user] = new CUserRecord(user, repeater, timestamp);
-	else if(timestamp.compare(rec->getTimeStamp()) > 0) {
+	else if (timestamp.compare(rec->getTimeStamp()) > 0) {
 		// Update an existing record, but only if the received timestamp is newer
 		rec->setRepeater(repeater);
 		rec->setTimestamp(timestamp);
-	} else
+	} else if (timestamp.compare(rec->getTimeStamp()) < 0)
 		printf("Tried to update user %s, but the timestamp was stale, record: %s, new: %s\n", user.c_str(), rec->getTimeStamp().c_str(), timestamp.c_str());
 }
 
