@@ -25,24 +25,30 @@ CRepeaterCache::CRepeaterCache()
 
 CRepeaterCache::~CRepeaterCache()
 {
-	for (std::unordered_map<std::string, CRepeaterRecord *>::iterator it = m_cache.begin(); it != m_cache.end(); ++it)
+	for (auto it = m_cache.begin(); it != m_cache.end(); it++)
 		delete it->second;
+	m_cache.clear();
 }
 
-CRepeaterRecord* CRepeaterCache::find(const std::string& repeater)
+CRepeaterRecord *CRepeaterCache::find(const std::string &repeater)
 {
-	return m_cache[repeater];
+	auto repeater_record = m_cache.find(repeater);
+	if (repeater_record == m_cache.end())
+		return NULL;
+	else
+		return repeater_record->second;
 }
 
-void CRepeaterCache::update(const std::string& repeater, const std::string& gateway)
+void CRepeaterCache::update(const std::string &repeater, const std::string &gateway)
 {
-	CRepeaterRecord* rec = m_cache[repeater];
+	CRepeaterRecord *rec = NULL;
+	auto repeater_record = m_cache.find(repeater);
+	if (repeater_record != m_cache.end())
+		rec = repeater_record->second;
 
 	if (rec == NULL)
-		// A brand new record is needed
 		m_cache[repeater] = new CRepeaterRecord(repeater, gateway);
 	else
-		// Update an existing record
 		rec->setGateway(gateway);
 }
 

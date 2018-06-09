@@ -25,19 +25,26 @@ CUserCache::CUserCache()
 
 CUserCache::~CUserCache()
 {
-	for (std::unordered_map<std::string, CUserRecord *>::iterator it = m_cache.begin(); it != m_cache.end(); ++it)
+	for (auto it = m_cache.begin(); it != m_cache.end(); it++)
 		delete it->second;
 	m_cache.clear();
 }
 
-CUserRecord* CUserCache::find(const std::string& user)
+CUserRecord *CUserCache::find(const std::string& user)
 {
-	return m_cache[user];
+	auto user_record = m_cache.find(user);
+	if (user_record == m_cache.end())
+		return NULL;
+	else
+		return user_record->second;
 }
 
 void CUserCache::update(const std::string& user, const std::string& repeater, const std::string& timestamp)
 {
-	CUserRecord* rec = m_cache[user];
+	CUserRecord *rec = NULL;
+	auto user_record = m_cache.find(user);
+	if (user_record != m_cache.end())
+		rec = user_record->second;
 
 	if (rec == NULL)
 		// A brand new record is needed
@@ -46,7 +53,8 @@ void CUserCache::update(const std::string& user, const std::string& repeater, co
 		// Update an existing record, but only if the received timestamp is newer
 		rec->setRepeater(repeater);
 		rec->setTimestamp(timestamp);
-	}
+	} else
+		printf("Tried to update user %s, but the timestamp was stale, record: %s, new: %s\n", user.c_str(), rec->getTimeStamp().c_str(), timestamp.c_str());
 }
 
 unsigned int CUserCache::getCount() const

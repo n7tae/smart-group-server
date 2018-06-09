@@ -25,18 +25,26 @@ CGatewayCache::CGatewayCache()
 
 CGatewayCache::~CGatewayCache()
 {
-	for (std::unordered_map<std::string, CGatewayRecord *>::iterator it = m_cache.begin(); it != m_cache.end(); ++it)
+	for (auto it = m_cache.begin(); it != m_cache.end(); it++)
 		delete it->second;
+	m_cache.clear();
 }
 
-CGatewayRecord* CGatewayCache::find(const std::string& gateway)
+CGatewayRecord *CGatewayCache::find(const std::string &gateway)
 {
-	return m_cache[gateway];
+	auto gateway_record = m_cache.find(gateway);
+	if (gateway_record == m_cache.end())
+		return NULL;
+	else
+		return gateway_record->second;
 }
 
-void CGatewayCache::update(const std::string& gateway, const std::string& address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
+void CGatewayCache::update(const std::string &gateway, const std::string &address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
 {
-	CGatewayRecord* rec = m_cache[gateway];
+	CGatewayRecord *rec = NULL;
+	auto gateway_record = m_cache.find(gateway);
+	if (gateway_record != m_cache.end())
+		rec = gateway_record->second;
 
 	in_addr addr_in;
 	addr_in.s_addr = ::inet_addr(address.c_str());

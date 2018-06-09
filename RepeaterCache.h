@@ -24,7 +24,7 @@
 
 class CRepeaterRecord {
 public:
-	CRepeaterRecord(const std::string& repeater, const std::string& gateway) :
+	CRepeaterRecord(const std::string &repeater, const std::string &gateway) :
 	m_repeater(repeater),
 	m_gateway(gateway)
 	{
@@ -40,7 +40,7 @@ public:
 		return m_gateway;
 	}
 
-	void setGateway(const std::string& gateway)
+	void setGateway(const std::string &gateway)
 	{
 		m_gateway = gateway;
 	}
@@ -55,9 +55,9 @@ public:
 	CRepeaterCache();
 	~CRepeaterCache();
 
-	CRepeaterRecord* find(const std::string& repeater);
+	CRepeaterRecord *find(const std::string &repeater);
 
-	void update(const std::string& repeater, const std::string& gateway);
+	void update(const std::string &repeater, const std::string &gateway);
 
 	unsigned int getCount() const;
 

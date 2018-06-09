@@ -74,7 +74,7 @@ public:
 	}
 
 private:
-	std::string       m_gateway;
+	std::string    m_gateway;
 	in_addr        m_address;
 	DSTAR_PROTOCOL m_protocol;
 	bool           m_addrLock;
@@ -86,9 +86,9 @@ public:
 	CGatewayCache();
 	~CGatewayCache();
 
-	CGatewayRecord* find(const std::string& gateway);
+	CGatewayRecord *find(const std::string& gateway);
 
-	void update(const std::string& gateway, const std::string& address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock);
+	void update(const std::string &gateway, const std::string &address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock);
 
 	unsigned int getCount() const;
 

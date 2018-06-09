@@ -24,7 +24,7 @@
 
 class CUserRecord {
 public:
-	CUserRecord(const std::string& user, const std::string& repeater, const std::string& timestamp) :
+	CUserRecord(const std::string &user, const std::string &repeater, const std::string &timestamp) :
 	m_user(user),
 	m_repeater(repeater),
 	m_timestamp(timestamp)
@@ -46,12 +46,12 @@ public:
 		return m_timestamp;
 	}
 
-	void setRepeater(const std::string& repeater)
+	void setRepeater(const std::string &repeater)
 	{
 		m_repeater = repeater;
 	}
 
-	void setTimestamp(const std::string& timestamp)
+	void setTimestamp(const std::string &timestamp)
 	{
 		m_timestamp = timestamp;
 	}
@@ -67,9 +67,9 @@ public:
 	CUserCache();
 	~CUserCache();
 
-	CUserRecord* find(const std::string& user);
+	CUserRecord *find(const std::string& user);
 
-	void update(const std::string& user, const std::string& repeater, const std::string& timestamp);
+	void update(const std::string &user, const std::string &repeater, const std::string &timestamp);
 
 	unsigned int getCount() const;
 
