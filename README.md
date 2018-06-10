@@ -6,6 +6,8 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 
 ### What's New
 
+* **V# 180609** A general clean up of the *find* functions in the IRCDDB cache objects. Now they do a find instead of automatically creating an empty map entry.
+
 * **V# 180530** Smart Group Routing has been further improved for mobile users. Modern cell-phone networks are constantly remapping the G2 Routing port from your gateway. Since V# 180322, the smart-group-server will follow each user's port, whatever it may be. However, the phone carrier will relatively quickly close that port if there is inactivity. The user would still be subscribed to a Smart Group, but the cell-phone port would be closed and the user wouldn't hear any new traffic. Before this release, a mobile user would have to key up to re-establish a connection to the smart-group-server. With this release, the smart-group-server will ping each user every 10 seconds in order to keep the user's port open. The ping itself is only four bytes long, but with internet overhead, it becomes 46 bytes in length. Thus, if a client were to remain tethered to a smart-phone 24 hours/day for a 31-day month the ping would add 46 * 6 * 60 * 24 * 31 = 12,320,640 bytes to the cell-phone data usage. Obviously typical use-case scenarios will result in a much smaller data usage overhead.
 
 * **V# 180512** Using your radio's text message to LOGOFF and get INFO is now no longer supported. This method of unsubscribing is messy because it transmits into the group. The INFO technique is unneeded with the Routing Groups web-page.
