@@ -130,10 +130,6 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		if (pmod->info.size())
 			pmod->info.resize(20, ' ');
 
-		sprintf(key, "module.[%d].permanent", i);
-		get_value(cfg, key, pmod->permanent, 0, 120, "");
-		CUtils::ToUpper(pmod->permanent);
-
 		int ivalue;
 		sprintf(key, "module.[%d].usertimeout", i);
 		get_value(cfg, key, ivalue, 0, 600, 300);
@@ -158,8 +154,8 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS")) && isdigit(basename[3]) && isdigit(basename[4]) && isdigit(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
 				pmod->reflector = basename;
 		}
-		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' permanent='%s' usertimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'\n",
-			i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->permanent.c_str(), pmod->usertimeout,
+		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' usertimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'\n",
+			i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->usertimeout,
 			SCS_GROUP_CALLSIGN==pmod->callsignswitch ? "Group" : "User", pmod->txmsgswitch ? "true" : "false", pmod->reflector.c_str());
 		m_module.push_back(pmod);
 	}
@@ -244,13 +240,12 @@ void CSGSConfig::getIrcDDB(std::string& hostname, std::string& username, std::st
 	password = m_ircddbPassword;
 }
 
-void CSGSConfig::getGroup(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, std::string& permanent, unsigned int& userTimeout, CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
+void CSGSConfig::getGroup(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, unsigned int& userTimeout, CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
 {
 	band           = m_module[mod]->band;
 	callsign       = m_module[mod]->callsign;
 	logoff         = m_module[mod]->logoff;
 	info           = m_module[mod]->info;
-	permanent      = m_module[mod]->permanent;
 	userTimeout    = m_module[mod]->usertimeout;
 	callsignSwitch = m_module[mod]->callsignswitch;
 	txMsgSwitch    = m_module[mod]->txmsgswitch;

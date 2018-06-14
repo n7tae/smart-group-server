@@ -157,10 +157,10 @@ CTextCollector& CSGSId::getTextCollector()
 	return m_textCollector;
 }
 
-void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
-														unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector)
+void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
+										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector)
 {
-	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, permanent, userTimeout, callsignSwitch, txMsgSwitch, reflector);
+	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, reflector);
 
 	if (group)
 		m_Groups.push_back(group);
@@ -269,14 +269,13 @@ void CGroupHandler::link()
 		(*it)->linkInt();
 }
 
-CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
-																unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector) :
+CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
+											unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
 m_shortCallsign("SMRT"),
 m_repeater(repeater),
 m_infoText(infoText),
-m_permanent(),
 m_linkReflector(reflector),
 m_linkGateway(),
 m_linkStatus(LS_NONE),
@@ -308,25 +307,6 @@ m_repeaters()
 		else
 			m_shortCallsign = m_groupCallsign.substr(3, 3) + m_groupCallsign[7];
 	}
-	if (permanent.size() < 4)
-		return;
-	char *buf = (char *)calloc(permanent.size() + 1, 1);
-	if (buf) {
-		strcpy(buf, permanent.c_str());
-		char *token = strtok(buf, ",");
-		while (token) {
-			if (strlen(token)) {
-				std::string newcall(token);
-				if (newcall.size() > 3) {
-					CUtils::ToUpper(newcall);
-					newcall.resize(LONG_CALLSIGN_LENGTH, ' ');
-					m_permanent.insert(newcall);
-					token = strtok(NULL, ",");
-				}
-			}
-		}
-		free(buf);
-	}
 }
 
 CGroupHandler::~CGroupHandler()
@@ -342,7 +322,6 @@ CGroupHandler::~CGroupHandler()
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 		delete it->second;
 	m_repeaters.empty();
-	m_permanent.erase(m_permanent.begin(), m_permanent.end());
 }
 
 void CGroupHandler::process(CHeaderData &header)
@@ -830,7 +809,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 			} else {
 				if (tx->getId() == m_id) {
 					// Clear the repeater list if we're the relayed id
-					for (std::map<std::string, CSGSRepeater *>::iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+					for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 						delete it->second;
 					m_repeaters.clear();
 					m_id = 0x00U;
@@ -854,11 +833,10 @@ void CGroupHandler::clockInt(unsigned int ms)
 		}
 	}
 
-	// Individual user expiry, but not for the permanent entries
+	// Individual user expiry
 	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
 		CSGSUser* user = it->second;
-		if (user && m_permanent.find(user->getCallsign()) == m_permanent.end())
-			user->clock(ms);
+		user->clock(ms);
 	}
 
 	// Don't do timeouts when relaying audio

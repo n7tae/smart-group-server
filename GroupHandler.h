@@ -105,7 +105,7 @@ public:
 
 class CGroupHandler : public IReflectorCallback {
 public:
-	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
+	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
 										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string & eflector);
 	static void setG2Handler(CG2ProtocolHandler *handler);
 	static void setIRC(CIRCDDB *irc);
@@ -145,8 +145,8 @@ public:
 	virtual bool singleHeader();
 
 protected:
-	CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, const std::string &permanent,
-												unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector);
+	CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
+										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector);
 	virtual ~CGroupHandler();
 
 	bool linkInt();
@@ -168,7 +168,6 @@ private:
 	std::string    m_shortCallsign;
 	std::string    m_repeater;
 	std::string    m_infoText;
-	std::set<std::string>  m_permanent;
 	std::string    m_linkReflector;
 	std::string    m_linkGateway;
 	LINK_STATUS    m_linkStatus;
