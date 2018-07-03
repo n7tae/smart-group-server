@@ -28,7 +28,6 @@
 #include "RemoteGroup.h"
 #include "G2ProtocolHandler.h"
 #include "RepeaterCallback.h"
-#include "TextCollector.h"
 #include "CacheManager.h"
 #include "DStarDefines.h"
 #include "HeaderData.h"
@@ -82,8 +81,6 @@ public:
 
 	CSGSUser* getUser() const;
 
-	CTextCollector& getTextCollector();
-
 private:
 	unsigned int   m_id;
 	CTimer         m_timer;
@@ -91,7 +88,6 @@ private:
 	bool           m_logoff;
 	bool           m_end;
 	CSGSUser      *m_user;
-	CTextCollector m_textCollector;
 };
 
 class CSGSRepeater {

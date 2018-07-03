@@ -82,8 +82,7 @@ m_timer(1000U, timeout),
 m_login(false),
 m_logoff(false),
 m_end(false),
-m_user(user),
-m_textCollector()
+m_user(user)
 {
 	assert(user != NULL);
 
@@ -152,10 +151,10 @@ CSGSUser* CSGSId::getUser() const
 	return m_user;
 }
 
-CTextCollector& CSGSId::getTextCollector()
-{
-	return m_textCollector;
-}
+//CTextCollector& CSGSId::getTextCollector()
+//{
+	//return m_textCollector;
+//}
 
 void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
 										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector)
