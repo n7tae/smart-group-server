@@ -35,12 +35,10 @@ public:
 	bool setDExtraData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
 	bool setDPlusData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
 	bool setDCSData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
-	bool setCCSData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
 
 	unsigned int getDExtraData(unsigned char* data, unsigned int length) const;
 	unsigned int getDPlusData(unsigned char* data, unsigned int length) const;
 	unsigned int getDCSData(unsigned char* data, unsigned int length) const;
-	unsigned int getCCSData(unsigned char* data, unsigned int length) const;
 
 	std::string  getData1() const;
 	void         setData1(const std::string& data);

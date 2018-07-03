@@ -130,22 +130,6 @@ bool CPollData::setDCSData(const unsigned char* data, unsigned int length, const
 	return true;
 }
 
-bool CPollData::setCCSData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
-{
-	assert(data != NULL);
-	assert(length >= 25U);
-	assert(yourPort > 0U);
-
-	m_data1       = std::string((const char*)data);
-	m_data1.resize(25);
-	m_length      = length;
-	m_yourAddress = yourAddress;
-	m_yourPort    = yourPort;
-	m_myPort      = myPort;
-
-	return true;
-}
-
 bool CPollData::setDPlusData(const unsigned char* /*data*/, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
 {
 	assert(yourPort > 0U);
@@ -207,24 +191,6 @@ unsigned int CPollData::getDCSData(unsigned char *data, unsigned int length) con
 
 		return 22U;
 	}
-}
-
-unsigned int CPollData::getCCSData(unsigned char *data, unsigned int length) const
-{
-	assert(data != NULL);
-	assert(length >= 25U);
-
-	::memset(data, ' ', 25U);
-
-	for (unsigned int i = 0U; i < m_data1.size() && i < LONG_CALLSIGN_LENGTH; i++)
-		data[i + 0U] = m_data1.at(i);
-
-	if (m_data2.size()) {
-		for (unsigned int i = 0U; i < m_data2.size() && i < LONG_CALLSIGN_LENGTH; i++)
-			data[i + 8U] = m_data2.at(i);
-	}
-
-	return 25U;
 }
 
 unsigned int CPollData::getDPlusData(unsigned char *data, unsigned int length) const
