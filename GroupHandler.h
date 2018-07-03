@@ -27,7 +27,6 @@
 
 #include "RemoteGroup.h"
 #include "G2ProtocolHandler.h"
-#include "ReflectorCallback.h"		// DEXTRA_LINK || DCS_LINK
 #include "RepeaterCallback.h"
 #include "TextCollector.h"
 #include "CacheManager.h"
@@ -103,7 +102,7 @@ public:
 	in_addr            m_address;
 };
 
-class CGroupHandler : public IReflectorCallback {
+class CGroupHandler {
 public:
 	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
 										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string & eflector);
@@ -135,19 +134,19 @@ public:
 
 	bool logoff(const std::string& callsign);
 
-	virtual bool process(CHeaderData &header, DIRECTION direction, AUDIO_SOURCE source);
-	virtual bool process(CAMBEData &data, DIRECTION direction, AUDIO_SOURCE source);
+	bool process(CHeaderData &header, DIRECTION direction, AUDIO_SOURCE source);
+	bool process(CAMBEData &data, DIRECTION direction, AUDIO_SOURCE source);
 
-	virtual void linkUp(DSTAR_PROTOCOL protocol, const std::string &callsign);
-	virtual void linkRefused(DSTAR_PROTOCOL protocol, const std::string &callsign);
-	virtual bool linkFailed(DSTAR_PROTOCOL protocol, const std::string &callsign, bool isRecoverable);
+	void linkUp(DSTAR_PROTOCOL protocol, const std::string &callsign);
+	void linkRefused(DSTAR_PROTOCOL protocol, const std::string &callsign);
+	bool linkFailed(DSTAR_PROTOCOL protocol, const std::string &callsign, bool isRecoverable);
 
-	virtual bool singleHeader();
+	bool singleHeader();
 
 protected:
 	CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
 										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector);
-	virtual ~CGroupHandler();
+	~CGroupHandler();
 
 	bool linkInt();
 	void clockInt(unsigned int ms);

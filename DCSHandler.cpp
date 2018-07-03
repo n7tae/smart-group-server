@@ -34,7 +34,7 @@ CCallsignList           *CDCSHandler::m_blackList = NULL;
 std::list<CDCSHandler *> CDCSHandler::m_DCSHandlers;
 
 
-CDCSHandler::CDCSHandler(IReflectorCallback *handler, const std::string &dcsHandler, const std::string &repeater, CDCSProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
+CDCSHandler::CDCSHandler(CGroupHandler *handler, const std::string &dcsHandler, const std::string &repeater, CDCSProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
 m_reflector(dcsHandler),
 m_repeater(repeater),
 m_handler(protoHandler),
@@ -211,7 +211,7 @@ void CDCSHandler::process(CConnectData &connect)
 	printf("CDCSHandler::process(CConnectData) type=CT_LINK%c, from repeater=%s\n", (type==CT_LINK1) ? '1' : '2', connect.getRepeater().c_str());
 }
 
-void CDCSHandler::link(IReflectorCallback *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
+void CDCSHandler::link(CGroupHandler *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
 {
 	// if the handler is currently unlinking, quit!
 	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
@@ -232,7 +232,7 @@ void CDCSHandler::link(IReflectorCallback *handler, const std::string &repeater,
 	}
 }
 
-void CDCSHandler::unlink(IReflectorCallback *handler, const std::string &callsign, bool exclude)
+void CDCSHandler::unlink(CGroupHandler *handler, const std::string &callsign, bool exclude)
 {
 	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
 		CDCSHandler *dcsHandler = *it;
@@ -319,7 +319,7 @@ void CDCSHandler::unlink()
 	}
 }
 
-void CDCSHandler::writeHeader(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction)
+void CDCSHandler::writeHeader(CGroupHandler *handler, CHeaderData &header, DIRECTION direction)
 {
 	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
 		CDCSHandler *dcsHandler = *it;
@@ -327,7 +327,7 @@ void CDCSHandler::writeHeader(IReflectorCallback *handler, CHeaderData &header, 
 	}
 }
 
-void CDCSHandler::writeAMBE(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
+void CDCSHandler::writeAMBE(CGroupHandler *handler, CAMBEData &data, DIRECTION direction)
 {
 	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
 		CDCSHandler *dcsHandler = *it;
@@ -657,7 +657,7 @@ bool CDCSHandler::clockInt(unsigned int ms)
 	return false;
 }
 
-void CDCSHandler::writeHeaderInt(IReflectorCallback *handler, CHeaderData& header, DIRECTION direction)
+void CDCSHandler::writeHeaderInt(CGroupHandler *handler, CHeaderData& header, DIRECTION direction)
 {
 	if (m_linkState != DCS_LINKED)
 		return;
@@ -682,7 +682,7 @@ void CDCSHandler::writeHeaderInt(IReflectorCallback *handler, CHeaderData& heade
 	m_rptCall2 = header.getRptCall2();
 }
 
-void CDCSHandler::writeAMBEInt(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
+void CDCSHandler::writeAMBEInt(CGroupHandler *handler, CAMBEData &data, DIRECTION direction)
 {
 	if (m_linkState != DCS_LINKED)
 		return;

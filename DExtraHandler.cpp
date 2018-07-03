@@ -33,7 +33,7 @@ CCallsignList              *CDExtraHandler::m_whiteList = NULL;
 CCallsignList              *CDExtraHandler::m_blackList = NULL;
 
 
-CDExtraHandler::CDExtraHandler(IReflectorCallback *handler, const std::string &dextraHandler, const std::string &repeater, CDExtraProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
+CDExtraHandler::CDExtraHandler(CGroupHandler *handler, const std::string &dextraHandler, const std::string &repeater, CDExtraProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
 m_reflector(dextraHandler),
 m_repeater(repeater),
 m_handler(protoHandler),
@@ -201,7 +201,7 @@ void CDExtraHandler::process(CConnectData &connect)
 	printf("CDExtraHandler::process(CConnectData) type=CT_LINK%c, SGSchannel=%s, from repeater=%s\n", (type==CT_LINK1) ? '1' : '2', m_callsign.c_str(), connect.getRepeater().c_str());
 }
 
-void CDExtraHandler::link(IReflectorCallback *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
+void CDExtraHandler::link(CGroupHandler *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
 {
 	CDExtraProtocolHandler *protoHandler = m_pool->getHandler();
 	if (protoHandler == NULL)
@@ -215,7 +215,7 @@ void CDExtraHandler::link(IReflectorCallback *handler, const std::string &repeat
 	}
 }
 
-void CDExtraHandler::unlink(IReflectorCallback *handler, const std::string &callsign, bool exclude)
+void CDExtraHandler::unlink(CGroupHandler *handler, const std::string &callsign, bool exclude)
 {
 	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
 		CDExtraHandler *dextraHandler = *it;
@@ -301,7 +301,7 @@ void CDExtraHandler::unlink()
 	}
 }
 
-void CDExtraHandler::writeHeader(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction)
+void CDExtraHandler::writeHeader(CGroupHandler *handler, CHeaderData &header, DIRECTION direction)
 {
 	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
 		CDExtraHandler *dextraHandler = *it;
@@ -309,7 +309,7 @@ void CDExtraHandler::writeHeader(IReflectorCallback *handler, CHeaderData &heade
 	}
 }
 
-void CDExtraHandler::writeAMBE(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
+void CDExtraHandler::writeAMBE(CGroupHandler *handler, CAMBEData &data, DIRECTION direction)
 {
 	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
 		CDExtraHandler *dextraHandler = *it;
@@ -627,7 +627,7 @@ bool CDExtraHandler::clockInt(unsigned int ms)
 	return false;
 }
 
-void CDExtraHandler::writeHeaderInt(IReflectorCallback *handler, CHeaderData &header, DIRECTION direction)
+void CDExtraHandler::writeHeaderInt(CGroupHandler *handler, CHeaderData &header, DIRECTION direction)
 {
 	if (m_linkState != DEXTRA_LINKED)
 		return;
@@ -657,7 +657,7 @@ void CDExtraHandler::writeHeaderInt(IReflectorCallback *handler, CHeaderData &he
 	}
 }
 
-void CDExtraHandler::writeAMBEInt(IReflectorCallback *handler, CAMBEData &data, DIRECTION direction)
+void CDExtraHandler::writeAMBEInt(CGroupHandler *handler, CAMBEData &data, DIRECTION direction)
 {
 	if (m_linkState != DEXTRA_LINKED)
 		return;
