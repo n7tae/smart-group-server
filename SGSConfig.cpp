@@ -135,6 +135,9 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		get_value(cfg, key, ivalue, 0, 600, 300);
 		pmod->usertimeout = (unsigned int)ivalue;
 
+		sprintf(key, "module.[%d].rxonly", i);
+		get_value(cfg, key, pmod->listen_only, false);
+
 		bool bvalue;
 		sprintf(key, "module.[%d].callsignswitch", i);
 		get_value(cfg, key, bvalue, false);
@@ -158,6 +161,11 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 			i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->usertimeout,
 			SCS_GROUP_CALLSIGN==pmod->callsignswitch ? "Group" : "User", pmod->txmsgswitch ? "true" : "false", pmod->reflector.c_str());
 		m_module.push_back(pmod);
+
+		if (pmod->listen_only && pmod->reflector.size()<8) {
+			printf("Smart Group %s is RxOnly, but no reflector is defined, resetting RxOnly\n", pmod->callsign.c_str());
+			pmod->listen_only = false;
+		}
 	}
 
 	// remote control
