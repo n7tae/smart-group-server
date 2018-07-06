@@ -38,8 +38,8 @@ public:
 	virtual void setCallsign(const std::string& callsign);
 	virtual void setAddress(const std::string& address);
 
-	virtual void addGroup(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText,
-							unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector);
+	virtual void addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
+		unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listen_only, const std::string &reflector);
 
 	virtual void setRemote(bool enabled, const std::string& password, unsigned int port);
 	virtual void setIRC(CIRCDDB* irc);

@@ -198,9 +198,10 @@ void CSGSThread::setAddress(const std::string& address)
 	m_address = address;
 }
 
-void CSGSThread::addGroup(const std::string& callsign, const std::string& logoff, const std::string& repeater, const std::string& infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string& reflector)
+void CSGSThread::addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
+	unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listen_only, const std::string &reflector)
 {
-	CGroupHandler::add(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, reflector);
+	CGroupHandler::add(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, listen_only, reflector);
 }
 
 void CSGSThread::setIRC(CIRCDDB* irc)

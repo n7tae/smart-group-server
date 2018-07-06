@@ -109,18 +109,19 @@ bool CSGSApp::createThread()
 		std::string band, callsign, logoff, info, reflector;
 		unsigned int usertimeout;
 		CALLSIGN_SWITCH callsignswitch;
-		bool txmsgswitch;
+		bool txmsgswitch, listen_only;
 
-		config.getGroup(i, band, callsign, logoff, info, usertimeout, callsignswitch, txmsgswitch, reflector);
+		config.getGroup(i, band, callsign, logoff, info, usertimeout, callsignswitch, txmsgswitch, listen_only, reflector);
 
 		if (callsign.size() && isalnum(callsign[0])) {
 			std::string repeater(CallSign);
 			repeater.resize(7, ' ');
 			repeater.push_back(band[0]);
-			m_thread->addGroup(callsign, logoff, repeater, info, usertimeout, callsignswitch, txmsgswitch, reflector);
-			printf("Group %d: %s/%s using %s, \"%s\", timeout: %u mins, c/s switch: %s, msg switch: %s, Linked: %s\n",
+			m_thread->addGroup(callsign, logoff, repeater, info, usertimeout, callsignswitch, txmsgswitch, listen_only, reflector);
+			printf("Group %d: %s/%s using %s, \"%s\", timeout: %u mins, c/s switch: %s, msg switch: %s, RxOnly: %s, Linked: %s\n",
 				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), usertimeout,
-				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false", reflector.c_str());
+				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false",
+				listen_only ? "true" : "false", reflector.c_str());
 		}
 	}
 

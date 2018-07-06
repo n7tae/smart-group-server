@@ -240,7 +240,8 @@ void CSGSConfig::getIrcDDB(std::string& hostname, std::string& username, std::st
 	password = m_ircddbPassword;
 }
 
-void CSGSConfig::getGroup(unsigned int mod, std::string& band, std::string& callsign, std::string& logoff, std::string& info, unsigned int& userTimeout, CALLSIGN_SWITCH& callsignSwitch, bool& txMsgSwitch, std::string& reflector) const
+void CSGSConfig::getGroup(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info,
+	unsigned int &userTimeout, CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, bool &listen_only, std::string &reflector) const
 {
 	band           = m_module[mod]->band;
 	callsign       = m_module[mod]->callsign;
@@ -249,6 +250,7 @@ void CSGSConfig::getGroup(unsigned int mod, std::string& band, std::string& call
 	userTimeout    = m_module[mod]->usertimeout;
 	callsignSwitch = m_module[mod]->callsignswitch;
 	txMsgSwitch    = m_module[mod]->txmsgswitch;
+	listen_only    = m_module[mod]->listen_only;
 	reflector      = m_module[mod]->reflector;
 }
 

@@ -157,9 +157,9 @@ CSGSUser* CSGSId::getUser() const
 //}
 
 void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
-										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector)
+		unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector)
 {
-	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, reflector);
+	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, listenOnly, reflector);
 
 	if (group)
 		m_Groups.push_back(group);
@@ -269,7 +269,7 @@ void CGroupHandler::link()
 }
 
 CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
-											unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector) :
+		unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
 m_shortCallsign("SMRT"),
@@ -286,6 +286,7 @@ m_pingTimer(1000U, 10U),
 m_userTimeout(userTimeout),
 m_callsignSwitch(callsignSwitch),
 m_txMsgSwitch(txMsgSwitch),
+m_listenOnly(listenOnly),
 m_ids(),
 m_users(),
 m_repeaters()
@@ -407,12 +408,12 @@ void CGroupHandler::process(CHeaderData &header)
 	header.setFlag3(0x00);
 
 	if (LT_DEXTRA == m_linkType) {
-		if (!islogin) {
+		if (!islogin && !m_listenOnly) {
 			header.setRepeaters(m_linkGateway, m_linkReflector);
 			CDExtraHandler::writeHeader(this, header, DIR_OUTGOING);
 		}
 	} else if (LT_DCS == m_linkType) {
-		if (!islogin) {
+		if (!islogin && !m_listenOnly) {
 			header.setRepeaters(m_linkGateway, m_linkReflector);
 			CDCSHandler::writeHeader(this, header, DIR_OUTGOING);
 		}
@@ -467,10 +468,10 @@ void CGroupHandler::process(CHeaderData &header)
 		default:
 			break;
 	}
-	if (!islogin)
+	if (!islogin && !m_listenOnly)
 		sendToRepeaters(header);
 
-	if (m_txMsgSwitch)
+	if (m_txMsgSwitch && !islogin && !m_listenOnly)
 		sendFromText(my);
 }
 
@@ -487,7 +488,7 @@ void CGroupHandler::process(CAMBEData &data)
 	CSGSUser* user = tx->getUser();
 	user->reset();
 
-	if (id == m_id && !tx->isLogin()) {
+	if (id == m_id && !tx->isLogin() && !m_listenOnly) {
 		if (LT_DEXTRA == m_linkType)
 			CDExtraHandler::writeAMBE(this, data, DIR_OUTGOING);
 		else if (LT_DCS == m_linkType)
@@ -893,6 +894,7 @@ void CGroupHandler::updateReflectorInfo()
 	info.resize(20, '_');
 	CUtils::ReplaceChar(info, ' ', '_');
 	parms.push_back(info);
+	parms.push_back(std::string(m_listenOnly ? "1" : "0"));
 
 	m_irc->sendSGSInfo(subcommand, parms);
 }

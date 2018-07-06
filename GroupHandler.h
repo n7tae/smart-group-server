@@ -101,7 +101,7 @@ public:
 class CGroupHandler {
 public:
 	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
-										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string & eflector);
+			unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string & eflector);
 	static void setG2Handler(CG2ProtocolHandler *handler);
 	static void setIRC(CIRCDDB *irc);
 	static void setCache(CCacheManager *cache);
@@ -141,7 +141,7 @@ public:
 
 protected:
 	CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
-										unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, const std::string &reflector);
+			unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector);
 	~CGroupHandler();
 
 	bool linkInt();
@@ -175,6 +175,7 @@ private:
 	unsigned int   m_userTimeout;
 	CALLSIGN_SWITCH  m_callsignSwitch;
 	bool           m_txMsgSwitch;
+	bool           m_listenOnly;
 	std::map<unsigned int, CSGSId *>      m_ids;
 	std::map<std::string, CSGSUser *>     m_users;
 	std::map<std::string, CSGSRepeater *> m_repeaters;
