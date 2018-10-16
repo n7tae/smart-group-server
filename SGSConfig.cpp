@@ -102,11 +102,19 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 			printf("subscribe suffix not space or letter\n");
 			basename.empty();
 		}
+		if ('L' == subscribe[0]) {
+			printf("subscribe cannot be 'L'\n");
+			basename.empty();
+		}
 		sprintf(key, "module.[%d].unsubscribe", i);
 		get_value(cfg, key, unsubscribe, 1, 1, "T");
 		CUtils::ToUpper(unsubscribe);
 		if ('A' > unsubscribe[0] || unsubscribe[0] > 'Z') {
 			printf("unsubscribe suffix not a letter\n");
+			basename.empty();
+		}
+		if ('L' == unsubscribe[0]) {
+			printf("unsubscribe cannot be 'L'\n");
 			basename.empty();
 		}
 		if (! subscribe.compare(unsubscribe)) {
