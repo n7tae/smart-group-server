@@ -34,3 +34,5 @@ removed/*
 *.out
 *.app
 sgs
+
+sgs.cfg

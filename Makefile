@@ -33,8 +33,9 @@ newhostfiles :
 
 install : sgs
 	/bin/cp -f sgs $(BINDIR)
-	/bin/ln -s $(shell pwd)/sgs.cfg $(CFGDIR)
+	/bin/cp -f $(shell pwd)/sgs.cfg $(CFGDIR)
 	/bin/cp -f sgs.service /lib/systemd/system
+	/sbin/useradd -d /tmp -M -s /sbin/nologin -r sgs
 	systemctl enable sgs.service
 	systemctl daemon-reload
 	systemctl start sgs.service
@@ -46,6 +47,7 @@ uninstall :
 	systemctl daemon-reload
 	/bin/rm -f $(BINDIR)/sgs
 	/bin/rm -f $(CFGDIR)/sgs.cfg
+	/sbin/userdel sgs
 
 removehostfiles :
 	/bin/rm -f $(CFGDIR)/DExtra_Hosts.txt

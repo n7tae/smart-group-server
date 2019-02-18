@@ -6,6 +6,9 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 
 ### What's New
 
+* **V# 190218** The sgs process no longer runs as root.  A system user "sgs" is
+created during installation.
+
 * **V# 180706** Smart Groups can now be declared as "RxOnly" meaning that subscribed users will only be able to hear traffic from a linked reflector. The RxOnly Smart Group will hear subscribe and unsubscribe transmissions but voice data will not be re-broadcast to other subscribers or a linked reflector. If you try to configure a Smart Group with the RxOnly characterisitic without also specifying a linked reflector, the RxOnly declaration will be ignored.
 * Also new in this release, the sgs.cfg file installed in the CFGDIR (usually /usr/local/etc) is now installed as a symbolic link pointing to the sgs.cfg in the build directory. This means you can edit the configuration file at user level permission and then simply restart the sgs program: `sudo systemctl restart sgs`.
 
