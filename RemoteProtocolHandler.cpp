@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017-2019 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -71,6 +71,7 @@ RPH_TYPE CRemoteProtocolHandler::readType()
 	// CUtils::dump("Incoming", m_inBuffer, length);
 
 	if (memcmp(m_inBuffer, "LIN", 3U) == 0) {
+		printf("remote login from %s on port %u", inet_ntoa(address), port);
 		m_loggedIn = false;
 		m_address  = address;
 		m_port     = port;
