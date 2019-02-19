@@ -4,6 +4,9 @@
 BINDIR=/usr/local/bin
 CFGDIR=/usr/local/etc
 
+# check for Fedora or something else
+REDHAT=$(shell [ -f /etc/redhat-release ] && echo 1 || echo 0)
+
 # choose this if you want debugging help
 #CPPFLAGS=-g -ggdb -W -Wall -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 # or, you can choose this for a much smaller executable without debugging help
@@ -33,8 +36,10 @@ newhostfiles :
 
 install : sgs
 	/bin/cp -f sgs $(BINDIR)
-	/bin/ln -s $(shell pwd)/sgs.cfg $(CFGDIR)
+# Fedora defaults to perm 700 for home directories, so we cannot symlink sgs.cfg
+	@if [ $(REDHAT)==1 ]; then /bin/cp -f $(shell pwd)/sgs.cfg $(CFGDIR); else /bin/ln -s $(shell pwd)/sgs.cfg $(CFGDIR); fi
 	/bin/cp -f sgs.service /lib/systemd/system
+	/usr/sbin/useradd -d /tmp -M -s /usr/sbin/nologin -r sgs
 	systemctl enable sgs.service
 	systemctl daemon-reload
 	systemctl start sgs.service
@@ -46,6 +51,7 @@ uninstall :
 	systemctl daemon-reload
 	/bin/rm -f $(BINDIR)/sgs
 	/bin/rm -f $(CFGDIR)/sgs.cfg
+	/usr/sbin/userdel sgs
 
 removehostfiles :
 	/bin/rm -f $(CFGDIR)/DExtra_Hosts.txt
