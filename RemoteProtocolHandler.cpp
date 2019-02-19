@@ -71,7 +71,7 @@ RPH_TYPE CRemoteProtocolHandler::readType()
 	// CUtils::dump("Incoming", m_inBuffer, length);
 
 	if (memcmp(m_inBuffer, "LIN", 3U) == 0) {
-		printf("remote login from %s on port %u", inet_ntoa(address), port);
+		printf("remote login from %s on port %u\n", inet_ntoa(address), port);
 		m_loggedIn = false;
 		m_address  = address;
 		m_port     = port;
