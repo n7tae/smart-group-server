@@ -39,9 +39,9 @@ newhostfiles :
 install : sgs
 	/bin/cp -f sgs $(BINDIR)
 # Fedora defaults to perm 700 for home directories, so we cannot symlink sgs.cfg
-	@if [ $(REDHAT)==1 ]; then /bin/cp -f $(shell pwd)/sgs.cfg $(CFGDIR); else /bin/ln -s $(shell pwd)/sgs.cfg $(CFGDIR); fi
+	if [ $(REDHAT) = 1 ]; then /bin/cp -f $(shell pwd)/sgs.cfg $(CFGDIR); else /bin/ln -s $(shell pwd)/sgs.cfg $(CFGDIR); fi
 	/bin/cp -f sgs.service /lib/systemd/system
-	@if [ $(SGSUSER)==0 ]; then /usr/sbin/useradd -d /tmp -M -s /usr/sbin/nologin -r sgs; fi
+	if [ $(SGSUSER) = 0 ]; then /usr/sbin/useradd -d /tmp -M -s /usr/sbin/nologin -r sgs; fi
 	systemctl enable sgs.service
 	systemctl daemon-reload
 	systemctl start sgs.service
@@ -53,7 +53,7 @@ uninstall :
 	systemctl daemon-reload
 	/bin/rm -f $(BINDIR)/sgs
 # On Fedora, save current sgs.cfg in working directory before removing
-	@if [ $(REDHAT)==1 ]; then /bin/cp -f $(CFGDIR)/sgs.cfg $(shell pwd)/sgs.cfg; fi
+	if [ $(REDHAT) = 1 ]; then /bin/cp -f $(CFGDIR)/sgs.cfg $(shell pwd)/sgs.cfg; fi
 	/bin/rm -f $(CFGDIR)/sgs.cfg
 	/usr/sbin/userdel sgs
 
