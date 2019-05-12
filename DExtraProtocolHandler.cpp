@@ -25,8 +25,9 @@
 
 const unsigned int BUFFER_LENGTH = 1000U;
 
-CDExtraProtocolHandler::CDExtraProtocolHandler(unsigned int port, const std::string& addr) :
-m_socket(addr, port),
+CDExtraProtocolHandler::CDExtraProtocolHandler(int family, unsigned short port) :
+m_family(family),
+m_socket(family, port),
 m_type(DE_NONE),
 m_buffer(NULL),
 m_length(0U),
@@ -44,10 +45,10 @@ CDExtraProtocolHandler::~CDExtraProtocolHandler()
 
 bool CDExtraProtocolHandler::open()
 {
-	return m_socket.open();
+	return m_socket.Open();
 }
 
-unsigned int CDExtraProtocolHandler::getPort() const
+unsigned short CDExtraProtocolHandler::getPort() const
 {
 	return m_myPort;
 }
@@ -60,9 +61,10 @@ bool CDExtraProtocolHandler::writeHeader(const CHeaderData& header)
 #if defined(DUMP_TX)
 	CUtils::dump("Sending Header", buffer, length);
 #endif
-
+	CSockAddress addr;
+	addr.Initialize(m_family, header.getYourPort(), header.getYourAddress().c_str());
 	for (unsigned int i = 0U; i < 5U; i++) {
-		bool res = m_socket.write(buffer, length, header.getYourAddress(), header.getYourPort());
+		bool res = m_socket.Write(buffer, length, addr);
 		if (!res)
 			return false;
 	}
@@ -78,8 +80,9 @@ bool CDExtraProtocolHandler::writeAMBE(const CAMBEData& data)
 #if defined(DUMP_TX)
 	CUtils::dump("Sending Data", buffer, length);
 #endif
-
-	return m_socket.write(buffer, length, data.getYourAddress(), data.getYourPort());
+	CSockAddress addr;
+	addr.Initialize(m_family, data.getYourPort(), data.getYourAddress().c_str());
+	return m_socket.Write(buffer, length, addr);
 }
 
 bool CDExtraProtocolHandler::writePoll(const CPollData& poll)
@@ -90,8 +93,9 @@ bool CDExtraProtocolHandler::writePoll(const CPollData& poll)
 #if defined(DUMP_TX)
 	CUtils::dump("Sending Poll", buffer, length);
 #endif
-
-	return m_socket.write(buffer, length, poll.getYourAddress(), poll.getYourPort());
+	CSockAddress addr;
+	addr.Initialize(m_family, poll.getYourPort(), poll.getYourAddress().c_str());
+	return m_socket.Write(buffer, length, addr);
 }
 
 bool CDExtraProtocolHandler::writeConnect(const CConnectData& connect)
@@ -102,9 +106,10 @@ bool CDExtraProtocolHandler::writeConnect(const CConnectData& connect)
 #if defined(DUMP_TX)
 	CUtils::dump("Sending Connect", buffer, length);
 #endif
-
+	CSockAddress addr;
+	addr.Initialize(m_family, connect.getYourPort(), connect.getYourAddress().c_str());
 	for (unsigned int i = 0U; i < 2U; i++) {
-		bool res = m_socket.write(buffer, length, connect.getYourAddress(), connect.getYourPort());
+		bool res = m_socket.Write(buffer, length, addr);
 		if (!res)
 			return false;
 	}
@@ -128,7 +133,8 @@ bool CDExtraProtocolHandler::readPackets()
 	m_type = DE_NONE;
 
 	// No more data?
-	int length = m_socket.read(m_buffer, BUFFER_LENGTH, m_yourAddress, m_yourPort);
+	CSockAddress addr;
+	int length = m_socket.Read(m_buffer, BUFFER_LENGTH, addr);
 	if (length <= 0)
 		return false;
 
@@ -224,5 +230,5 @@ CConnectData* CDExtraProtocolHandler::newConnect()
 
 void CDExtraProtocolHandler::close()
 {
-	m_socket.close();
+	m_socket.Close();
 }

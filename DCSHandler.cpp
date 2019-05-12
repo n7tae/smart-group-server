@@ -34,7 +34,7 @@ CCallsignList           *CDCSHandler::m_blackList = NULL;
 std::list<CDCSHandler *> CDCSHandler::m_DCSHandlers;
 
 
-CDCSHandler::CDCSHandler(CGroupHandler *handler, const std::string &dcsHandler, const std::string &repeater, CDCSProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
+CDCSHandler::CDCSHandler(CGroupHandler *handler, const std::string &dcsHandler, const std::string &repeater, CDCSProtocolHandler *protoHandler, const std::string &address, unsigned short port, DIRECTION direction) :
 m_reflector(dcsHandler),
 m_repeater(repeater),
 m_handler(protoHandler),
@@ -135,15 +135,15 @@ std::string CDCSHandler::getIncoming(const std::string &callsign)
 
 void CDCSHandler::process(CAMBEData &data)
 {
-	in_addr   yourAddress = data.getYourAddress();
-	unsigned int yourPort = data.getYourPort();
-	unsigned int myPort   = data.getMyPort();
+	std::string yourAddress(data.getYourAddress());
+	unsigned short yourPort = data.getYourPort();
+	unsigned short myPort   = data.getMyPort();
 
 	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
 		CDCSHandler *dcsHandler = *it;
-		if (		dcsHandler->m_yourAddress.s_addr == yourAddress.s_addr &&
-					dcsHandler->m_yourPort           == yourPort &&
-					dcsHandler->m_myPort             == myPort) {
+		if (dcsHandler->m_yourAddress == yourAddress &&
+			dcsHandler->m_yourPort    == yourPort &&
+			dcsHandler->m_myPort      == myPort) {
 			dcsHandler->processInt(data);
 			return;
 		}
@@ -152,19 +152,19 @@ void CDCSHandler::process(CAMBEData &data)
 
 void CDCSHandler::process(CPollData &poll)
 {
-	std::string   dcsHandler  = poll.getData1();
-	std::string   repeater   = poll.getData2();
-	in_addr   yourAddress = poll.getYourAddress();
-	unsigned int yourPort = poll.getYourPort();
-	unsigned int   myPort = poll.getMyPort();
-	unsigned int   length = poll.getLength();
+	std::string dcsHandler  = poll.getData1();
+	std::string repeater    = poll.getData2();
+	std::string yourAddress = poll.getYourAddress();
+	unsigned short yourPort = poll.getYourPort();
+	unsigned short   myPort = poll.getMyPort();
+	unsigned int     length = poll.getLength();
 
 	// Check to see if we already have a link
 	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
 		CDCSHandler *handler = *it;
 		if (		0==handler->m_reflector.compare(dcsHandler) &&
 					0==handler->m_repeater.compare(repeater) &&
-					handler->m_yourAddress.s_addr == yourAddress.s_addr &&
+					handler->m_yourAddress == yourAddress &&
 					handler->m_yourPort  == yourPort &&
 					handler->m_myPort    == myPort &&
 					handler->m_direction == DIR_OUTGOING &&
@@ -175,7 +175,7 @@ void CDCSHandler::process(CPollData &poll)
 			handler->m_handler->writePoll(reply);
 			return;
 		} else if (0==handler->m_reflector.compare(0, LONG_CALLSIGN_LENGTH - 1U, dcsHandler, 0, LONG_CALLSIGN_LENGTH - 1U) &&
-				   handler->m_yourAddress.s_addr == yourAddress.s_addr &&
+				   handler->m_yourAddress == yourAddress &&
 				   handler->m_yourPort  == yourPort &&
 				   handler->m_myPort    == myPort &&
 				   handler->m_direction == DIR_INCOMING &&
@@ -211,7 +211,7 @@ void CDCSHandler::process(CConnectData &connect)
 	printf("CDCSHandler::process(CConnectData) type=CT_LINK%c, from repeater=%s\n", (type==CT_LINK1) ? '1' : '2', connect.getRepeater().c_str());
 }
 
-void CDCSHandler::link(CGroupHandler *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
+void CDCSHandler::link(CGroupHandler *handler, const std::string &repeater, const std::string &gateway, const std::string &address)
 {
 	// if the handler is currently unlinking, quit!
 	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
@@ -346,7 +346,7 @@ void CDCSHandler::gatewayUpdate(const std::string &dcsHandler, const std::string
 			if (address.size()) {
 				// A new address, change the value
 				printf("Changing IP address of DCS gateway or dcsHandler %s to %s\n", dcsHandler->m_reflector.c_str(), address.c_str());
-				dcsHandler->m_yourAddress.s_addr = ::inet_addr(address.c_str());
+				dcsHandler->m_yourAddress = address;
 			} else {
 				printf("IP address for DCS gateway or dcsHandler %s has been removed\n", dcsHandler->m_reflector.c_str());
 
@@ -508,12 +508,12 @@ void CDCSHandler::processInt(CAMBEData &data)
 
 bool CDCSHandler::processInt(CConnectData &connect, CD_TYPE type)
 {
-	in_addr   yourAddress = connect.getYourAddress();
-	unsigned int yourPort = connect.getYourPort();
-	unsigned int   myPort = connect.getMyPort();
-	std::string  repeater = connect.getRepeater();
+	std::string yourAddress = connect.getYourAddress();
+	unsigned short yourPort = connect.getYourPort();
+	unsigned short myPort   = connect.getMyPort();
+	std::string repeater    = connect.getRepeater();
 
-	if (m_yourAddress.s_addr != yourAddress.s_addr || m_yourPort != yourPort || m_myPort != myPort)
+	if ((! (m_yourAddress == yourAddress)) || m_yourPort != yourPort || m_myPort != myPort)
 		return false;
 
 	switch (type) {

@@ -46,15 +46,12 @@ void CGatewayCache::update(const std::string &gateway, const std::string &addres
 	if (gateway_record != m_cache.end())
 		rec = gateway_record->second;
 
-	in_addr addr_in;
-	addr_in.s_addr = ::inet_addr(address.c_str());
-
 	if (rec == NULL)
 		// A brand new record is needed
-		m_cache[gateway] = new CGatewayRecord(gateway, addr_in, protocol, addrLock, protoLock);
+		m_cache[gateway] = new CGatewayRecord(gateway, address, protocol, addrLock, protoLock);
 	else
 		// Update an existing record
-		rec->setData(addr_in, protocol, addrLock, protoLock);
+		rec->setData(address, protocol, addrLock, protoLock);
 }
 
 unsigned int CGatewayCache::getCount() const

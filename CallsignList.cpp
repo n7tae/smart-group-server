@@ -44,7 +44,7 @@ bool CCallsignList::load()
 
 	while (fgets(cstr, 32, file)) {
 		std::string callsign(cstr);
-		CUtils::ToUpper(callsign);
+		ToUpper(callsign);
 		callsign.resize(LONG_CALLSIGN_LENGTH, ' ');
 
 		m_callsigns.insert(callsign);

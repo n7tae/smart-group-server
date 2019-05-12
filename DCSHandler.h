@@ -46,7 +46,7 @@ public:
 	static void setDCSProtocolIncoming(CDCSProtocolHandler *handler);
 	static void setGatewayType(GATEWAY_TYPE type);
 
-	static void link(CGroupHandler *handler, const std::string &repeater, const std::string &reflector, const in_addr &address);
+	static void link(CGroupHandler *handler, const std::string &repeater, const std::string &reflector, const std::string &address);
 	static void unlink(CGroupHandler *handler, const std::string &reflector = std::string(""), bool exclude = true);
 	static void unlink(CDCSHandler *reflector);
 	static void unlink();
@@ -72,7 +72,7 @@ public:
 	static std::string getIncoming(const std::string &callsign);
 
 protected:
-	CDCSHandler(CGroupHandler *handler, const std::string &reflector, const std::string &repeater, CDCSProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction);
+	CDCSHandler(CGroupHandler *handler, const std::string &reflector, const std::string &repeater, CDCSProtocolHandler *protoHandler, const std::string &address, unsigned short port, DIRECTION direction);
 	~CDCSHandler();
 
 	void processInt(CAMBEData &data);
@@ -93,18 +93,18 @@ private:
 
 	static GATEWAY_TYPE             m_gatewayType;
 
-	static CCallsignList           *m_whiteList;
-	static CCallsignList           *m_blackList;
+	static CCallsignList *m_whiteList;
+	static CCallsignList *m_blackList;
 
 	std::string          m_reflector;
 	std::string          m_repeater;
 	CDCSProtocolHandler *m_handler;
-	in_addr              m_yourAddress;
-	unsigned int         m_yourPort;
-	unsigned int         m_myPort;
+	std::string          m_yourAddress;
+	unsigned short       m_yourPort;
+	unsigned short       m_myPort;
 	DIRECTION            m_direction;
 	DCS_STATE            m_linkState;
-	CGroupHandler  *m_destination;
+	CGroupHandler       *m_destination;
 	time_t               m_time;
 	CTimer               m_pollTimer;
 	CTimer               m_pollInactivityTimer;
@@ -116,11 +116,11 @@ private:
 	CTimer               m_inactivityTimer;
 
 	// Header data
-	std::string             m_yourCall;
-	std::string             m_myCall1;
-	std::string             m_myCall2;
-	std::string             m_rptCall1;
-	std::string             m_rptCall2;
+	std::string m_yourCall;
+	std::string m_myCall1;
+	std::string m_myCall2;
+	std::string m_rptCall1;
+	std::string m_rptCall2;
 
 	unsigned int calcBackoff();
 };

@@ -48,19 +48,54 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		return;
 	if (0 == m_callsign.size())
 		return;
-	CUtils::ToUpper(m_callsign);
-	get_value(cfg, "gateway.address", m_address, 0, 20, "");
-	printf("GATEWAY: callsign='%s' address='%s'\n", m_callsign.c_str(), m_address.c_str());
-	if (! get_value(cfg, "ircddb.hostname", m_ircddbHostname, 5, 30, "rr.openquad.net"))
-		return;
-	if (! get_value(cfg, "ircddb.username", m_ircddbUsername, 3, 8, ""))
-		return;
-	if (0 == m_ircddbUsername.size())
-		m_ircddbUsername = m_callsign;
-	else
-		CUtils::ToUpper(m_ircddbUsername);
-	get_value(cfg, "ircddb.password", m_ircddbPassword, 1, 30, "");
-	printf("IRCDDB: host='%s' user='%s' password='%s'\n", m_ircddbHostname.c_str(), m_ircddbUsername.c_str(), m_ircddbPassword.c_str());
+	ToUpper(m_callsign);
+	printf("GATEWAY: callsign='%s'\n", m_callsign.c_str());
+	Sircddb *pirc;
+	switch (cfg.lookup("ircddb").getLength()) {
+		case 0:
+			pirc = new Sircddb;
+			pirc->Hostname = "rrv6.openquad.net";
+			pirc->Username = m_callsign;
+			m_ircddb.push_back(pirc);
+			pirc = new Sircddb;
+			pirc->Hostname = "rr.openquad.net";
+			pirc->Username = m_callsign;
+			m_ircddb.push_back(pirc);
+			break;
+		case 1:
+			pirc = new Sircddb;
+			get_value(cfg, "ircddb.[0].hostname", pirc->Hostname, 5, 64, "rr.openquad.net");
+			get_value(cfg, "ircddb.[0].username", pirc->Username, 0, 8, "");
+			if (0 == pirc->Username.size())
+				pirc->Username = m_callsign;
+			else
+				ToUpper(pirc->Username);
+			get_value(cfg, "ircddb.[0].password", pirc->Password, 0, 30, "");
+			m_ircddb.push_back(pirc);
+			break;
+		default:
+			for (int i=0; i<2; i++) {
+				char key[32];
+				pirc = new Sircddb;
+				snprintf(key, 32, "ircddb.[%d].hostname", i);
+				get_value(cfg, key, pirc->Hostname, 5, 64, "rr.openquad.net");
+				snprintf(key, 32, "ircddb.[%d].username", i);
+				get_value(cfg, key, pirc->Username, 0, 8, "");
+				if (0 == pirc->Username.size())
+					pirc->Username = m_callsign;
+				else
+					ToUpper(pirc->Username);
+				snprintf(key, 32, "ircddb.[%d].password", i);
+				get_value(cfg, key, pirc->Password, 0, 30, "");
+				m_ircddb.push_back(pirc);
+			}
+			break;
+	}
+	
+	for (int i=0; i<cfg.lookup("ircddb").getLength(); i++)
+		printf("IRCDDB[%d]: host='%s' user='%s' password='%s'\n", i, m_ircddb[i]->Hostname.c_str(), m_ircddb[i]->Username.c_str(), m_ircddb[i]->Password.c_str());
+	if (2<cfg.lookup("ircddb").getLength())
+		fprintf(stderr, "A maximum of two irc servers are supported!");
 
 	// module parameters
 	for (int i=0; i<cfg.lookup("module").getLength(); i++) {
@@ -76,7 +111,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 				}
 			}
 			if (isokay)
-				CUtils::ToUpper(basename);
+				ToUpper(basename);
 			else {
 				printf("Malformed basename for module %d: '%s'\n", i, basename.c_str());
 				basename.empty();
@@ -85,7 +120,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 
 		sprintf(key, "module.[%d].band", i);
 		get_value(cfg, key, band, 1, 1, "A");
-		CUtils::ToUpper(band);
+		ToUpper(band);
 		if (! isalpha(band[0])) {
 			printf("Module %d band is not a letter\n", i);
 			basename.empty();
@@ -97,7 +132,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 
 		sprintf(key, "module.[%d].subscribe", i);
 		get_value(cfg, key, subscribe, 1, 1, "A");
-		CUtils::ToUpper(subscribe);
+		ToUpper(subscribe);
 		if (subscribe[0] != ' ' && ('A' > subscribe[0] || subscribe[0] > 'Z')) {
 			printf("subscribe suffix not space or letter\n");
 			basename.empty();
@@ -108,7 +143,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		}
 		sprintf(key, "module.[%d].unsubscribe", i);
 		get_value(cfg, key, unsubscribe, 1, 1, "T");
-		CUtils::ToUpper(unsubscribe);
+		ToUpper(unsubscribe);
 		if ('A' > unsubscribe[0] || unsubscribe[0] > 'Z') {
 			printf("unsubscribe suffix not a letter\n");
 			basename.empty();
@@ -161,13 +196,11 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		}
 		pmod->reflector.empty();
 		if (basename.size()) {
-			CUtils::ToUpper(basename);
+			ToUpper(basename);
 			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS")) && isdigit(basename[3]) && isdigit(basename[4]) && isdigit(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
 				pmod->reflector = basename;
 		}
-		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' usertimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'\n",
-			i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->usertimeout,
-			SCS_GROUP_CALLSIGN==pmod->callsignswitch ? "Group" : "User", pmod->txmsgswitch ? "true" : "false", pmod->reflector.c_str());
+		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' usertimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'\n", i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->usertimeout, SCS_GROUP_CALLSIGN==pmod->callsignswitch ? "Group" : "User", pmod->txmsgswitch ? "true" : "false", pmod->reflector.c_str());
 		m_module.push_back(pmod);
 
 		if (pmod->listen_only && pmod->reflector.size()<8) {
@@ -182,11 +215,15 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		get_value(cfg, "remote.password", m_remotePassword, 6, 30, "");
 		int ivalue;
 		get_value(cfg, "remote.port", ivalue, 1000, 65000, 39999);
-		m_remotePort = (unsigned int)ivalue;
-		printf("Remote enabled: password='%s', port=%d\n", m_remotePassword.c_str(), m_remotePort);
+		m_remotePort = (unsigned short)ivalue;
+		std::string str;
+		get_value(cfg, "remote.family", str, 0, 30, "ipv4");
+		m_ipv6 = (std::string::npos == str.find('4')) ? true : false;
+		printf("Remote enabled: password='%s', port=%d, family=IPV%d\n", m_remotePassword.c_str(), m_remotePort, m_ipv6 ? 6 : 4);
 	} else {
 		m_remotePort = 0U;
 		m_remotePassword.empty();
+		m_ipv6 = false;
 		printf("Remote disabled\n");
 	}
 }
@@ -197,11 +234,21 @@ CSGSConfig::~CSGSConfig()
 		delete m_module.back();
 		m_module.pop_back();
 	}
+
+	while (m_ircddb.size()) {
+		delete m_ircddb.back();
+		m_module.pop_back();
+	}
 }
 
 unsigned int CSGSConfig::getModCount()
 {
 	return m_module.size();
+}
+
+unsigned int CSGSConfig::getIRCCount()
+{
+	return m_ircddb.size();
 }
 
 unsigned int CSGSConfig::getLinkCount(const char *type)
@@ -243,17 +290,16 @@ bool CSGSConfig::get_value(const Config &cfg, const char *path, std::string &val
 	return true;
 }
 
-void CSGSConfig::getGateway(std::string& callsign, std::string& address) const
+void CSGSConfig::getGateway(std::string& callsign) const
 {
 	callsign = m_callsign;
-	address  = m_address;
 }
 
-void CSGSConfig::getIrcDDB(std::string& hostname, std::string& username, std::string& password) const
+void CSGSConfig::getIrcDDB(int irc, std::string& hostname, std::string& username, std::string& password) const
 {
-	hostname = m_ircddbHostname;
-	username = m_ircddbUsername;
-	password = m_ircddbPassword;
+	hostname = m_ircddb[irc]->Hostname;
+	username = m_ircddb[irc]->Username;
+	password = m_ircddb[irc]->Password;
 }
 
 void CSGSConfig::getGroup(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info,
@@ -270,9 +316,10 @@ void CSGSConfig::getGroup(unsigned int mod, std::string &band, std::string &call
 	reflector      = m_module[mod]->reflector;
 }
 
-void CSGSConfig::getRemote(bool& enabled, std::string& password, unsigned int& port) const
+void CSGSConfig::getRemote(bool &enabled, std::string &password, unsigned short &port, bool &is_ipv6) const
 {
 	enabled  = m_remoteEnabled;
 	password = m_remotePassword;
 	port     = m_remotePort;
+	is_ipv6  = m_ipv6;
 }

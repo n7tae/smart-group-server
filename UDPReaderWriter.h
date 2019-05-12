@@ -29,26 +29,26 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+#include "SockAddress.h"
+
 
 class CUDPReaderWriter {
 public:
-	CUDPReaderWriter(const std::string& address, unsigned int port);
+	CUDPReaderWriter(int family, unsigned short port);
 	~CUDPReaderWriter();
 
-	static in_addr lookup(const std::string& hostName);
+	bool Open();
 
-	bool open();
+	int Read(unsigned char *buffer, unsigned int length, CSockAddress &addr);
+	bool Write(const unsigned char *buffer, unsigned int length, CSockAddress &addr);
 
-	int  read(unsigned char* buffer, unsigned int length, in_addr& address, unsigned int& port);
-	bool write(const unsigned char* buffer, unsigned int length, const in_addr& address, unsigned int port);
-
-	void close();
+	void Close();
 
 	unsigned int getPort() const;
 
 private:
-	std::string       m_address;
+	int m_family;
 	unsigned short m_port;
-	in_addr        m_addr;
-	int            m_fd;
+	int m_fd;
+	CSockAddress m_addr;
 };

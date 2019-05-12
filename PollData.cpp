@@ -24,7 +24,7 @@
 #include "DStarDefines.h"
 #include "Utils.h"
 
-CPollData::CPollData(const std::string& data1, const std::string& data2, DIRECTION direction, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort) :
+CPollData::CPollData(const std::string &data1, const std::string &data2, DIRECTION direction, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort) :
 m_data1(data1),
 m_data2(data2),
 m_direction(direction),
@@ -37,7 +37,7 @@ m_myPort(myPort)
 	assert(yourPort > 0U);
 }
 
-CPollData::CPollData(const std::string& data, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort) :
+CPollData::CPollData(const std::string & data, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort) :
 m_data1(data),
 m_data2(),
 m_direction(DIR_OUTGOING),
@@ -50,7 +50,7 @@ m_myPort(myPort)
 	assert(yourPort > 0U);
 }
 
-CPollData::CPollData(const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort) :
+CPollData::CPollData(const std::string &yourAddress, unsigned short yourPort, unsigned short myPort) :
 m_data1(),
 m_data2(),
 m_direction(DIR_OUTGOING),
@@ -79,7 +79,7 @@ CPollData::~CPollData()
 {
 }
 
-bool CPollData::setDExtraData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
+bool CPollData::setDExtraData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(data != NULL);
 	assert(length >= 9U);
@@ -97,7 +97,7 @@ bool CPollData::setDExtraData(const unsigned char* data, unsigned int length, co
 	return true;
 }
 
-bool CPollData::setDCSData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
+bool CPollData::setDCSData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(data != NULL);
 	assert(yourPort > 0U);
@@ -130,7 +130,7 @@ bool CPollData::setDCSData(const unsigned char* data, unsigned int length, const
 	return true;
 }
 
-bool CPollData::setDPlusData(const unsigned char* /*data*/, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
+bool CPollData::setDPlusData(const unsigned char * /*data*/, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(yourPort > 0U);
 
@@ -230,17 +230,17 @@ bool CPollData::isDongle() const
 	return m_dongle;
 }
 
-in_addr CPollData::getYourAddress() const
+std::string CPollData::getYourAddress() const
 {
 	return m_yourAddress;
 }
 
-unsigned int CPollData::getYourPort() const
+unsigned short CPollData::getYourPort() const
 {
 	return m_yourPort;
 }
 
-unsigned int CPollData::getMyPort() const
+unsigned short CPollData::getMyPort() const
 {
 	return m_myPort;
 }

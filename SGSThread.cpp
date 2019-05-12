@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2013,2015 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017-2018 by Thomas Early N7TAE
+ *   Copyright (c) 2017-2019 by Thomas Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -46,8 +46,6 @@ m_killed(false),
 m_stopped(true),
 m_callsign(),
 m_address(),
-m_g2Handler(NULL),
-m_irc(NULL),
 m_cache(),
 m_logEnabled(false),
 m_statusTimer(1000U, 1U),		// 1 second
@@ -57,15 +55,15 @@ m_remotePassword(),
 m_remotePort(0U),
 m_remote(NULL)
 {
+	m_g2Handler[0] = m_g2Handler[1] = NULL;
+	m_irc[0] = m_irc[1] = NULL;
 	CHeaderData::initialise();
-	CG2Handler::initialise(0);
 	printf("SGSThread created. DExtra channels: %d, DCS Channels: %d\n", countDExtra, countDCS);
 }
 
 CSGSThread::~CSGSThread()
 {
 	CHeaderData::finalise();
-	CG2Handler::finalise();
 	CGroupHandler::finalise();
 	CDExtraHandler::finalise();
 	CDCSHandler::finalise();
@@ -75,16 +73,23 @@ CSGSThread::~CSGSThread()
 
 void CSGSThread::run()
 {
-	m_g2Handler = new CG2ProtocolHandler(G2_DV_PORT, m_address);
-	bool ret = m_g2Handler->open();
-	if (!ret) {
-		printf("Could not open the G2 protocol handler\n");
-		delete m_g2Handler;
-		m_g2Handler = NULL;
+	for (int i=0; m_irc[i] && i<2; i++) {
+		int family = m_irc[i]->GetFamily();
+		if (AF_INET6 == family)
+			m_g2Handler[i] = new CG2ProtocolHandler(family, G2_IPV6_PORT);
+		else
+			m_g2Handler[i] = new CG2ProtocolHandler(family, G2_DV_PORT);
+		
+		bool ret = m_g2Handler[i]->open();
+		if (!ret) {
+			printf("Could not open the G2 protocol handler\n");
+			delete m_g2Handler[i];
+			m_g2Handler[i] = NULL;
+		}
 	}
 
 	// Wait here until we have the essentials to run
-	while (!m_killed && (m_g2Handler == NULL || m_irc == NULL || 0==m_callsign.size()))
+	while (!m_killed && (m_g2Handler[0] == NULL || m_irc == NULL || 0==m_callsign.size()))
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 	if (m_killed)
@@ -96,10 +101,8 @@ void CSGSThread::run()
 
 	loadReflectors(DEXTRA_HOSTS_FILE_NAME, DP_DEXTRA);
 	loadReflectors(DCS_HOSTS_FILE_NAME, DP_DCS);
-	CDExtraProtocolHandlerPool dextraPool(DEXTRA_PORT, m_address);
-	CDCSProtocolHandlerPool dcsPool(DCS_PORT, m_address);
-
-	CG2Handler::setG2ProtocolHandler(m_g2Handler);
+	CDExtraProtocolHandlerPool dextraPool(DEXTRA_PORT);
+	CDCSProtocolHandlerPool dcsPool(DCS_PORT);
 
 	CDExtraHandler::setCallsign(m_callsign);
 	CDExtraHandler::setDExtraProtocolHandlerPool(&dextraPool);
@@ -108,13 +111,13 @@ void CSGSThread::run()
 
 	CGroupHandler::setCache(&m_cache);
 	CGroupHandler::setGateway(m_callsign);
-	CGroupHandler::setG2Handler(m_g2Handler);
-	CGroupHandler::setIRC(m_irc);
+	CGroupHandler::setG2Handler(m_g2Handler[0], m_g2Handler[1]);
+	CGroupHandler::setIRC(m_irc[0], m_irc[1]);
 	if (m_countDExtra || m_countDCS)
 		CGroupHandler::link();
 
 	if (m_remoteEnabled && m_remotePassword.size() && m_remotePort > 0U) {
-		m_remote = new CRemoteHandler(m_remotePassword, m_remotePort);
+		m_remote = new CRemoteHandler(m_remotePassword, m_remotePort, m_remoteIPV6);
 		bool res = m_remote->open();
 		if (!res) {
 			delete m_remote;
@@ -129,8 +132,12 @@ void CSGSThread::run()
 
 	try {
 		while (!m_killed) {
-			processIrcDDB();
-			processG2();
+			processIrcDDB(0);
+			processG2(0);
+			if (m_irc[1]) {
+				processIrcDDB(1);
+				processG2(1);
+			}
 			processDExtra(&dextraPool);
 			processDCS(&dcsPool);
 			if (m_remote != NULL)
@@ -142,8 +149,6 @@ void CSGSThread::run()
 			time(&start);
 
 			m_statusTimer.clock(ms);
-
-			CG2Handler::clock(ms);
 			CGroupHandler::clock(ms);
 			CDExtraHandler::clock(ms);
 			CDCSHandler::clock(ms);
@@ -168,11 +173,22 @@ void CSGSThread::run()
 	CDCSHandler::unlink();
 	dcsPool.close();
 
-	m_g2Handler->close();
-	delete m_g2Handler;
+	m_g2Handler[0]->close();
+	delete m_g2Handler[0];
+	if (m_g2Handler[1]) {
+		m_g2Handler[1]->close();
+		delete m_g2Handler[1];
+	}
 
-	m_irc->close();
-	delete m_irc;
+	if (m_irc[0]) {
+		m_irc[0]->close();
+		delete m_irc[0];
+	}
+
+	if (m_irc[1]) {
+		m_irc[1]->close();
+		delete m_irc[1];
+	}
 
 	if (m_remote != NULL) {
 		m_remote->close();
@@ -185,7 +201,7 @@ void CSGSThread::kill()
 	m_killed = true;
 }
 
-void CSGSThread::setCallsign(const std::string& callsign)
+void CSGSThread::setCallsign(const std::string &callsign)
 {
 	if (!m_stopped)
 		return;
@@ -193,10 +209,10 @@ void CSGSThread::setCallsign(const std::string& callsign)
 	m_callsign = callsign;
 }
 
-void CSGSThread::setAddress(const std::string& address)
-{
-	m_address = address;
-}
+// void CSGSThread::setAddress(const std::string &address)
+// {
+// 	m_address = address;
+// }
 
 void CSGSThread::addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
 	unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listen_only, const std::string &reflector)
@@ -204,31 +220,33 @@ void CSGSThread::addGroup(const std::string &callsign, const std::string &logoff
 	CGroupHandler::add(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, listen_only, reflector);
 }
 
-void CSGSThread::setIRC(CIRCDDB* irc)
+void CSGSThread::setIRC(const unsigned int i, CIRCDDB* irc)
 {
 	assert(irc != NULL);
 
-	m_irc = irc;
+	m_irc[i] = irc;
 }
 
-void CSGSThread::setRemote(bool enabled, const std::string& password, unsigned int port)
+void CSGSThread::setRemote(bool enabled, const std::string& password, unsigned short port, bool is_ipv6)
 {
 	if (enabled) {
 		m_remoteEnabled  = true;
 		m_remotePassword = password;
 		m_remotePort     = port;
+		m_remoteIPV6     = is_ipv6;
 	} else {
 		m_remoteEnabled  = false;
 		m_remotePassword = password;
 		m_remotePort     = REMOTE_DUMMY_PORT;
+		m_remoteIPV6     = false;
 	}
 }
 
-void CSGSThread::processIrcDDB()
+void CSGSThread::processIrcDDB(const int i)
 {
 	// Once per second
 	if (m_statusTimer.hasExpired()) {
-		int status = m_irc->getConnectionState();
+		int status = m_irc[i]->getConnectionState();
 		switch (status) {
 			case 0:
 			case 10:
@@ -255,8 +273,8 @@ void CSGSThread::processIrcDDB()
 	}
 
 	// Process all incoming ircDDB messages, updating the caches
-	for (;;) {
-		IRCDDB_RESPONSE_TYPE type = m_irc->getMessageType();
+	while (true) {
+		IRCDDB_RESPONSE_TYPE type = m_irc[i]->getMessageType();
 
 		switch (type) {
 			case IDRT_NONE:
@@ -264,7 +282,7 @@ void CSGSThread::processIrcDDB()
 
 			case IDRT_USER: {
 					std::string user, repeater, gateway, address, timestamp;
-					bool res = m_irc->receiveUser(user, repeater, gateway, address, timestamp);
+					bool res = m_irc[i]->receiveUser(user, repeater, gateway, address, timestamp);
 					if (!res)
 						break;
 
@@ -279,7 +297,7 @@ void CSGSThread::processIrcDDB()
 
 			case IDRT_REPEATER: {
 					std::string repeater, gateway, address;
-					bool res = m_irc->receiveRepeater(repeater, gateway, address);
+					bool res = m_irc[i]->receiveRepeater(repeater, gateway, address);
 					if (!res)
 						break;
 
@@ -294,7 +312,7 @@ void CSGSThread::processIrcDDB()
 
 			case IDRT_GATEWAY: {
 					std::string gateway, address;
-					bool res = m_irc->receiveGateway(gateway, address);
+					bool res = m_irc[i]->receiveGateway(gateway, address);
 					if (!res)
 						break;
 
@@ -316,7 +334,7 @@ void CSGSThread::processIrcDDB()
 
 void CSGSThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
 {
-	for (;;) {
+	while (true) {
 		DEXTRA_TYPE type = dextraPool->read();
 
 		switch (type) {
@@ -365,7 +383,7 @@ void CSGSThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
 
 void CSGSThread::processDCS(CDCSProtocolHandlerPool *dcsPool)
 {
-	for (;;) {
+	while (true) {
 		DCS_TYPE type = dcsPool->read();
 
 		switch (type) {
@@ -403,17 +421,17 @@ void CSGSThread::processDCS(CDCSProtocolHandlerPool *dcsPool)
 	}
 }
 
-void CSGSThread::processG2()
+void CSGSThread::processG2(const int i)
 {
-	for (;;) {
-		G2_TYPE type = m_g2Handler->read();
+	while(true) {
+		G2_TYPE type = m_g2Handler[i]->read();
 
 		switch (type) {
 			case GT_NONE:
 				return;
 
 			case GT_HEADER: {
-					CHeaderData* header = m_g2Handler->readHeader();
+					CHeaderData* header = m_g2Handler[i]->readHeader();
 					if (header != NULL) {
 //printf("G2 header - My: %s/%s  Your: %s  Rpt1: %s  Rpt2: %s  Flags: %02X %02X %02X\n", header->getMyCall1().c_str(), header->getMyCall2().c_str(), header->getYourCall().c_str(), header->getRptCall1().c_str(), header->getRptCall2().c_str(), header->getFlag1(), header->getFlag2(), header->getFlag3());
 						CG2Handler::process(*header);
@@ -423,7 +441,7 @@ void CSGSThread::processG2()
 				break;
 
 			case GT_AMBE: {
-					CAMBEData* data = m_g2Handler->readAMBE();
+					CAMBEData* data = m_g2Handler[i]->readAMBE();
 					if (data != NULL) {
 						CG2Handler::process(*data);
 						delete data;

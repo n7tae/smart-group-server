@@ -22,9 +22,8 @@
 #include "DCSProtocolHandlerPool.h"
 #include "Utils.h"
 
-CDCSProtocolHandlerPool::CDCSProtocolHandlerPool(const unsigned int port, const std::string &addr) :
-m_basePort(port),
-m_address(addr)
+CDCSProtocolHandlerPool::CDCSProtocolHandlerPool(const unsigned short port) :
+m_basePort(port)
 {
 	assert(port > 0U);
 	m_index = m_pool.end();
@@ -42,10 +41,10 @@ CDCSProtocolHandlerPool::~CDCSProtocolHandlerPool()
 
 CDCSProtocolHandler *CDCSProtocolHandlerPool::getHandler()
 {
-	unsigned int port = m_basePort;
+	unsigned short port = m_basePort;
 	while (m_pool.end() != m_pool.find(port))
 		port++;	// find an unused port
-	CDCSProtocolHandler *proto = new CDCSProtocolHandler(port, m_address);
+	CDCSProtocolHandler *proto = new CDCSProtocolHandler(AF_INET, port);
 	if (proto) {
 		if (proto->open()) {
 			m_pool[port] = proto;

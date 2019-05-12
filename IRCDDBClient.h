@@ -32,9 +32,10 @@ struct CIRCDDBPrivate;
 
 class CIRCDDBClient : public CIRCDDB{
 public:
-	CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo,
-		const std::string& localAddr = std::string(""));
+	CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo);
 	~CIRCDDBClient();
+
+	int GetFamily();
 
 	// A false return implies a network error, or unable to log in
 	bool open();

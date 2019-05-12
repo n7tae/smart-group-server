@@ -78,7 +78,7 @@ void CCCITTChecksum::update(const bool* data)
 {
 	assert(data != NULL);
 
-	unsigned short byte = CUtils::bitsToByte(data);
+	unsigned short byte = bitsToByte(data);
 
 	unsigned short tmp = (m_crc & 0x00FF) ^ byte;
 

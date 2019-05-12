@@ -44,7 +44,7 @@ enum RPH_TYPE {
 
 class CRemoteProtocolHandler {
 public:
-	CRemoteProtocolHandler(unsigned int port, const std::string &address = std::string(""));
+	CRemoteProtocolHandler(bool is_ipv6, unsigned short port);
 	~CRemoteProtocolHandler();
 
 	bool open();
@@ -69,8 +69,9 @@ public:
 
 private:
 	CUDPReaderWriter  m_socket;
-	in_addr           m_address;
-	unsigned int      m_port;
+	int               m_family;
+	std::string       m_address;
+	unsigned short    m_port;
 	bool              m_loggedIn;
 	RPH_TYPE          m_type;
 	unsigned char    *m_inBuffer;

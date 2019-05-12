@@ -163,80 +163,7 @@ CHeaderData::~CHeaderData()
 	delete[] m_rptCall2;
 }
 
-bool CHeaderData::setIcomRepeaterData(const unsigned char *data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort)
-{
-	assert(data != NULL);
-	assert(length >= 58U);
-
-	m_rptSeq = data[4]  * 256U + data[5];
-	m_band1  = data[11];
-	m_band2  = data[12];
-	m_band3  = data[13];
-	m_id     = data[14] * 256U + data[15];
-
-	m_flag1 = data[17U];
-	m_flag2 = data[18U];
-	m_flag3 = data[19U];
-
-	::memcpy(m_rptCall2, data + 20U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_rptCall1, data + 28U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_yourCall, data + 36U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_myCall1,  data + 44U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_myCall2,  data + 52U, SHORT_CALLSIGN_LENGTH);
-
-	m_yourAddress = yourAddress;
-	m_yourPort    = yourPort;
-
-	if (check) {
-		CCCITTChecksum cksum;
-		cksum.update(data + 17U, RADIO_HEADER_LENGTH_BYTES - 2U);
-		bool valid = cksum.check(data + 17U + RADIO_HEADER_LENGTH_BYTES - 2U);
-
-		if (!valid)
-			CUtils::dump("Header checksum failure from the repeater", data + 17U, RADIO_HEADER_LENGTH_BYTES);
-
-		return valid;
-	} else {
-		return true;
-	}
-}
-
-bool CHeaderData::setHBRepeaterData(const unsigned char *data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort)
-{
-	assert(data != NULL);
-	assert(length >= 49U);
-
-	m_id     = data[5U] * 256U + data[6U];
-	m_errors = data[7U];
-
-	m_flag1 = data[8U];
-	m_flag2 = data[9U];
-	m_flag3 = data[10U];
-
-	::memcpy(m_rptCall2, data + 11U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_rptCall1, data + 19U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_yourCall, data + 27U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_myCall1,  data + 35U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_myCall2,  data + 43U, SHORT_CALLSIGN_LENGTH);
-
-	m_yourAddress = yourAddress;
-	m_yourPort    = yourPort;
-
-	if (check) {
-		CCCITTChecksum cksum;
-		cksum.update(data + 8U, RADIO_HEADER_LENGTH_BYTES - 2U);
-		bool valid = cksum.check(data + 8U + RADIO_HEADER_LENGTH_BYTES - 2U);
-
-		if (!valid)
-			CUtils::dump("Header checksum failure from the repeater", data + 8U, RADIO_HEADER_LENGTH_BYTES);
-
-		return valid;
-	} else {
-		return true;
-	}
-}
-
-void CHeaderData::setDCSData(const unsigned char *data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
+void CHeaderData::setDCSData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(data != NULL);
 	assert(length >= 100U);
@@ -258,7 +185,7 @@ void CHeaderData::setDCSData(const unsigned char *data, unsigned int length, con
 	m_myPort      = myPort;
 }
 
-bool CHeaderData::setG2Data(const unsigned char *data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort)
+bool CHeaderData::setG2Data(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort)
 {
 	assert(data != NULL);
 	assert(length >= 56U);
@@ -287,7 +214,7 @@ bool CHeaderData::setG2Data(const unsigned char *data, unsigned int length, bool
 		bool valid = cksum.check(data + 15U + RADIO_HEADER_LENGTH_BYTES - 2U);
 
 		if (!valid)
-			CUtils::dump("Header checksum failure from G2", data + 15U, RADIO_HEADER_LENGTH_BYTES);
+			dump("Header checksum failure from G2", data + 15U, RADIO_HEADER_LENGTH_BYTES);
 
 		return valid;
 	} else {
@@ -295,7 +222,7 @@ bool CHeaderData::setG2Data(const unsigned char *data, unsigned int length, bool
 	}
 }
 
-bool CHeaderData::setDExtraData(const unsigned char *data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
+bool CHeaderData::setDExtraData(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(data != NULL);
 	assert(length >= 56U);
@@ -325,7 +252,7 @@ bool CHeaderData::setDExtraData(const unsigned char *data, unsigned int length, 
 		bool valid = cksum.check(data + 15U + RADIO_HEADER_LENGTH_BYTES - 2U);
 
 		if (!valid)
-			CUtils::dump("Header checksum failure from DExtra", data + 15U, RADIO_HEADER_LENGTH_BYTES);
+			dump("Header checksum failure from DExtra", data + 15U, RADIO_HEADER_LENGTH_BYTES);
 
 		return valid;
 	} else {
@@ -333,13 +260,13 @@ bool CHeaderData::setDExtraData(const unsigned char *data, unsigned int length, 
 	}
 }
 
-bool CHeaderData::setDPlusData(const unsigned char *data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
+bool CHeaderData::setDPlusData(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(data != NULL);
 	assert(length >= 58U);
 
 	if (data[0] != 0x3A || data[1] != 0x80) {
-		CUtils::dump("Invalid header length from D-Plus", data, length);
+		dump("Invalid header length from D-Plus", data, length);
 		return false;
 	}
 
@@ -368,7 +295,7 @@ bool CHeaderData::setDPlusData(const unsigned char *data, unsigned int length, b
 		bool valid = cksum.check(data + 17U + RADIO_HEADER_LENGTH_BYTES - 2U);
 
 		if (!valid)
-			CUtils::dump("Header checksum failure from D-Plus", data + 17U, RADIO_HEADER_LENGTH_BYTES);
+			dump("Header checksum failure from D-Plus", data + 17U, RADIO_HEADER_LENGTH_BYTES);
 
 		return valid;
 	} else {
@@ -376,7 +303,7 @@ bool CHeaderData::setDPlusData(const unsigned char *data, unsigned int length, b
 	}
 }
 
-bool CHeaderData::setDVTOOLData(const unsigned char* data, unsigned int length, bool check)
+bool CHeaderData::setDVTOOLData(const unsigned char *data, unsigned int length, bool check)
 {
 	assert(data != NULL);
 	assert(length >= RADIO_HEADER_LENGTH_BYTES);
@@ -397,103 +324,12 @@ bool CHeaderData::setDVTOOLData(const unsigned char* data, unsigned int length, 
 		bool valid = cksum.check(data + RADIO_HEADER_LENGTH_BYTES - 2U);
 
 		if (!valid)
-			CUtils::dump("Header checksum failure from DVTOOL", data, RADIO_HEADER_LENGTH_BYTES);
+			dump("Header checksum failure from DVTOOL", data, RADIO_HEADER_LENGTH_BYTES);
 
 		return valid;
 	} else {
 		return true;
 	}
-}
-
-unsigned int CHeaderData::getIcomRepeaterData(unsigned char *data, unsigned int length, bool check) const
-{
-	assert(data != NULL);
-	assert(length >= 58U);
-
-	data[0] = 'D';
-	data[1] = 'S';
-	data[2] = 'T';
-	data[3] = 'R';
-
-	data[4] = m_rptSeq / 256U;		// Packet sequence number
-	data[5] = m_rptSeq % 256U;
-
-	data[6] = 0x73;					// Not a response
-	data[7] = 0x12;					// Data type
-
-	data[8] = 0x00;					// Length of 48 bytes following
-	data[9] = 0x30;
-
-	data[10] = 0x20;				// AMBE plus Slow Data following
-
-	data[11] = m_band1;
-	data[12] = m_band2;
-	data[13] = m_band3;
-
-	data[14] = m_id / 256U;			// Unique session id
-	data[15] = m_id % 256U;
-
-	data[16] = 0x80;
-
-	data[17] = m_flag1;				// Flags 1, 2, and 3
-	data[18] = m_flag2;
-	data[19] = m_flag3;
-
-	::memcpy(data + 20U, m_rptCall2, LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 28U, m_rptCall1, LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 36U, m_yourCall, LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 44U, m_myCall1,  LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 52U, m_myCall2,  SHORT_CALLSIGN_LENGTH);
-
-	if (check) {
-		CCCITTChecksum csum;
-		csum.update(data + 17, 4U * LONG_CALLSIGN_LENGTH + SHORT_CALLSIGN_LENGTH + 3U);
-		csum.result(data + 56);
-	} else {
-		data[56] = 0xFF;
-		data[57] = 0xFF;
-	}
-
-	return 58U;
-}
-
-unsigned int CHeaderData::getHBRepeaterData(unsigned char *data, unsigned int length, bool check) const
-{
-	assert(data != NULL);
-	assert(length >= 49U);
-
-	data[0] = 'D';
-	data[1] = 'S';
-	data[2] = 'R';
-	data[3] = 'P';
-
-	data[4] = 0x20U;
-
-	data[5] = m_id / 256U;			// Unique session id
-	data[6] = m_id % 256U;
-
-	data[7] = 0U;
-
-	data[8]  = m_flag1;				// Flags 1, 2, and 3
-	data[9]  = m_flag2;
-	data[10] = m_flag3;
-
-	::memcpy(data + 11U, m_rptCall2, LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 19U, m_rptCall1, LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 27U, m_yourCall, LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 35U, m_myCall1,  LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 43U, m_myCall2,  SHORT_CALLSIGN_LENGTH);
-
-	if (check) {
-		CCCITTChecksum csum;
-		csum.update(data + 8U, 4U * LONG_CALLSIGN_LENGTH + SHORT_CALLSIGN_LENGTH + 3U);
-		csum.result(data + 47U);
-	} else {
-		data[47] = 0xFF;
-		data[48] = 0xFF;
-	}
-
-	return 49U;
 }
 
 void CHeaderData::getDCSData(unsigned char *data, unsigned int length) const
@@ -875,23 +711,23 @@ unsigned int CHeaderData::getData(unsigned char *data, unsigned int length, bool
 	}
 }
 
-void CHeaderData::setDestination(const in_addr& address, unsigned int port)
+void CHeaderData::setDestination(const std::string &address, unsigned short port)
 {
 	m_yourAddress = address;
 	m_yourPort    = port;
 }
 
-in_addr CHeaderData::getYourAddress() const
+std::string CHeaderData::getYourAddress() const
 {
 	return m_yourAddress;
 }
 
-unsigned int CHeaderData::getYourPort() const
+unsigned short CHeaderData::getYourPort() const
 {
 	return m_yourPort;
 }
 
-unsigned int CHeaderData::getMyPort() const
+unsigned short CHeaderData::getMyPort() const
 {
 	return m_myPort;
 }

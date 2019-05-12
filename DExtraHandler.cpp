@@ -33,7 +33,7 @@ CCallsignList              *CDExtraHandler::m_whiteList = NULL;
 CCallsignList              *CDExtraHandler::m_blackList = NULL;
 
 
-CDExtraHandler::CDExtraHandler(CGroupHandler *handler, const std::string &dextraHandler, const std::string &repeater, CDExtraProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction) :
+CDExtraHandler::CDExtraHandler(CGroupHandler *handler, const std::string &dextraHandler, const std::string &repeater, CDExtraProtocolHandler *protoHandler, const std::string &address, unsigned short port, DIRECTION direction) :
 m_reflector(dextraHandler),
 m_repeater(repeater),
 m_handler(protoHandler),
@@ -139,24 +139,24 @@ std::string CDExtraHandler::getDongles()
 
 void CDExtraHandler::process(CHeaderData &header)
 {
-	in_addr   yourAddress = header.getYourAddress();
-	unsigned int yourPort = header.getYourPort();
+	std::string yourAddress = header.getYourAddress();
+	unsigned short yourPort = header.getYourPort();
 
 	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
 		CDExtraHandler *dextraHandler = *it;
-		if (dextraHandler->m_yourAddress.s_addr==yourAddress.s_addr && dextraHandler->m_yourPort==yourPort)
+		if (dextraHandler->m_yourAddress==yourAddress && dextraHandler->m_yourPort==yourPort)
 			dextraHandler->processInt(header);
 	}
 }
 
 void CDExtraHandler::process(CAMBEData &data)
 {
-	in_addr   yourAddress = data.getYourAddress();
-	unsigned int yourPort = data.getYourPort();
+	std::string yourAddress = data.getYourAddress();
+	unsigned short yourPort = data.getYourPort();
 
 	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
 		CDExtraHandler *dextraHandler = *it;
-		if (yourAddress.s_addr==dextraHandler->m_yourAddress.s_addr && yourPort==dextraHandler->m_yourPort)
+		if (yourAddress==dextraHandler->m_yourAddress && yourPort==dextraHandler->m_yourPort)
 			dextraHandler->processInt(data);
 	}
 }
@@ -164,13 +164,13 @@ void CDExtraHandler::process(CAMBEData &data)
 void CDExtraHandler::process(const CPollData &poll)
 {
 	std::string reflector = poll.getData1();
-	in_addr   yourAddress = poll.getYourAddress();
-	unsigned int yourPort = poll.getYourPort();
+	std::string yourAddress = poll.getYourAddress();
+	unsigned short yourPort = poll.getYourPort();
 	// reset all inactivity times from this reflector
 	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
 		CDExtraHandler *handler = *it;
 		if (		0==handler->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, reflector, 0, LONG_CALLSIGN_LENGTH-1) &&
-					handler->m_yourAddress.s_addr == yourAddress.s_addr &&
+					handler->m_yourAddress == yourAddress &&
 					handler->m_yourPort           == yourPort &&
 					handler->m_linkState          == DEXTRA_LINKED) {
 			handler->m_pollInactivityTimer.start();
@@ -201,7 +201,7 @@ void CDExtraHandler::process(CConnectData &connect)
 	printf("CDExtraHandler::process(CConnectData) type=CT_LINK%c, SGSchannel=%s, from repeater=%s\n", (type==CT_LINK1) ? '1' : '2', m_callsign.c_str(), connect.getRepeater().c_str());
 }
 
-void CDExtraHandler::link(CGroupHandler *handler, const std::string &repeater, const std::string &gateway, const in_addr &address)
+void CDExtraHandler::link(CGroupHandler *handler, const std::string &repeater, const std::string &gateway, const std::string &address)
 {
 	CDExtraProtocolHandler *protoHandler = m_pool->getHandler();
 	if (protoHandler == NULL)
@@ -328,7 +328,7 @@ void CDExtraHandler::gatewayUpdate(const std::string &dextraHandler, const std::
 			if (address.size()) {
 				// A new address, change the value
 				printf("Changing IP address of DExtra gateway or dextraHandler %s to %s\n", dextraHandler->m_reflector.c_str(), address.c_str());
-				dextraHandler->m_yourAddress.s_addr = ::inet_addr(address.c_str());
+				dextraHandler->m_yourAddress = address;
 			} else {
 				printf("IP address for DExtra gateway or dextraHandler %s has been removed\n", dextraHandler->m_reflector.c_str());
 
@@ -481,11 +481,11 @@ void CDExtraHandler::processInt(CAMBEData &data)
 
 bool CDExtraHandler::processInt(CConnectData &connect, CD_TYPE type)
 {
-	in_addr yourAddress   = connect.getYourAddress();
-	unsigned int yourPort = connect.getYourPort();
-	std::string  repeater = connect.getRepeater();
+	std::string yourAddress(connect.getYourAddress());
+	unsigned short yourPort = connect.getYourPort();
+	std::string repeater(connect.getRepeater());
 
-	if (m_yourAddress.s_addr != yourAddress.s_addr || m_yourPort != yourPort)
+	if ((! (m_yourAddress == yourAddress)) || m_yourPort != yourPort)
 		return false;
 
 	switch (type) {

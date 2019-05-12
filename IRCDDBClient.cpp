@@ -3,7 +3,7 @@ CIRCDDBClient - ircDDB client library in C++
 
 Copyright (C) 2010-2011   Michael Dirska, DL1BFF (dl1bff@mdx.de)
 Copyright (C) 2011,2012   Jonathan Naylor, G4KLX
-Copyright (c) 2017 by Thomas A. Early
+Copyright (c) 2017,2019 by Thomas A. Early
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,11 +30,11 @@ struct CIRCDDBClientPrivate
 	IRCDDBApp *app;
 };
 
-CIRCDDBClient::CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo, const std::string& localAddr ) : d(new CIRCDDBClientPrivate)
+CIRCDDBClient::CIRCDDBClient(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo) : d(new CIRCDDBClientPrivate)
 {
 	std::string update_channel("#dstar");
 	d->app = new IRCDDBApp(update_channel);
-	d->client = new IRCClient(d->app, update_channel, hostName, port, callsign, password, versionInfo, localAddr);
+	d->client = new IRCClient(d->app, update_channel, hostName, port, callsign, password, versionInfo);
 }
 
 CIRCDDBClient::~CIRCDDBClient()
@@ -44,6 +44,10 @@ CIRCDDBClient::~CIRCDDBClient()
 	delete d;
 }
 
+int CIRCDDBClient::GetFamily()
+{
+	return d->client->GetFamily();
+}
 
 	// A false return implies a network error, or unable to log in
 bool CIRCDDBClient::open()
@@ -81,8 +85,7 @@ void CIRCDDBClient::kickWatchdog(const std::string& callsign, const std::string&
 
 
 // Send heard data, a false return implies a network error
-bool CIRCDDBClient::sendHeard( const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,
-									const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3 )
+bool CIRCDDBClient::sendHeard( const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3 )
 {
 	if (myCall.size() != 8) {
 		printf("CIRCDDBClient::sendHeard:myCall='%s' len != 8\n", myCall.c_str());
@@ -118,8 +121,7 @@ void CIRCDDBClient::sendSGSInfo(const std::string subcommand, const std::vector<
 }
 
 // Send heard data, a false return implies a network error
-bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,
-	const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message)
+bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message)
 {
 	if (myCall.size() != 8) {
 		printf("CIRCDDBClient::sendHeardWithTXMsg:myCall='%s' len != 8\n", myCall.c_str());
@@ -170,8 +172,7 @@ bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::str
 
 
 
-bool CIRCDDBClient::sendHeardWithTXStats( const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1,
-	const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors)
+bool CIRCDDBClient::sendHeardWithTXStats( const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors)
 {
 	if ((num_dv_frames <= 0) || (num_dv_frames > 65535)) {
 		printf("CIRCDDBClient::sendHeardWithTXStats:num_dv_frames=%d not in range 1-65535\n", num_dv_frames);
@@ -239,7 +240,7 @@ bool CIRCDDBClient::findGateway(const std::string& gatewayCallsign)
 		return false;
 	}
 	std::string gw(gatewayCallsign);
-	CUtils::ToUpper(gw);
+	ToUpper(gw);
 	return d->app->findGateway(gw);
 }
 
@@ -251,7 +252,7 @@ bool CIRCDDBClient::findRepeater(const std::string& repeaterCallsign)
 		return false;
 	}
 	std::string rptr(repeaterCallsign);
-	CUtils::ToUpper(rptr);
+	ToUpper(rptr);
 	return d->app->findRepeater(rptr);
 }
 
@@ -263,7 +264,7 @@ bool CIRCDDBClient::findUser(const std::string& userCallsign)
 		return false;
 	}
 	std::string usr(userCallsign);
-	CUtils::ToUpper(usr);
+	ToUpper(usr);
 	return d->app->findUser(usr);
 }
 

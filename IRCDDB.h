@@ -40,6 +40,8 @@ public:
 	CIRCDDB();
 	virtual ~CIRCDDB();
 
+	virtual int GetFamily() = 0;
+
 	// A false return implies a network error, or unable to log in
 	virtual bool open() = 0;
 

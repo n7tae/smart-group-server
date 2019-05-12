@@ -26,31 +26,31 @@
 
 class CPollData {
 public:
-	CPollData(const std::string& data1, const std::string& data2, DIRECTION direction, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort = 0U);
-	CPollData(const std::string& data, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort = 0U);
-	CPollData(const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort = 0U);
+	CPollData(const std::string &data1, const std::string &data2, DIRECTION direction, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort = 0U);
+	CPollData(const std::string &data, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort = 0U);
+	CPollData(const std::string &yourAddress, unsigned short yourPort, unsigned short myPort = 0U);
 	CPollData();
 	~CPollData();
 
-	bool setDExtraData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
-	bool setDPlusData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
-	bool setDCSData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
+	bool setDExtraData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
+	bool setDPlusData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
+	bool setDCSData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
 
-	unsigned int getDExtraData(unsigned char* data, unsigned int length) const;
-	unsigned int getDPlusData(unsigned char* data, unsigned int length) const;
-	unsigned int getDCSData(unsigned char* data, unsigned int length) const;
+	unsigned int getDExtraData(unsigned char *data, unsigned int length) const;
+	unsigned int getDPlusData(unsigned char *data, unsigned int length) const;
+	unsigned int getDCSData(unsigned char *data, unsigned int length) const;
 
 	std::string  getData1() const;
-	void         setData1(const std::string& data);
+	void         setData1(const std::string &data);
 
 	std::string  getData2() const;
-	void         setData2(const std::string& data);
+	void         setData2(const std::string &data);
 
 	bool         isDongle() const;
 
-	in_addr      getYourAddress() const;
-	unsigned int getYourPort() const;
-	unsigned int getMyPort() const;
+	std::string getYourAddress() const;
+	unsigned short getYourPort() const;
+	unsigned short getMyPort() const;
 
 	DIRECTION    getDirection() const;
 	unsigned int getLength() const;
@@ -61,8 +61,8 @@ private:
 	DIRECTION    m_direction;
 	bool         m_dongle;
 	unsigned int m_length;
-	in_addr      m_yourAddress;
-	unsigned int m_yourPort;
-	unsigned int m_myPort;
+	std::string  m_yourAddress;
+	unsigned short m_yourPort;
+	unsigned short m_myPort;
 };
 

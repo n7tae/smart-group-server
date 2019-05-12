@@ -21,7 +21,6 @@
 
 #include <netinet/in.h>
 
-#include "G2ProtocolHandler.h"
 #include "DStarDefines.h"
 #include "HeaderData.h"
 #include "AMBEData.h"
@@ -29,30 +28,12 @@
 
 class CG2Handler {
 public:
-	static void initialise(unsigned int maxRoutes);
-
-	static void setG2ProtocolHandler(CG2ProtocolHandler* handler);
-
 	static void process(CHeaderData& header);
 	static void process(CAMBEData& header);
 
-	static void clock(unsigned int ms);
-
-	static void finalise();
-
 protected:
-	CG2Handler(const in_addr& address, unsigned int id);
+	CG2Handler();
 	~CG2Handler();
 
 	bool clockInt(unsigned int ms);
-
-private:
-	static unsigned int        m_maxRoutes;
-	static CG2Handler**        m_routes;
-
-	static CG2ProtocolHandler* m_handler;
-
-	in_addr           m_address;
-	unsigned int      m_id;
-	CTimer            m_inactivityTimer;
 };

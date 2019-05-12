@@ -34,30 +34,30 @@ enum G2_TYPE {
 
 class CG2ProtocolHandler {
 public:
-	CG2ProtocolHandler(unsigned int port, const std::string& addr = std::string(""));
+	CG2ProtocolHandler(int family, unsigned short port);
 	~CG2ProtocolHandler();
 
 	bool open();
 
 	bool writeHeader(const CHeaderData& header);
 	bool writeAMBE(const CAMBEData& data);
-	bool writePing(in_addr address);
+	bool writePing(const std::string &address);
 
 	G2_TYPE read();
-	CHeaderData* readHeader();
-	CAMBEData*   readAMBE();
+	CHeaderData *readHeader();
+	CAMBEData   *readAMBE();
 
 	void close();
 
 private:
-	std::unordered_map<uint32_t, unsigned int> portmap;
+	std::unordered_map<std::string, unsigned short> portmap;
 
 	CUDPReaderWriter m_socket;
 	G2_TYPE          m_type;
-	unsigned char*   m_buffer;
+	unsigned char   *m_buffer;
 	unsigned int     m_length;
-	in_addr          m_address;
-	unsigned int     m_port;
+	std::string      m_address;
+	unsigned short   m_port;
 
 	bool readPackets();
 };

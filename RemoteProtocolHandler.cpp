@@ -30,10 +30,10 @@
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
-CRemoteProtocolHandler::CRemoteProtocolHandler(unsigned int port, const std::string &address) :
-m_socket(address, port),
-m_address(),
-m_port(0U),
+CRemoteProtocolHandler::CRemoteProtocolHandler(bool is_ipv6, unsigned short port) :
+m_socket(is_ipv6 ? AF_INET6 : AF_INET, port),
+m_family(is_ipv6 ? AF_INET6 : AF_INET),
+m_port(port),
 m_loggedIn(false),
 m_type(RPHT_NONE),
 m_inBuffer(NULL),
@@ -54,32 +54,30 @@ CRemoteProtocolHandler::~CRemoteProtocolHandler()
 
 bool CRemoteProtocolHandler::open()
 {
-	return m_socket.open();
+	return m_socket.Open();
 }
 
 RPH_TYPE CRemoteProtocolHandler::readType()
 {
 	m_type = RPHT_NONE;
 
-	in_addr address;
-	unsigned int port;
-
-	int length = m_socket.read(m_inBuffer, BUFFER_LENGTH, address, port);
+	CSockAddress addr;
+	int length = m_socket.Read(m_inBuffer, BUFFER_LENGTH, addr);
 	if (length <= 0)
 		return m_type;
 
 	// CUtils::dump("Incoming", m_inBuffer, length);
 
 	if (memcmp(m_inBuffer, "LIN", 3U) == 0) {
-		printf("remote login from %s on port %u\n", inet_ntoa(address), port);
+		printf("remote login from %s on port %u\n", addr.GetAddress(), addr.GetPort());
 		m_loggedIn = false;
-		m_address  = address;
-		m_port     = port;
+		m_address  = addr.GetAddress();
+		m_port     = addr.GetPort();
 		m_type = RPHT_LOGIN;
 		return m_type;
 	}
 
-	if (address.s_addr == inet_addr("127.0.0.1")) {
+	if ((AF_INET==m_family && 0==m_address.compare("127.0.0.1")) || (AF_INET6==m_family && 0==m_address.compare("::1"))) {
 		if (memcmp(m_inBuffer, "LKS", 3U) == 0) {
 			m_inLength = length;
 			m_type = RPHT_LINKSCR;
@@ -88,7 +86,7 @@ RPH_TYPE CRemoteProtocolHandler::readType()
 	}
 
 	if (m_loggedIn) {
-		if (address.s_addr != m_address.s_addr || port != m_port) {
+		if (m_address.compare(addr.GetAddress()) || addr.GetPort() != m_port) {
 			sendNAK("You are not logged in");
 			return m_type;
 		}
@@ -259,8 +257,9 @@ bool CRemoteProtocolHandler::sendCallsigns(const std::list<std::string> &repeate
 	}
 
 	// CUtils::dump(wxT("Outgoing"), m_outBuffer, p - m_outBuffer);
-
-	return m_socket.write(m_outBuffer, p - m_outBuffer, m_address, m_port);
+	CSockAddress addr;
+	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	return m_socket.Write(m_outBuffer, p - m_outBuffer, addr);
 }
 
 bool CRemoteProtocolHandler::sendGroup(const CRemoteGroup &data)
@@ -321,8 +320,9 @@ bool CRemoteProtocolHandler::sendGroup(const CRemoteGroup &data)
 	}
 
 	// CUtils::dump("Outgoing", m_outBuffer, p - m_outBuffer);
-
-	return m_socket.write(m_outBuffer, p - m_outBuffer, m_address, m_port);
+	CSockAddress addr;
+	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	return m_socket.Write(m_outBuffer, p - m_outBuffer, addr);
 }
 
 void CRemoteProtocolHandler::setLoggedIn(bool set)
@@ -332,7 +332,7 @@ void CRemoteProtocolHandler::setLoggedIn(bool set)
 
 void CRemoteProtocolHandler::close()
 {
-	m_socket.close();
+	m_socket.Close();
 }
 
 bool CRemoteProtocolHandler::sendACK()
@@ -340,8 +340,9 @@ bool CRemoteProtocolHandler::sendACK()
 	memcpy(m_outBuffer + 0U, "ACK", 3U);
 
 	// CUtils::dump("Outgoing", m_outBuffer, 3U);
-
-	return m_socket.write(m_outBuffer, 3U, m_address, m_port);
+	CSockAddress addr;
+	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	return m_socket.Write(m_outBuffer, 3U, addr);
 }
 
 bool CRemoteProtocolHandler::sendNAK(const std::string &text)
@@ -354,8 +355,9 @@ bool CRemoteProtocolHandler::sendNAK(const std::string &text)
 		m_outBuffer[i + 3U] = text.at(i);
 
 	// CUtils::dump("Outgoing", m_outBuffer, 3U + text.size() + 1U);
-
-	return m_socket.write(m_outBuffer, 3U + text.size() + 1U, m_address, m_port);
+	CSockAddress addr;
+	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	return m_socket.Write(m_outBuffer, 3U + text.size() + 1U, addr);
 }
 
 bool CRemoteProtocolHandler::sendRandom(uint32_t random)
@@ -366,6 +368,7 @@ bool CRemoteProtocolHandler::sendRandom(uint32_t random)
 	memcpy(m_outBuffer + 3U, &temp, sizeof(uint32_t));
 
 	// CUtils::dump("Outgoing", m_outBuffer, 3U + sizeof(uint32_t));
-
-	return m_socket.write(m_outBuffer, 3U + sizeof(uint32_t), m_address, m_port);
+	CSockAddress addr;
+	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	return m_socket.Write(m_outBuffer, 3U + sizeof(uint32_t), addr);
 }

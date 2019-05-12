@@ -82,27 +82,45 @@ bool CSGSApp::createThread()
 	CSGSConfig config(m_configFile);
 	m_thread = new CSGSThread(config.getLinkCount("XRF"), config.getLinkCount("DCS"));
 
-	std::string CallSign, address;
-	config.getGateway(CallSign, address);
+	std::string CallSign;
+	config.getGateway(CallSign);
 
 	CallSign.resize(7, ' ');
 	CallSign.push_back('G');
 
-	printf("Gateway callsign set to %s, local address set to %s\n", CallSign.c_str(), address.c_str());
+	printf("Gateway callsign set to %s\n", CallSign.c_str());
 
-	std::string hostname, username, password;
-	config.getIrcDDB(hostname, username, password);
-	printf("ircDDB host set to %s, username set to %s\n", hostname.c_str(), username.c_str());
+	int family[2] = { AF_UNSPEC, AF_UNSPEC };
 
-	if (hostname.size() && username.size()) {
-		CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_SmartGroupServer") + std::string("-") + VERSION, address);
-		bool res = ircDDB->open();
-		if (!res) {
-			printf("Cannot initialise the ircDDB protocol handler\n");
+	for (unsigned int i=0; i<config.getIRCCount(); i++) {
+		std::string hostname, username, password;
+		config.getIrcDDB(i, hostname, username, password);
+		
+		if (hostname.size() && username.size()) {
+			CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_SmartGroupServer") + std::string("-") + VERSION);
+			bool res = ircDDB->open();
+			if (!res) {
+				printf("Cannot initialise the ircDDB protocol handler\n");
+				return false;
+			}
+
+			family[i] = ircDDB->GetFamily();
+			printf("ircDDB host[%d] set to %s, username set to %s and is using %s\n", i, hostname.c_str(), username.c_str(), (AF_INET==family[i] ? "IPV4" : "IPV6"));
+
+			m_thread->setIRC(i, ircDDB);
+		}
+	}
+	
+	if (family[0] == family[1]) {
+		fprintf(stderr, "The two irc Servers must have different family types\n");
+		return false;
+	}
+
+	if (AF_INET == family[0]) {
+		if (AF_INET6 == family[1]) {
+			fprintf(stderr, "The first server in a 2-server configuration must be of type AF_INET6\n");
 			return false;
 		}
-
-		m_thread->setIRC(ircDDB);
 	}
 
 	for (unsigned int i=0; i<config.getModCount(); i++) {
@@ -127,12 +145,12 @@ bool CSGSApp::createThread()
 
 	bool remoteEnabled;
 	std::string remotePassword;
-	unsigned int remotePort;
-	config.getRemote(remoteEnabled, remotePassword, remotePort);
-	printf("Remote enabled set to %d, port set to %u\n", int(remoteEnabled), remotePort);
-	m_thread->setRemote(remoteEnabled, remotePassword, remotePort);
+	unsigned short remotePort;
+	bool remoteIPV6;
+	config.getRemote(remoteEnabled, remotePassword, remotePort, remoteIPV6);
+	printf("Remote control is %sabled, port set to %u, using IPV%c\n", remoteEnabled ? "en" : "dis", remotePort, remoteIPV6 ? '6' : '4');
+	m_thread->setRemote(remoteEnabled, remotePassword, remotePort, remoteIPV6);
 
-	m_thread->setAddress(address);
 	m_thread->setCallsign(CallSign);
 
 	return true;

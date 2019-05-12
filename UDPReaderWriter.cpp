@@ -21,10 +21,9 @@
 #include <string.h>
 #include "UDPReaderWriter.h"
 
-CUDPReaderWriter::CUDPReaderWriter(const std::string& address, unsigned int port) :
-m_address(address),
+CUDPReaderWriter::CUDPReaderWriter(int family, unsigned short port) :
+m_family(family),
 m_port(port),
-m_addr(),
 m_fd(-1)
 {
 }
@@ -33,66 +32,35 @@ CUDPReaderWriter::~CUDPReaderWriter()
 {
 }
 
-in_addr CUDPReaderWriter::lookup(const std::string& hostname)
+bool CUDPReaderWriter::Open()
 {
-	in_addr addr;
-	in_addr_t address = ::inet_addr(hostname.c_str());
-	if (address != in_addr_t(-1)) {
-		addr.s_addr = address;
-		return addr;
-	}
-
-	struct hostent* hp = ::gethostbyname(hostname.c_str());
-	if (hp != NULL) {
-		::memcpy(&addr, hp->h_addr_list[0], sizeof(struct in_addr));
-		return addr;
-	}
-
-	printf("Cannot find address for host %s\n", hostname.c_str());
-
-	addr.s_addr = INADDR_NONE;
-	return addr;
-}
-
-bool CUDPReaderWriter::open()
-{
-	m_fd = ::socket(PF_INET, SOCK_DGRAM, 0);
+	m_fd = socket(m_family, SOCK_DGRAM, 0);
 	if (m_fd < 0) {
 		printf("Cannot create the UDP socket, err: %s\n", strerror(errno));
 		return false;
 	}
 
-	if (m_port > 0U) {
-		sockaddr_in addr;
-		::memset(&addr, 0x00, sizeof(sockaddr_in));
-		addr.sin_family      = AF_INET;
-		addr.sin_port        = htons(m_port);
-		addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-		if (m_address.size()) {
-			addr.sin_addr.s_addr = ::inet_addr(m_address.c_str());
-			if (addr.sin_addr.s_addr == INADDR_NONE) {
-				printf("The address is invalid - %s\n", m_address.c_str());
-				return false;
-			}
-		}
+	if (m_port > 0U && (m_family==AF_INET || m_family==AF_INET6)) {
+		m_addr.Initialize(m_family, m_port, "ANY_PORT");
 
 		int reuse = 1;
 		if (::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == -1) {
-			printf("Cannot set the UDP socket option (port: %u), err: %s\n", m_port, strerror(errno));
-			return false;
+		 	printf("Cannot set the UDP socket option (port: %u), err: %s\n", m_port, strerror(errno));
+		 	return false;
 		}
 
-		if (::bind(m_fd, (sockaddr*)&addr, sizeof(sockaddr_in)) == -1) {
+		if (bind(m_fd, m_addr.GetPointer(), sizeof(struct sockaddr)) == -1) {
 			printf("Cannot bind the UDP address (port: %u), err: %s\n", m_port, strerror(errno));
 			return false;
 		}
-	}
+	} else
+		return false;
+	
 
 	return true;
 }
 
-int CUDPReaderWriter::read(unsigned char* buffer, unsigned int length, in_addr& address, unsigned int& port)
+int CUDPReaderWriter::Read(unsigned char *buffer, unsigned int length, CSockAddress &addr)
 {
 	// Check that the readfrom() won't block
 	fd_set readFds;
@@ -104,54 +72,48 @@ int CUDPReaderWriter::read(unsigned char* buffer, unsigned int length, in_addr& 
 	tv.tv_sec  = 0L;
 	tv.tv_usec = 0L;
 
-	int ret = ::select(m_fd + 1, &readFds, NULL, NULL, &tv);
+	int ret = select(m_fd + 1, &readFds, NULL, NULL, &tv);
 	if (ret < 0) {
 		printf("Error returned from UDP select (port: %u), err: %s\n", m_port, strerror(errno));
 		return -1;
 	}
 
-	if (ret == 0)
+	if (0 == ret) 
 		return 0;
 
-	sockaddr_in addr;
-	socklen_t size = sizeof(sockaddr_in);
+	socklen_t size = sizeof(struct sockaddr_storage);
 
-	ssize_t len = ::recvfrom(m_fd, (char*)buffer, length, 0, (sockaddr *)&addr, &size);
+	ssize_t len = recvfrom(m_fd, buffer, length, 0, addr.GetPointer(), &size);
 	if (len <= 0) {
 		printf("Error returned from recvfrom (port: %u), err: %s\n", m_port, strerror(errno));
 		return -1;
 	}
 
-	address = addr.sin_addr;
-	port    = ntohs(addr.sin_port);
-
 	return len;
 }
 
-bool CUDPReaderWriter::write(const unsigned char* buffer, unsigned int length, const in_addr& address, unsigned int port)
+bool CUDPReaderWriter::Write(const unsigned char* buffer, unsigned int length, CSockAddress &addr)
 {
-	sockaddr_in addr;
-	::memset(&addr, 0x00, sizeof(sockaddr_in));
+	unsigned int count = 0;
+	while (count < length) {
+	 	ssize_t ret = ::sendto(m_fd, buffer+count, length-count, 0, addr.GetPointer(), sizeof(struct sockaddr_storage));
+		if (ret < 0) {
+			printf("Error returned from sendto (port: %u), err: %s\n", m_port, strerror(errno));
+			return false;
+		}
 
-	addr.sin_family = AF_INET;
-	addr.sin_addr   = address;
-	addr.sin_port   = htons(port);
-
-	ssize_t ret = ::sendto(m_fd, (char *)buffer, length, 0, (sockaddr *)&addr, sizeof(sockaddr_in));
-	if (ret < 0) {
-		printf("Error returned from sendto (port: %u), err: %s\n", m_port, strerror(errno));
-		return false;
+		count += ret;
 	}
-
-	if (ret != ssize_t(length))
-		return false;
 
 	return true;
 }
 
-void CUDPReaderWriter::close()
+void CUDPReaderWriter::Close()
 {
-	::close(m_fd);
+	if (m_fd != -1) {
+		close(m_fd);
+		m_fd = -1;
+	}
 }
 
 unsigned int CUDPReaderWriter::getPort() const

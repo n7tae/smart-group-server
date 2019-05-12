@@ -1,6 +1,7 @@
+#pragma once
+
 /*
- *   Copyright (C) 2011,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017-2018 by Thomas A. Early
+ *   Copyright (C) 2019 by Thomas Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,32 +18,27 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#pragma once
-
-#include <string>
-#include <cstdint>
-
-#include "RemoteProtocolHandler.h"
-#include "Timer.h"
-
-class CRemoteHandler {
+class CSockAddress
+{
 public:
-	CRemoteHandler(const std::string &password, unsigned short port, bool is_ipv6);
-	~CRemoteHandler();
+	CSockAddress();
+	CSockAddress(const struct sockaddr_storage &from);
+	CSockAddress(const int family, const unsigned short port, const char *address);
+	~CSockAddress() {}
 
-	bool open();
-
-	void process();
-
-	void close();
+	void Initialize(int family, uint16_t port = 0U, const char *address = NULL);
+	CSockAddress &operator=(const CSockAddress &from);
+	bool operator==(CSockAddress &from);
+	bool AddressIsZero();
+	void ClearAddress();
+	const char *GetAddress();
+	unsigned short GetPort();
+	struct sockaddr *GetPointer();
+	size_t GetSize();
+	int GetFamily();
+	void Clear();
 
 private:
-	std::string            m_password;
-	CRemoteProtocolHandler m_handler;
-	uint32_t               m_random;
-
-	void sendGroup(const std::string &callsign);
-	void link(const std::string &callsign, const std::string &reflector);
-	void unlink(const std::string &callsign);
-	void logoff(const std::string &callsign, const std::string &user);
+	struct sockaddr_storage addr;
+	char straddr[INET6_ADDRSTRLEN];
 };

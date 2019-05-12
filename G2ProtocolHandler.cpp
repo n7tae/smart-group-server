@@ -26,13 +26,11 @@
 
 const unsigned int BUFFER_LENGTH = 255U;
 
-CG2ProtocolHandler::CG2ProtocolHandler(unsigned int port, const std::string& addr) :
-m_socket(addr, port),
+CG2ProtocolHandler::CG2ProtocolHandler(int family, unsigned short port) :
+m_socket(family, port),
 m_type(GT_NONE),
 m_buffer(NULL),
-m_length(0U),
-m_address(),
-m_port(0U)
+m_length(0U)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 }
@@ -45,7 +43,7 @@ CG2ProtocolHandler::~CG2ProtocolHandler()
 
 bool CG2ProtocolHandler::open()
 {
-	return m_socket.open();
+	return m_socket.Open();
 }
 
 bool CG2ProtocolHandler::writeHeader(const CHeaderData& header)
@@ -57,12 +55,23 @@ bool CG2ProtocolHandler::writeHeader(const CHeaderData& header)
 	CUtils::dump("Sending Header", buffer, length);
 #endif
 
-	in_addr addr = header.getYourAddress();
-	auto found = portmap.find(addr.s_addr);
-	unsigned int port = (portmap.end()==found) ? header.getYourPort() : found->second;
+	CSockAddress saddr;
+	std::string addr = header.getYourAddress();
+	auto it = portmap.find(addr);
+	if (addr.npos == addr.find(':')) {
+		if (portmap.end() == it)
+			saddr.Initialize(AF_INET, G2_DV_PORT, addr.c_str());
+		else
+			saddr.Initialize(AF_INET, it->second, addr.c_str());
+	} else {
+		if (portmap.end() == it)
+			saddr.Initialize(AF_INET6, G2_IPV6_PORT, addr.c_str());
+		else
+			saddr.Initialize(AF_INET6, it->second, addr.c_str());
+	} 
 
 	for (unsigned int i = 0U; i < 5U; i++) {
-		bool res = m_socket.write(buffer, length, addr, port);
+		bool res = m_socket.Write(buffer, length, saddr);
 		if (!res)
 			return false;
 	}
@@ -79,21 +88,43 @@ bool CG2ProtocolHandler::writeAMBE(const CAMBEData& data)
 	CUtils::dump("Sending Data", buffer, length);
 #endif
 
-	in_addr addr = data.getYourAddress();
-	auto found = portmap.find(addr.s_addr);
-	unsigned int port = (portmap.end()==found) ? data.getYourPort() : found->second;
+	CSockAddress saddr;
+	std::string addr = data.getYourAddress();
+	auto it = portmap.find(addr);
+	if (addr.npos == addr.find(':')) {
+		if (portmap.end() == it)
+			saddr.Initialize(AF_INET, G2_DV_PORT, addr.c_str());
+		else
+			saddr.Initialize(AF_INET, it->second, addr.c_str());
+	} else {
+		if (portmap.end() == it)
+			saddr.Initialize(AF_INET6, G2_IPV6_PORT, addr.c_str());
+		else
+			saddr.Initialize(AF_INET6, it->second, addr.c_str());
+	} 
 
-	return m_socket.write(buffer, length, addr, port);
+	return m_socket.Write(buffer, length, saddr);
 }
 
-bool CG2ProtocolHandler::writePing(in_addr addr)
+bool CG2ProtocolHandler::writePing(const std::string &addr)
 {
 	unsigned char test[4];
 	memcpy(test, "PING", 4);
-	auto found = portmap.find(addr.s_addr);
-	unsigned int port = (portmap.end()==found) ? G2_DV_PORT : found->second;
+	auto it = portmap.find(addr);
+	CSockAddress saddr;
+	if (addr.npos == addr.find(':')) {
+		if (portmap.end() == it)
+			saddr.Initialize(AF_INET, G2_DV_PORT, addr.c_str());
+		else
+			saddr.Initialize(AF_INET, it->second, addr.c_str());
+	} else {
+		if (portmap.end() == it)
+			saddr.Initialize(AF_INET6, G2_IPV6_PORT, addr.c_str());
+		else
+			saddr.Initialize(AF_INET6, it->second, addr.c_str());
+	} 
 
-	return m_socket.write(test, 4, addr, port);
+	return m_socket.Write(test, 4, saddr);
 }
 
 G2_TYPE CG2ProtocolHandler::read()
@@ -112,7 +143,8 @@ bool CG2ProtocolHandler::readPackets()
 	m_type = GT_NONE;
 
 	// No more data?
-	int length = m_socket.read(m_buffer, BUFFER_LENGTH, m_address, m_port);
+	CSockAddress addr;
+	int length = m_socket.Read(m_buffer, BUFFER_LENGTH, addr);
 	if (length <= 0)
 		return false;
 
@@ -123,18 +155,23 @@ bool CG2ProtocolHandler::readPackets()
 	}
 
 	// save the incoming port (this is to enable mobile hotspots)
-	if (portmap.end() == portmap.find(m_address.s_addr)) {
-		if (GT_HEADER == m_type)
-			printf("%.6s at %s is on port %u\n", m_buffer+42, inet_ntoa(m_address), m_port);
-		portmap[m_address.s_addr] = m_port;
-	} else {
-		if (portmap[m_address.s_addr] != m_port) {
+	// We will only save it if it's different from the "standard" port
+	m_port = addr.GetPort();
+	const int family = addr.GetFamily();
+	if ((AF_INET==family && G2_DV_PORT!=m_port) || (AF_INET6==family && G2_IPV6_PORT!=m_port)) {
+		m_address.assign(addr.GetAddress());
+		if (portmap.end() == portmap.find(m_address)) {
 			if (GT_HEADER == m_type)
-				printf("%.6s at %s is now on port %u, was %u\n", m_buffer+42, inet_ntoa(m_address), m_port, portmap[m_address.s_addr]);
-			portmap[m_address.s_addr] = m_port;
+				printf("%.6s at %s is on port %u\n", m_buffer+42, m_address.c_str(), m_port);
+			portmap[m_address] = m_port;
+		} else {
+			if (portmap[m_address] != m_port) {
+				if (GT_HEADER == m_type)
+					printf("%.6s at %s is now on port %u, was %u\n", m_buffer+42, m_address.c_str(), m_port, portmap[m_address]);
+				portmap[m_address] = m_port;
+			}
 		}
 	}
-
 	return isdsvt ? false : true;
 }
 
@@ -145,7 +182,7 @@ CHeaderData* CG2ProtocolHandler::readHeader()
 
 	CHeaderData* header = new CHeaderData;
 
-	// G2 checksums are unreliable
+	CSockAddress addr;
 	bool res = header->setG2Data(m_buffer, m_length, false, m_address, m_port);
 	if (!res) {
 		delete header;
@@ -173,5 +210,5 @@ CAMBEData* CG2ProtocolHandler::readAMBE()
 
 void CG2ProtocolHandler::close()
 {
-	m_socket.close();
+	m_socket.Close();
 }

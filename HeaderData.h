@@ -26,27 +26,21 @@
 class CHeaderData {
 public:
 	CHeaderData();
-	CHeaderData(const CHeaderData& header);
-	CHeaderData(const std::string& myCall1,  const std::string& myCall2, const std::string& yourCall,
-				const std::string& rptCall1, const std::string& rptCall2, unsigned char flag1 = 0x00,
-				unsigned char flag2 = 0x00, unsigned char flag3 = 0x00);
+	CHeaderData(const CHeaderData &header);
+	CHeaderData(const std::string &myCall1,  const std::string &myCall2, const std::string &yourCall, const std::string &rptCall1, const std::string &rptCall2, unsigned char flag1 = 0x00, unsigned char flag2 = 0x00, unsigned char flag3 = 0x00);
 	~CHeaderData();
 
-	bool setIcomRepeaterData(const unsigned char* data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort);
-	bool setHBRepeaterData(const unsigned char* data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort);
-	bool setG2Data(const unsigned char* data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort);
-	bool setDExtraData(const unsigned char* data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
-	bool setDPlusData(const unsigned char* data, unsigned int length, bool check, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
-	void setDCSData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
+	bool setG2Data(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort);
+	bool setDExtraData(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
+	bool setDPlusData(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
+	void setDCSData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
 
-	unsigned int getIcomRepeaterData(unsigned char* data, unsigned int length, bool check) const;
-	unsigned int getHBRepeaterData(unsigned char* data, unsigned int length, bool check) const;
-	unsigned int getDExtraData(unsigned char* data, unsigned int length, bool check) const;
-	unsigned int getDPlusData(unsigned char* data, unsigned int length, bool check) const;
-	unsigned int getG2Data(unsigned char* data, unsigned int length, bool check) const;
-	void         getDCSData(unsigned char* data, unsigned int length) const;
+	unsigned int getDExtraData(unsigned char *data, unsigned int length, bool check) const;
+	unsigned int getDPlusData(unsigned char *data, unsigned int length, bool check) const;
+	unsigned int getG2Data(unsigned char *data, unsigned int length, bool check) const;
+	void         getDCSData(unsigned char *data, unsigned int length) const;
 
-	bool setDVTOOLData(const unsigned char* data, unsigned int length, bool check);
+	bool setDVTOOLData(const unsigned char *data, unsigned int length, bool check);
 
 	unsigned int getId() const;
 	void setId(unsigned int id);
@@ -76,22 +70,22 @@ public:
 	void setFlag3(unsigned char flag);
 	void setFlags(unsigned char flag1, unsigned char flag2, unsigned char flag3);
 
-	void setMyCall1(const std::string& callsign);
-	void setMyCall2(const std::string& callsign);
-	void setYourCall(const std::string& callsign);
-	void setRptCall1(const std::string& callsign);
-	void setRptCall2(const std::string& callsign);
+	void setMyCall1(const std::string &callsign);
+	void setMyCall2(const std::string &callsign);
+	void setYourCall(const std::string &callsign);
+	void setRptCall1(const std::string &callsign);
+	void setRptCall2(const std::string &callsign);
 	void setCQCQCQ();
 
-	void setRepeaters(const std::string& rpt1, const std::string& rpt2);
-	void setDestination(const in_addr& address, unsigned int port);
+	void setRepeaters(const std::string &rpt1, const std::string &rpt2);
+	void setDestination(const std::string &address, unsigned short port);
 
-	bool setData(const unsigned char* data, unsigned int length, bool check);
-	unsigned int getData(unsigned char* data, unsigned int length, bool check) const;
+	bool setData(const unsigned char *data, unsigned int length, bool check);
+	unsigned int getData(unsigned char *data, unsigned int length, bool check) const;
 
-	in_addr      getYourAddress() const;
-	unsigned int getYourPort() const;
-	unsigned int getMyPort() const;
+	std::string    getYourAddress() const;
+	unsigned short getYourPort() const;
+	unsigned short getMyPort() const;
 
 	unsigned int getErrors() const;
 
@@ -110,13 +104,13 @@ private:
 	unsigned char  m_flag1;
 	unsigned char  m_flag2;
 	unsigned char  m_flag3;
-	unsigned char* m_myCall1;
-	unsigned char* m_myCall2;
-	unsigned char* m_yourCall;
-	unsigned char* m_rptCall1;
-	unsigned char* m_rptCall2;
-	in_addr        m_yourAddress;
-	unsigned int   m_yourPort;
-	unsigned int   m_myPort;
+	unsigned char *m_myCall1;
+	unsigned char *m_myCall2;
+	unsigned char *m_yourCall;
+	unsigned char *m_rptCall1;
+	unsigned char *m_rptCall2;
+	std::string    m_yourAddress;
+	unsigned short m_yourPort;
+	unsigned short m_myPort;
 	unsigned int   m_errors;
 };

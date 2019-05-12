@@ -30,7 +30,7 @@
 
 class CGatewayRecord {
 public:
-	CGatewayRecord(const std::string& gateway, in_addr address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock) :
+	CGatewayRecord(const std::string &gateway, const std::string &address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock) :
 	m_gateway(gateway),
 	m_address(address),
 	m_protocol(DP_UNKNOWN),
@@ -48,7 +48,7 @@ public:
 		return m_gateway;
 	}
 
-	in_addr getAddress() const
+	std::string getAddress() const
 	{
 		return m_address;
 	}
@@ -58,7 +58,7 @@ public:
 		return m_protocol;
 	}
 
-	void setData(in_addr address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
+	void setData(const std::string address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
 	{
 		if (!m_addrLock) {
 			m_address  = address;
@@ -75,7 +75,7 @@ public:
 
 private:
 	std::string    m_gateway;
-	in_addr        m_address;
+	std::string    m_address;
 	DSTAR_PROTOCOL m_protocol;
 	bool           m_addrLock;
 	bool           m_protoLock;

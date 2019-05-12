@@ -62,7 +62,7 @@ CUserData *CCacheManager::findUser(const std::string& user)
 }
 
 // sets the IP address of the user and returns true if found
-bool CCacheManager::findUserAddress(const std::string &user, in_addr &addr)
+bool CCacheManager::findUserAddress(const std::string &user, std::string &addr)
 {
 	mux.lock();
 	CUserRecord *ur = m_userCache.find(user);

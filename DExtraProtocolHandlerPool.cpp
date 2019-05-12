@@ -22,9 +22,8 @@
 #include "DExtraProtocolHandlerPool.h"
 #include "Utils.h"
 
-CDExtraProtocolHandlerPool::CDExtraProtocolHandlerPool(const unsigned int port, const std::string &addr) :
-m_basePort(port),
-m_address(addr)
+CDExtraProtocolHandlerPool::CDExtraProtocolHandlerPool(const unsigned short port) :
+m_basePort(port)
 {
 	assert(port > 0U);
 	m_index = m_pool.end();
@@ -45,7 +44,7 @@ CDExtraProtocolHandler* CDExtraProtocolHandlerPool::getHandler()
 	unsigned int port = m_basePort;
 	while (m_pool.end() != m_pool.find(port))
 		port++;	// find an unused port
-	CDExtraProtocolHandler *proto = new CDExtraProtocolHandler(port, m_address);
+	CDExtraProtocolHandler *proto = new CDExtraProtocolHandler(AF_INET, port);
 	if (proto) {
 		if (proto->open()) {
 			m_pool[port] = proto;

@@ -29,7 +29,7 @@
 
 const char *HTML = "<table border=\"0\" width=\"95%%\"><tr><td width=\"4%%\"><img border=\"0\" src=%s></td><td width=\"96%%\"><font size=\"2\"><b>%s</b> ircDDB Gateway %s</font></td></tr></table>";
 
-CConnectData::CConnectData(GATEWAY_TYPE gatewayType, const std::string& repeater, const std::string& reflector, CD_TYPE type, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort) :
+CConnectData::CConnectData(GATEWAY_TYPE gatewayType, const std::string &repeater, const std::string &reflector, CD_TYPE type, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort) :
 m_gatewayType(gatewayType),
 m_repeater(repeater),
 m_reflector(reflector),
@@ -44,7 +44,7 @@ m_myPort(myPort)
 	assert(reflector.size());
 }
 
-CConnectData::CConnectData(const std::string& repeater, const std::string& reflector, CD_TYPE type, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort) :
+CConnectData::CConnectData(const std::string &repeater, const std::string &reflector, CD_TYPE type, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort) :
 m_gatewayType(GT_REPEATER),
 m_repeater(repeater),
 m_reflector(reflector),
@@ -59,7 +59,7 @@ m_myPort(myPort)
 	assert(reflector.size());
 }
 
-CConnectData::CConnectData(const std::string& repeater, CD_TYPE type, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort) :
+CConnectData::CConnectData(const std::string &repeater, CD_TYPE type, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort) :
 m_gatewayType(GT_REPEATER),
 m_repeater(repeater),
 m_reflector(),
@@ -73,7 +73,7 @@ m_myPort(myPort)
 	assert(repeater.size());
 }
 
-CConnectData::CConnectData(const std::string& repeater, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort) :
+CConnectData::CConnectData(const std::string &repeater, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort) :
 m_gatewayType(GT_REPEATER),
 m_repeater(repeater),
 m_reflector(),
@@ -87,7 +87,7 @@ m_myPort(myPort)
 	assert(repeater.size());
 }
 
-CConnectData::CConnectData(CD_TYPE type, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort) :
+CConnectData::CConnectData(CD_TYPE type, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort) :
 m_gatewayType(GT_REPEATER),
 m_repeater(),
 m_reflector(),
@@ -116,7 +116,7 @@ CConnectData::~CConnectData()
 {
 }
 
-bool CConnectData::setDExtraData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
+bool CConnectData::setDExtraData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(data != NULL);
 	assert(length >= 11U);
@@ -161,7 +161,7 @@ bool CConnectData::setDExtraData(const unsigned char* data, unsigned int length,
 	return true;
 }
 
-bool CConnectData::setDCSData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
+bool CConnectData::setDCSData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(data != NULL);
 	assert(length >= 11U);
@@ -208,7 +208,7 @@ bool CConnectData::setDCSData(const unsigned char* data, unsigned int length, co
 	return true;
 }
 
-bool CConnectData::setDPlusData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort)
+bool CConnectData::setDPlusData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(data != NULL);
 	assert(length >= 5U);
@@ -395,7 +395,7 @@ unsigned int CConnectData::getDPlusData(unsigned char *data, unsigned int length
 					data[i] = 0x00;
 
 				std::string callsign = m_repeater;
-				CUtils::Trim(callsign);
+				Trim(callsign);
 
 				for (unsigned int i = 0U; i < callsign.size(); i++)
 					data[i + 4U] = callsign.at(i);
@@ -446,17 +446,17 @@ unsigned int CConnectData::getDPlusData(unsigned char *data, unsigned int length
 	}
 }
 
-in_addr CConnectData::getYourAddress() const
+std::string CConnectData::getYourAddress() const
 {
 	return m_yourAddress;
 }
 
-unsigned int CConnectData::getYourPort() const
+unsigned short CConnectData::getYourPort() const
 {
 	return m_yourPort;
 }
 
-unsigned int CConnectData::getMyPort() const
+unsigned short CConnectData::getMyPort() const
 {
 	return m_myPort;
 }

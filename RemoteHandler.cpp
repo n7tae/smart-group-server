@@ -28,9 +28,9 @@
 #include "DCSHandler.h"
 #include "Utils.h"
 
-CRemoteHandler::CRemoteHandler(const std::string &password, unsigned int port, const std::string &address) :
+CRemoteHandler::CRemoteHandler(const std::string &password, unsigned short port, bool is_ipv6) :
 m_password(password),
-m_handler(port, address),
+m_handler(is_ipv6, port),
 m_random(0U)
 {
 	assert(port > 0U);
@@ -155,7 +155,7 @@ void CRemoteHandler::unlink(const std::string &callsign)
 				break;
 			default:
 				delete data;
-				m_handler.sendNAK("alread unlinked");
+				m_handler.sendNAK("already unlinked");
 				return;
 		}
 		delete data;

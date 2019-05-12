@@ -24,8 +24,9 @@
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
-CDCSProtocolHandler::CDCSProtocolHandler(unsigned int port, const std::string& addr) :
-m_socket(addr, port),
+CDCSProtocolHandler::CDCSProtocolHandler(int family, unsigned short port) :
+m_family(family),
+m_socket(family, port),
 m_type(DC_NONE),
 m_buffer(NULL),
 m_length(0U),
@@ -43,10 +44,10 @@ CDCSProtocolHandler::~CDCSProtocolHandler()
 
 bool CDCSProtocolHandler::open()
 {
-	return m_socket.open();
+	return m_socket.Open();
 }
 
-unsigned int CDCSProtocolHandler::getPort() const
+unsigned short CDCSProtocolHandler::getPort() const
 {
 	return m_myPort;
 }
@@ -59,8 +60,9 @@ bool CDCSProtocolHandler::writeData(const CAMBEData& data)
 #if defined(DUMP_TX)
 	CUtils::dump("Sending Data", buffer, length);
 #endif
-
-	return m_socket.write(buffer, length, data.getYourAddress(), data.getYourPort());
+	CSockAddress addr;
+	addr.Initialize(m_family, data.getYourPort(), data.getYourAddress().c_str());
+	return m_socket.Write(buffer, length, addr);
 }
 
 bool CDCSProtocolHandler::writePoll(const CPollData& poll)
@@ -71,8 +73,9 @@ bool CDCSProtocolHandler::writePoll(const CPollData& poll)
 #if defined(DUMP_TX)
 	CUtils::dump("Sending Poll", buffer, length);
 #endif
-
-	return m_socket.write(buffer, length, poll.getYourAddress(), poll.getYourPort());
+	CSockAddress addr;
+	addr.Initialize(m_family, poll.getYourPort(), poll.getYourAddress().c_str());
+	return m_socket.Write(buffer, length, addr);
 }
 
 bool CDCSProtocolHandler::writeConnect(const CConnectData& connect)
@@ -83,8 +86,9 @@ bool CDCSProtocolHandler::writeConnect(const CConnectData& connect)
 #if defined(DUMP_TX)
 	CUtils::dump("Sending Connect", buffer, length);
 #endif
-
-	return m_socket.write(buffer, length, connect.getYourAddress(), connect.getYourPort());
+	CSockAddress addr;
+	addr.Initialize(m_family, connect.getYourPort(), connect.getYourAddress().c_str());
+	return m_socket.Write(buffer, length, addr);
 }
 
 DCS_TYPE CDCSProtocolHandler::read()
@@ -103,7 +107,8 @@ bool CDCSProtocolHandler::readPackets()
 	m_type = DC_NONE;
 
 	// No more data?
-	int length = m_socket.read(m_buffer, BUFFER_LENGTH, m_yourAddress, m_yourPort);
+	CSockAddress addr;
+	int length = m_socket.Read(m_buffer, BUFFER_LENGTH, addr);
 	if (length <= 0)
 		return false;
 
@@ -191,5 +196,5 @@ CConnectData* CDCSProtocolHandler::readConnect()
 
 void CDCSProtocolHandler::close()
 {
-	m_socket.close();
+	m_socket.Close();
 }

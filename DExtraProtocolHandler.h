@@ -39,12 +39,12 @@ enum DEXTRA_TYPE {
 
 class CDExtraProtocolHandler {
 public:
-	CDExtraProtocolHandler(unsigned int port, const std::string& addr = std::string(""));
+	CDExtraProtocolHandler(int family, unsigned short port);
 	~CDExtraProtocolHandler();
 
 	bool open();
 
-	unsigned int getPort() const;
+	unsigned short getPort() const;
 
 	bool writeHeader(const CHeaderData& header);
 	bool writeAMBE(const CAMBEData& data);
@@ -52,21 +52,22 @@ public:
 	bool writePoll(const CPollData& poll);
 
 	DEXTRA_TYPE   read();
-	CHeaderData*  newHeader();
-	CAMBEData*    newAMBE();
-	CPollData*    newPoll();
-	CConnectData* newConnect();
+	CHeaderData  *newHeader();
+	CAMBEData    *newAMBE();
+	CPollData    *newPoll();
+	CConnectData *newConnect();
 
 	void close();
 
 private:
+	int              m_family;
 	CUDPReaderWriter m_socket;
 	DEXTRA_TYPE      m_type;
-	unsigned char*   m_buffer;
+	unsigned char   *m_buffer;
 	unsigned int     m_length;
-	in_addr          m_yourAddress;
-	unsigned int     m_yourPort;
-	unsigned int     m_myPort;
+	std::string      m_yourAddress;
+	unsigned short   m_yourPort;
+	unsigned short   m_myPort;
 
 	bool readPackets();
 };

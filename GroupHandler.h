@@ -92,18 +92,17 @@ private:
 
 class CSGSRepeater {
 public:
-	std::string        m_destination;
-	std::string        m_repeater;
-	std::string        m_gateway;
-	in_addr            m_address;
+	std::string m_destination;
+	std::string m_repeater;
+	std::string m_gateway;
+	std::string	m_address;
 };
 
 class CGroupHandler {
 public:
-	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
-			unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string & eflector);
-	static void setG2Handler(CG2ProtocolHandler *handler);
-	static void setIRC(CIRCDDB *irc);
+	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string & eflector);
+	static void setG2Handler(CG2ProtocolHandler *handler0, CG2ProtocolHandler *handler1);
+	static void setIRC(CIRCDDB *irc0, CIRCDDB *irc1);
 	static void setCache(CCacheManager *cache);
 	static void setGateway(const std::string &gateway);
 	static void link();
@@ -140,8 +139,7 @@ public:
 	bool singleHeader();
 
 protected:
-	CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
-			unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector);
+	CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector);
 	~CGroupHandler();
 
 	bool linkInt();
@@ -150,8 +148,8 @@ protected:
 private:
 	static std::list<CGroupHandler *> m_Groups;
 
-	static CG2ProtocolHandler *m_g2Handler;
-	static CIRCDDB            *m_irc;
+	static CG2ProtocolHandler *m_g2Handler[2];
+	static CIRCDDB            *m_irc[2];
 	static CCacheManager      *m_cache;
 	static std::string         m_gateway;
 

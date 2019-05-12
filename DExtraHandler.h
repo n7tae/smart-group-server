@@ -45,7 +45,7 @@ public:
 	static void setCallsign(const std::string &callsign);
 	static void setDExtraProtocolHandlerPool(CDExtraProtocolHandlerPool *pool);
 
-	static void link(CGroupHandler *handler, const std::string &repeater, const std::string &reflector, const in_addr &address);
+	static void link(CGroupHandler *handler, const std::string &repeater, const std::string &reflector, const std::string &address);
 	static void unlink(CGroupHandler *handler, const std::string &reflector = std::string(""), bool exclude = true);
 	static void unlink(CDExtraHandler *reflector);
 	static void unlink();
@@ -73,7 +73,7 @@ public:
 	static std::string getDongles();
 
 protected:
-	CDExtraHandler(CGroupHandler *handler, const std::string &reflector, const std::string &repeater, CDExtraProtocolHandler *protoHandler, const in_addr &address, unsigned int port, DIRECTION direction);
+	CDExtraHandler(CGroupHandler *handler, const std::string &reflector, const std::string &repeater, CDExtraProtocolHandler *protoHandler, const std::string &address, unsigned short port, DIRECTION direction);
 	~CDExtraHandler();
 
 	void processInt(CHeaderData &header);
@@ -93,17 +93,17 @@ private:
 
 	static bool                        m_stateChange;
 
-	static CCallsignList              *m_whiteList;
-	static CCallsignList              *m_blackList;
+	static CCallsignList *m_whiteList;
+	static CCallsignList *m_blackList;
 
 	std::string             m_reflector;
 	std::string             m_repeater;
 	CDExtraProtocolHandler *m_handler;
-	in_addr                 m_yourAddress;
-	unsigned int            m_yourPort;
+	std::string             m_yourAddress;
+	unsigned short          m_yourPort;
 	DIRECTION               m_direction;
 	DEXTRA_STATE            m_linkState;
-	CGroupHandler     *m_destination;
+	CGroupHandler          *m_destination;
 	time_t                  m_time;
 	CTimer                  m_pollTimer;
 	CTimer                  m_pollInactivityTimer;

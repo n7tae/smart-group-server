@@ -34,31 +34,31 @@ enum CD_TYPE {
 
 class CConnectData {
 public:
-	CConnectData(GATEWAY_TYPE gatewayType, const std::string& repeater, const std::string& reflector, CD_TYPE type, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort = 0U);
-	CConnectData(const std::string& repeater, const std::string& reflector, CD_TYPE type, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort = 0U);
-	CConnectData(const std::string& repeater, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort = 0U);
-	CConnectData(const std::string& repeater, CD_TYPE type, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort = 0U);
-	CConnectData(CD_TYPE type, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort = 0U);
+	CConnectData(GATEWAY_TYPE gatewayType, const std::string &repeater, const std::string &reflector, CD_TYPE type, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort = 0U);
+	CConnectData(const std::string &repeater, const std::string &reflector, CD_TYPE type, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort = 0U);
+	CConnectData(const std::string &repeater, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort = 0U);
+	CConnectData(const std::string &repeater, CD_TYPE type, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort = 0U);
+	CConnectData(CD_TYPE type, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort = 0U);
 	CConnectData();
 	~CConnectData();
 
-	bool setDExtraData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
-	bool setDPlusData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
-	bool setDCSData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
+	bool setDExtraData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
+	bool setDPlusData( const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
+	bool setDCSData(   const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
 
-	unsigned int getDExtraData(unsigned char* data, unsigned int length) const;
-	unsigned int getDPlusData(unsigned char* data, unsigned int length) const;
-	unsigned int getDCSData(unsigned char* data, unsigned int length) const;
+	unsigned int getDExtraData(unsigned char *data, unsigned int length) const;
+	unsigned int getDPlusData( unsigned char *data, unsigned int length) const;
+	unsigned int getDCSData(   unsigned char *data, unsigned int length) const;
 
 	std::string   getRepeater() const;
 	std::string   getReflector() const;
 	CD_TYPE       getType() const;
 
-	in_addr       getYourAddress() const;
-	unsigned int  getYourPort() const;
-	unsigned int  getMyPort() const;
+	std::string    getYourAddress() const;
+	unsigned short getYourPort() const;
+	unsigned short getMyPort() const;
 
-	void setLocator(const std::string& locator);
+	void setLocator(const std::string &locator);
 
 private:
 	GATEWAY_TYPE  m_gatewayType;
@@ -66,8 +66,8 @@ private:
 	std::string   m_reflector;
 	CD_TYPE       m_type;
 	std::string   m_locator;
-	in_addr       m_yourAddress;
-	unsigned int  m_yourPort;
-	unsigned int  m_myPort;
+	std::string   m_yourAddress;
+	unsigned short m_yourPort;
+	unsigned short m_myPort;
 };
 

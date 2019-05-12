@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010,2011,2012,2014 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017,2018 by Thomas A. Early
+ *   Copyright (c) 2017-2019 by Thomas A. Early
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -36,22 +36,29 @@ struct Smodule {
 	CALLSIGN_SWITCH callsignswitch;
 };
 
+struct Sircddb {
+	std::string Hostname;
+	std::string Username;
+	std::string Password;
+};
+
 class CSGSConfig {
 public:
 	CSGSConfig(const std::string &pathname);
 	~CSGSConfig();
 
-	void getGateway(std::string &callsign, std::string &address) const;
+	void getGateway(std::string &callsign) const;
 
-	void getIrcDDB(std::string &hostname, std::string &username, std::string &password) const;
+	void getIrcDDB(int irc, std::string &hostname, std::string &username, std::string &password) const;
 
 	void getGroup(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info,
 		unsigned int &userTimeout, CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, bool &listen_only, std::string &reflector) const;
 
-	void getRemote(bool &enabled, std::string &password, unsigned int &port) const;
+	void getRemote(bool &enabled, std::string &password, unsigned short &port, bool &is_ipv6) const;
 
 	unsigned int getModCount();
 	unsigned int getLinkCount(const char *type);
+	unsigned int getIRCCount();
 
 private:
 	bool get_value(const Config &cfg, const char *path, int &value, int min, int max, int default_value);
@@ -60,14 +67,12 @@ private:
 
 	std::string m_fileName;
 	std::string m_callsign;
-	std::string m_address;
-	std::string m_ircddbHostname;
-	std::string m_ircddbUsername;
-	std::string m_ircddbPassword;
 	std::vector<struct Smodule *> m_module;
+	std::vector<struct Sircddb *> m_ircddb;
 
 	bool m_remoteEnabled;
 	std::string m_remotePassword;
-	unsigned int m_remotePort;
+	unsigned short m_remotePort;
+	bool m_ipv6;
 }
 ;

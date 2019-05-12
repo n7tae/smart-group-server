@@ -31,8 +31,8 @@
 const unsigned int MESSAGE_DELAY = 4U;
 
 // define static members
-CG2ProtocolHandler *CGroupHandler::m_g2Handler = NULL;
-CIRCDDB            *CGroupHandler::m_irc = NULL;
+CG2ProtocolHandler *CGroupHandler::m_g2Handler[2] = { NULL, NULL };
+CIRCDDB            *CGroupHandler::m_irc[2] = { NULL, NULL };
 CCacheManager      *CGroupHandler::m_cache = NULL;
 std::string         CGroupHandler::m_gateway;
 std::list<CGroupHandler *> CGroupHandler::m_Groups;
@@ -156,8 +156,7 @@ CSGSUser* CSGSId::getUser() const
 	//return m_textCollector;
 //}
 
-void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
-		unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector)
+void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector)
 {
 	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, listenOnly, reflector);
 
@@ -167,18 +166,21 @@ void CGroupHandler::add(const std::string &callsign, const std::string &logoff, 
 		printf("Cannot allocate Smart Group with callsign %s\n", callsign.c_str());
 }
 
-void CGroupHandler::setG2Handler(CG2ProtocolHandler *handler)
+void CGroupHandler::setG2Handler(CG2ProtocolHandler *handler0, CG2ProtocolHandler *handler1)
 {
-	assert(handler != NULL);
+	assert(handler0 != NULL);
 
-	m_g2Handler = handler;
+	m_g2Handler[0] = handler0;
+	m_g2Handler[1] = handler1;
 }
 
-void CGroupHandler::setIRC(CIRCDDB *irc)
+void CGroupHandler::setIRC(CIRCDDB *irc0, CIRCDDB *irc1)
 {
-	assert(irc != NULL);
+	assert(irc0 != NULL);
+	assert(irc1 != NULL);
 
-	m_irc = irc;
+	m_irc[0] = irc0;
+	m_irc[1] = irc1;
 }
 
 void CGroupHandler::setCache(CCacheManager *cache)
@@ -268,8 +270,7 @@ void CGroupHandler::link()
 		(*it)->linkInt();
 }
 
-CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
-		unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector) :
+CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
 m_shortCallsign("SMRT"),
@@ -336,8 +337,12 @@ void CGroupHandler::process(CHeaderData &header)
 	// Ensure that this user is in the cache.
 	CUserData *userData = m_cache->findUser(my);	// userData is a new record (or NULL), so we have to delete or save it
 													// to prevent a memory leak
-	if (NULL == userData)
-		m_irc->findUser(my);
+	if (NULL == userData) {
+		if (m_irc[0])
+			m_irc[0]->findUser(my);
+		if (m_irc[1])
+			m_irc[0]->findUser(my);
+	}
 
 	if (0 == your.compare(m_groupCallsign)) {
 		// This is a normal message for logging in/relaying
@@ -742,12 +747,19 @@ void CGroupHandler::clockInt(unsigned int ms)
 {
 	m_pingTimer.clock(ms);
 	if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
-		for (auto it = m_users.begin(); it != m_users.end(); it++) {
-			CSGSUser *user = it->second;
-			if (user != NULL) {
-				in_addr addr;
-				if (m_cache->findUserAddress(user->getCallsign(), addr))
-					m_g2Handler->writePing(addr);
+		//for (auto it = m_users.begin(); it != m_users.end(); it++) {
+		//	CSGSUser *user = it->second;
+		//	if (user != NULL) {
+		//		in_addr addr;
+		//		if (m_cache->findUserAddress(user->getCallsign(), addr))
+		//			m_g2Handler->writePing(addr);
+		//	}
+		for (auto it=m_repeaters.begin(); it!=m_repeaters.end(); it++) {
+			if (it->second) {
+				int i = 0;
+				if (std::string::npos == it->second->m_address.find(':') && m_irc[1])
+					i = 1;
+				m_g2Handler[i]->writePing(it->second->m_address);
 			}
 		}
 		m_pingTimer.start();
@@ -766,14 +778,17 @@ void CGroupHandler::clockInt(unsigned int ms)
 
 	m_announceTimer.clock(ms);
 	if (m_announceTimer.hasExpired()) {
-		m_irc->sendHeardWithTXMsg(m_groupCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
-		if (m_offCallsign.size() && m_offCallsign.compare("        "))
-			m_irc->sendHeardWithTXMsg(m_offCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
+		for (int i=0; i<2; i++) {
+			if (m_irc[i]) {
+				m_irc[i]->sendHeardWithTXMsg(m_groupCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
+				if (m_offCallsign.size() && m_offCallsign.compare("        "))
+					m_irc[i]->sendHeardWithTXMsg(m_offCallsign, "    ", "CQCQCQ  ", m_repeater, m_gateway, 0x00U, 0x00U, 0x00U, std::string(""), m_infoText);
+			}
+		}
 		m_announceTimer.start(60U * 60U);		// 1 hour
-
 	}
 
-	if (m_oldlinkStatus!=m_linkStatus && 7==m_irc->getConnectionState()) {
+	if (m_oldlinkStatus!=m_linkStatus && 7==m_irc[0]->getConnectionState()) {
 		updateReflectorInfo();
 		m_oldlinkStatus = m_linkStatus;
 	}
@@ -864,13 +879,13 @@ void CGroupHandler::updateReflectorInfo()
 	std::string subcommand("REFLECTOR");
 	std::vector<std::string> parms;
 	std::string callsign(m_groupCallsign);
-	CUtils::ReplaceChar(callsign, ' ', '_');
+	ReplaceChar(callsign, ' ', '_');
 	parms.push_back(callsign);
 	std::string reflector(m_linkReflector);
 	if (reflector.size() < 8)
 		reflector.assign("________");
 	else
-		CUtils::ReplaceChar(reflector, ' ', '_');
+		ReplaceChar(reflector, ' ', '_');
 	parms.push_back(reflector);
 	switch (m_linkStatus) {
 		case LS_LINKING_DCS:
@@ -892,35 +907,45 @@ void CGroupHandler::updateReflectorInfo()
 	parms.push_back(std::to_string(m_userTimeout));
 	std::string info(m_infoText);
 	info.resize(20, '_');
-	CUtils::ReplaceChar(info, ' ', '_');
+	ReplaceChar(info, ' ', '_');
 	parms.push_back(info);
 	parms.push_back(std::string(m_listenOnly ? "1" : "0"));
 
-	m_irc->sendSGSInfo(subcommand, parms);
-}
+	for (int i=0; i<2; i++) {
+		if (m_irc[i])
+			m_irc[i]->sendSGSInfo(subcommand, parms);
+}	}
+
 
 void CGroupHandler::logUser(LOGUSER lu, const std::string channel, const std::string user)
 {
 	std::string cmd(LU_OFF==lu ? "LOGOFF" : "LOGON");
 	std::string chn(channel);
 	std::string usr(user);
-	CUtils::ReplaceChar(chn, ' ', '_');
-	CUtils::ReplaceChar(usr, ' ', '_');
+	ReplaceChar(chn, ' ', '_');
+	ReplaceChar(usr, ' ', '_');
 	std::vector<std::string> parms;
 	parms.push_back(chn);
 	parms.push_back(usr);
-	m_irc->sendSGSInfo(cmd, parms);
+	for (int i=0; i<2; i++) {
+		if (m_irc[i])
+			m_irc[i]->sendSGSInfo(cmd, parms);
+	}
 }
 
 void CGroupHandler::sendToRepeaters(CHeaderData& header) const
 {
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
-		CSGSRepeater* repeater = it->second;
+		CSGSRepeater *repeater = it->second;
+		const bool is_ipv4 = (std::string::npos == repeater->m_address.find(':'));
 		if (repeater != NULL) {
+			int i = 0;
+			if (is_ipv4 && m_irc[1])
+				i = 1;
 			header.setYourCall(repeater->m_destination);
-			header.setDestination(repeater->m_address, G2_DV_PORT);
+			header.setDestination(repeater->m_address, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
 			header.setRepeaters(repeater->m_gateway, repeater->m_repeater);
-			m_g2Handler->writeHeader(header);
+			m_g2Handler[i]->writeHeader(header);
 		}
 	}
 }
@@ -928,10 +953,14 @@ void CGroupHandler::sendToRepeaters(CHeaderData& header) const
 void CGroupHandler::sendToRepeaters(CAMBEData &data) const
 {
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
-		CSGSRepeater* repeater = it->second;
+		CSGSRepeater *repeater = it->second;
+		const bool is_ipv4 = (std::string::npos == repeater->m_address.find(':'));
 		if (repeater != NULL) {
+			int i = 0;
+			if (is_ipv4 && m_irc[1])
+				i = 1;
 			data.setDestination(repeater->m_address, G2_DV_PORT);
-			m_g2Handler->writeAMBE(data);
+			m_g2Handler[i]->writeAMBE(data);
 		}
 	}
 }
@@ -983,9 +1012,11 @@ void CGroupHandler::sendAck(const CUserData &user, const std::string &text) cons
 	unsigned int id = CHeaderData::createId();
 
 	CHeaderData header(m_groupCallsign, "    ", user.getUser(), user.getGateway(), user.getRepeater());
-	header.setDestination(user.getAddress(), G2_DV_PORT);
+	const bool is_ipv4 = (std::string::npos == user.getAddress().find(':'));
+	header.setDestination(user.getAddress(), is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
+	const int index = (is_ipv4 && m_irc[1]) ? 1 : 0;
 	header.setId(id);
-	m_g2Handler->writeHeader(header);
+	m_g2Handler[index]->writeHeader(header);
 
 	CSlowDataEncoder slowData;
 	slowData.setTextData(text);
@@ -1018,7 +1049,7 @@ void CGroupHandler::sendAck(const CUserData &user, const std::string &text) cons
 			data.setSeq(i);
 		}
 
-		m_g2Handler->writeAMBE(data);
+		m_g2Handler[index]->writeAMBE(data);
 	}
 }
 

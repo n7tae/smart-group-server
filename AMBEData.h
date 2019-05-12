@@ -27,25 +27,21 @@
 class CAMBEData {
 public:
 	CAMBEData();
-	CAMBEData(const CAMBEData& data);
+	CAMBEData(const CAMBEData &data);
 	~CAMBEData();
 
-	bool setIcomRepeaterData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort);
-	bool setHBRepeaterData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort);
-	bool setG2Data(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort);
-	bool setDExtraData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
-	bool setDPlusData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
-	bool setDCSData(const unsigned char* data, unsigned int length, const in_addr& yourAddress, unsigned int yourPort, unsigned int myPort);
+	bool setG2Data(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort);
+	bool setDExtraData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
+	bool setDPlusData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
+	bool setDCSData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
 
-	unsigned int getIcomRepeaterData(unsigned char* data, unsigned int length) const;
-	unsigned int getHBRepeaterData(unsigned char* data, unsigned int length) const;
-	unsigned int getDExtraData(unsigned char* data, unsigned int length) const;
-	unsigned int getDPlusData(unsigned char* data, unsigned int length) const;
-	unsigned int getDCSData(unsigned char* data, unsigned int length) const;
-	unsigned int getG2Data(unsigned char* data, unsigned int length) const;
+	unsigned int getDExtraData(unsigned char *data, unsigned int length) const;
+	unsigned int getDPlusData(unsigned char *data, unsigned int length) const;
+	unsigned int getDCSData(unsigned char *data, unsigned int length) const;
+	unsigned int getG2Data(unsigned char *data, unsigned int length) const;
 
-	unsigned int getId() const;
-	void setId(unsigned int id);
+	unsigned short getId() const;
+	void setId(unsigned short id);
 
 	unsigned char getBand1() const;
 	unsigned char getBand2() const;
@@ -65,35 +61,35 @@ public:
 
 	bool isSync() const;
 
-	void setData(const unsigned char* data, unsigned int length);
-	unsigned int getData(unsigned char* data, unsigned int length) const;
+	void setData(const unsigned char *data, unsigned int length);
+	unsigned int getData(unsigned char *data, unsigned int length) const;
 
-	void setDestination(const in_addr& address, unsigned int port);
+	void setDestination(const std::string &address, unsigned short port);
 
-	void setText(const std::string& text);
+	void setText(const std::string &text);
 
-	in_addr      getYourAddress() const;
-	unsigned int getYourPort() const;
-	unsigned int getMyPort() const;
+	std::string    getYourAddress() const;
+	unsigned short getYourPort() const;
+	unsigned short getMyPort() const;
 
 	unsigned int getErrors() const;
 
-	CHeaderData& getHeader();
+	CHeaderData &getHeader();
 
-	CAMBEData& operator=(const CAMBEData& data);
+	CAMBEData& operator=(const CAMBEData &data);
 
 private:
 	unsigned int   m_rptSeq;
 	unsigned char  m_outSeq;
-	unsigned int   m_id;
+	unsigned short m_id;
 	unsigned char  m_band1;
 	unsigned char  m_band2;
 	unsigned char  m_band3;
-	unsigned char* m_data;
-	in_addr        m_yourAddress;
-	unsigned int   m_yourPort;
-	unsigned int   m_myPort;
+	unsigned char *m_data;
+	std::string    m_yourAddress;
+	unsigned short m_yourPort;
+	unsigned short m_myPort;
 	unsigned int   m_errors;
-	std::string       m_text;
+	std::string    m_text;
 	CHeaderData    m_header;
 };

@@ -37,32 +37,33 @@ enum DCS_TYPE {
 
 class CDCSProtocolHandler {
 public:
-	CDCSProtocolHandler(unsigned int port, const std::string& addr = std::string(""));
+	CDCSProtocolHandler(int family, unsigned short port);
 	~CDCSProtocolHandler();
 
 	bool open();
 
-	unsigned int getPort() const;
+	unsigned short getPort() const;
 
-	bool writeData(const CAMBEData& data);
-	bool writeConnect(const CConnectData& connect);
-	bool writePoll(const CPollData& poll);
+	bool writeData(const CAMBEData &data);
+	bool writeConnect(const CConnectData &connect);
+	bool writePoll(const CPollData &poll);
 
 	DCS_TYPE      read();
-	CAMBEData*    readData();
-	CPollData*    readPoll();
-	CConnectData* readConnect();
+	CAMBEData    *readData();
+	CPollData    *readPoll();
+	CConnectData *readConnect();
 
 	void close();
 
 private:
+	int              m_family;
 	CUDPReaderWriter m_socket;
 	DCS_TYPE         m_type;
-	unsigned char*   m_buffer;
+	unsigned char	*m_buffer;
 	unsigned int     m_length;
-	in_addr          m_yourAddress;
-	unsigned int     m_yourPort;
-	unsigned int     m_myPort;
+	std::string      m_yourAddress;
+	unsigned short   m_yourPort;
+	unsigned short   m_myPort;
 
 	bool readPackets();
 };

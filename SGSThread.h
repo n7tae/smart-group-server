@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2015 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017-2019 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -36,13 +36,12 @@ public:
 	virtual ~CSGSThread();
 
 	virtual void setCallsign(const std::string& callsign);
-	virtual void setAddress(const std::string& address);
+	//virtual void setAddress(const std::string& address);
 
-	virtual void addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText,
-		unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listen_only, const std::string &reflector);
+	virtual void addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listen_only, const std::string &reflector);
 
-	virtual void setRemote(bool enabled, const std::string& password, unsigned int port);
-	virtual void setIRC(CIRCDDB* irc);
+	virtual void setRemote(bool enabled, const std::string& password, unsigned short port, bool is_ipv6);
+	virtual void setIRC(const unsigned int i, CIRCDDB* irc);
 
 	virtual void run();
 	virtual void kill();
@@ -55,19 +54,20 @@ private:
 	std::string	m_callsign;
 	std::string	m_address;
 
-	CG2ProtocolHandler *m_g2Handler;
-	CIRCDDB            *m_irc;
+	CG2ProtocolHandler *m_g2Handler[2];
+	CIRCDDB            *m_irc[2];
 	CCacheManager 		m_cache;
 	bool				m_logEnabled;
 	CTimer				m_statusTimer;
 	IRCDDB_STATUS		m_lastStatus;
 	bool				m_remoteEnabled;
 	std::string			m_remotePassword;
-	unsigned int		m_remotePort;
+	unsigned short		m_remotePort;
+	bool				m_remoteIPV6;
 	CRemoteHandler     *m_remote;
 
-	void processIrcDDB();
-	void processG2();
+	void processIrcDDB(const int i);
+	void processG2(const int i);
 	void loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarProtocol);
 
 	void processDExtra(CDExtraProtocolHandlerPool *dextraPool);

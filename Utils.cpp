@@ -28,7 +28,7 @@
 #include <sstream>
 #include "Utils.h"
 
-void CUtils::dump(const char* title, const bool* data, unsigned int length)
+void dump(const char* title, const bool* data, unsigned int length)
 {
 	assert(title != NULL);
 	assert(data != NULL);
@@ -73,7 +73,7 @@ void CUtils::dump(const char* title, const bool* data, unsigned int length)
 	}
 }
 
-void CUtils::dumpRev(const char* title, const bool* data, unsigned int length)
+void umpRev(const char* title, const bool* data, unsigned int length)
 {
 	assert(title != NULL);
 	assert(data != NULL);
@@ -118,7 +118,7 @@ void CUtils::dumpRev(const char* title, const bool* data, unsigned int length)
 	}
 }
 
-void CUtils::dump(const char* title, const unsigned char* data, unsigned int length)
+void dump(const char* title, const unsigned char* data, unsigned int length)
 {
 	assert(title != NULL);
 	assert(data != NULL);
@@ -165,7 +165,7 @@ void CUtils::dump(const char* title, const unsigned char* data, unsigned int len
 	}
 }
 
-unsigned char CUtils::bitsToByte(const bool* bits)
+unsigned char bitsToByte(const bool* bits)
 {
 	assert(bits != NULL);
 
@@ -181,7 +181,7 @@ unsigned char CUtils::bitsToByte(const bool* bits)
 	return val;
 }
 
-unsigned char CUtils::bitsToByteRev(const bool* bits)
+unsigned char bitsToByteRev(const bool* bits)
 {
 	assert(bits != NULL);
 
@@ -197,7 +197,7 @@ unsigned char CUtils::bitsToByteRev(const bool* bits)
 	return val;
 }
 
-void CUtils::byteToBits(unsigned char byte, bool* data)
+void byteToBits(unsigned char byte, bool* data)
 {
 	assert(data != NULL);
 
@@ -206,7 +206,7 @@ void CUtils::byteToBits(unsigned char byte, bool* data)
 		data[i] = byte & mask ? true : false;
 }
 
-void CUtils::byteToBitsRev(unsigned char byte, bool* data)
+void byteToBitsRev(unsigned char byte, bool* data)
 {
 	assert(data != NULL);
 
@@ -215,7 +215,7 @@ void CUtils::byteToBitsRev(unsigned char byte, bool* data)
 		data[i] = byte & mask ? true : false;
 }
 
-std::string CUtils::latLonToLoc(double latitude, double longitude)
+std::string latLonToLoc(double latitude, double longitude)
 {
 	if (latitude < -90.0 || latitude > 90.0)
 		return std::string();
@@ -262,7 +262,7 @@ std::string CUtils::latLonToLoc(double latitude, double longitude)
 	return std::string(locator);
 }
 
-void CUtils::clean(std::string &str, const std::string& allowed)
+void clean(std::string &str, const std::string& allowed)
 {
 	for (unsigned int i = 0U; i < str.size(); i++) {
 		int n = allowed.find(str[i]);
@@ -271,7 +271,7 @@ void CUtils::clean(std::string &str, const std::string& allowed)
 	}
 }
 
-std::string CUtils::ToUpper(std::string &str)
+std::string ToUpper(std::string &str)
 {
 	for (auto it=str.begin(); it!=str.end(); it++) {
 		if (islower(*it))
@@ -280,7 +280,7 @@ std::string CUtils::ToUpper(std::string &str)
 	return str;
 }
 
-std::string CUtils::ToLower(std::string &str)
+std::string ToLower(std::string &str)
 {
 	for (auto it=str.begin(); it!=str.end(); it++) {
 		if (isupper(*it))
@@ -289,7 +289,7 @@ std::string CUtils::ToLower(std::string &str)
 	return str;
 }
 
-std::string CUtils::Trim(std::string &str)
+std::string Trim(std::string &str)
 {
 	while (str.size() && std::isspace(str[0]))
 		str.erase(str.begin());
@@ -298,7 +298,7 @@ std::string CUtils::Trim(std::string &str)
 	return str;
 }
 
-void CUtils::ReplaceChar(std::string &str, char from, char to)
+void ReplaceChar(std::string &str, char from, char to)
 {
 	for (auto it=str.begin(); it!=str.end(); it++) {
 		if (from == *it)
@@ -306,78 +306,7 @@ void CUtils::ReplaceChar(std::string &str, char from, char to)
 	}
 }
 
-int CUtils::getAllIPV4Addresses(const char *name, unsigned short port, unsigned int *num, struct sockaddr_in *addr, unsigned int max_addr)
-{
-
-	struct addrinfo hints;
-	struct addrinfo * res;
-
-	memset(&hints, 0x00, sizeof(struct addrinfo));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-
-	int r = getaddrinfo(name, NULL, &hints, &res);
-
-	if (r == 0) {
-		struct addrinfo * rp;
-		unsigned int numAddr = 0;
-
-		for (rp = res; rp != NULL; rp = rp->ai_next) {
-			if (rp->ai_family == AF_INET)
-				numAddr ++;
-		}
-
-		if (numAddr > 0) {
-			if (numAddr > max_addr)
-				numAddr = max_addr;
-
-			int *shuffle = new int[numAddr];
-
-			unsigned int i;
-
-			for (i=0; i < numAddr; i++)
-				shuffle[i] = i;
-
-			for (i=0; i < (numAddr - 1); i++) {
-				if (rand() & 1) {
-					int tmp;
-					tmp = shuffle[i];
-					shuffle[i] = shuffle[i+1];
-					shuffle[i+1] = tmp;
-				}
-			}
-
-			for (i=(numAddr - 1); i > 0; i--) {
-				if (rand() & 1) {
-					int tmp;
-					tmp = shuffle[i];
-					shuffle[i] = shuffle[i-1];
-					shuffle[i-1] = tmp;
-				}
-			}
-
-			for (rp = res, i=0 ; (rp != NULL) && (i < numAddr); rp = rp->ai_next) {
-				if (rp->ai_family == AF_INET) {
-					memcpy(addr+shuffle[i], rp->ai_addr, sizeof (struct sockaddr_in));
-					addr[shuffle[i]].sin_port = htons(port);
-					i++;
-				}
-			}
-
-			delete[] shuffle;
-		}
-
-		*num = numAddr;
-		freeaddrinfo(res);
-		return 0;
-	} else {
-		std::string e(gai_strerror(r));
-		printf("getaddrinfo: %s\n", e.c_str());
-		return 1;
-	}
-}
-
-void CUtils::safeStringCopy(char *dest, const char *src, unsigned int buf_size)
+void safeStringCopy(char *dest, const char *src, unsigned int buf_size)
 {
 	unsigned int i = 0;
 
@@ -388,7 +317,7 @@ void CUtils::safeStringCopy(char *dest, const char *src, unsigned int buf_size)
 	dest[i] = 0;
 }
 
-std::string CUtils::getCurrentTime(void)
+std::string getCurrentTime(void)
 {
 	time_t now = time(NULL);
 	struct tm* tm;
@@ -400,7 +329,7 @@ std::string CUtils::getCurrentTime(void)
 	return std::string(buffer);
 }
 
-std::vector<std::string> CUtils::stringTokenizer(const std::string &s)
+std::vector<std::string> stringTokenizer(const std::string &s)
 {
 	std::stringstream ss(s);
 	std::istream_iterator<std::string> it(ss);
@@ -409,7 +338,7 @@ std::vector<std::string> CUtils::stringTokenizer(const std::string &s)
 	return result;
 }
 
-time_t CUtils::parseTime(const std::string str)
+time_t parseTime(const std::string str)
 {
 	struct tm stm;
 	strptime(str.c_str(), "%Y-%m-%d %H:%M:%S", &stm);
