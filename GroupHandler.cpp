@@ -329,7 +329,7 @@ void CGroupHandler::process(CHeaderData &header)
 {
 	std::string my   = header.getMyCall1();
 	std::string your = header.getYourCall();
-	unsigned int id = header.getId();
+	unsigned int id  = header.getId();
 
 	CSGSUser *group_user = m_users[my];	// if not found, m_user[my] will be created and its value will be set to NULL
 	bool islogin = false;

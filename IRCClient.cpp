@@ -50,11 +50,8 @@ void IRCClient::stopWork()
 #define MAXIPV4ADDR 10
 void IRCClient::Entry()
 {
-	CTCPReaderWriterClient ircSock;
-
 	int state = 0;
 	int timer = 0;
-	socklen_t optlen;
 
 	while (true) {
 
@@ -81,8 +78,6 @@ void IRCClient::Entry()
 
 
             case 4:
-				optlen = sizeof(int);
-				getsockopt(ircSock.GetFD(), SOL_SOCKET, SO_DOMAIN, &family, &optlen);
                 recvQ = new IRCMessageQueue();
                 sendQ = new IRCMessageQueue();
 
@@ -173,5 +168,13 @@ void IRCClient::Entry()
 
 int IRCClient::GetFamily()
 {
-	return family;
+	int rval = AF_UNSPEC;
+    int fd = ircSock.GetFD();
+    if (fd >= 0) {
+        struct sockaddr addr;
+        socklen_t size = sizeof(struct sockaddr);
+        if (! getsockname(fd, &addr, &size))
+            rval = addr.sa_family;
+    }
+    return rval;
 }

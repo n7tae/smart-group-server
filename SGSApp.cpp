@@ -105,7 +105,7 @@ bool CSGSApp::createThread()
 			}
 
 			family[i] = ircDDB->GetFamily();
-			printf("ircDDB host[%d] set to %s, username set to %s and is using %s\n", i, hostname.c_str(), username.c_str(), (AF_INET==family[i] ? "IPV4" : "IPV6"));
+			printf("ircDDB host[%d] set to %s, username set to %s and is using %s\n", i, hostname.c_str(), username.c_str(), ((AF_INET==family[i]) ? "IPV4" : ((AF_INET6==family[i]) ? "IPV6" : "UNSPECIFIED FAMILY")));
 
 			m_thread->setIRC(i, ircDDB);
 		}

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <future>
-#include <atomic>
 #include "TCPReaderWriterClient.h"
 
 #include "IRCReceiver.h"
@@ -23,7 +22,6 @@ protected:
 	virtual void Entry();
 
 private:
-	std::atomic<int> family;
 	std::future<void> client_thread;
 	char host_name[100];
 	char local_addr[100];
@@ -38,5 +36,5 @@ private:
 	IRCMessageQueue *sendQ;
 	IRCProtocol *proto;
 	IRCApplication *app;
-
+	CTCPReaderWriterClient ircSock;
 };
