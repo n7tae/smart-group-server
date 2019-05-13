@@ -48,6 +48,7 @@ public:
 	bool Write(const unsigned char* buffer, const unsigned int length);
 	bool WriteLine(const std::string &line);
 	int GetFD() { return m_fd; }
+	int GetFamily() { return m_family; }
 
 	void Close();
 

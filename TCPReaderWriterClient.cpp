@@ -68,7 +68,7 @@ bool CTCPReaderWriterClient::Open()
 
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;
+	hints.ai_family = m_family;
 	hints.ai_socktype = SOCK_STREAM;
 	//hints.ai_flags = AI_PASSIVE;
 	hints.ai_protocol = IPPROTO_TCP;
@@ -98,7 +98,8 @@ bool CTCPReaderWriterClient::Open()
 		} else {
 			char buf[INET6_ADDRSTRLEN];
 			void *addr;
-			if (AF_INET == rp->ai_family) {
+			m_family = rp->ai_family;
+			if (AF_INET == m_family) {
 				struct sockaddr_in *addr4 = (struct sockaddr_in *)rp->ai_addr;
 				addr = &(addr4->sin_addr);
 			} else {
@@ -210,5 +211,6 @@ void CTCPReaderWriterClient::Close()
 	if (m_fd != -1) {
 		close(m_fd);
 		m_fd = -1;
+		m_family = AF_UNSPEC;
 	}
 }

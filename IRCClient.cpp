@@ -168,13 +168,5 @@ void IRCClient::Entry()
 
 int IRCClient::GetFamily()
 {
-	int rval = AF_UNSPEC;
-    int fd = ircSock.GetFD();
-    if (fd >= 0) {
-        struct sockaddr addr;
-        socklen_t size = sizeof(struct sockaddr);
-        if (! getsockname(fd, &addr, &size))
-            rval = addr.sa_family;
-    }
-    return rval;
+	return ircSock.GetFamily();
 }
