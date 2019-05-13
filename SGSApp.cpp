@@ -90,8 +90,6 @@ bool CSGSApp::createThread()
 
 	printf("Gateway callsign set to %s\n", CallSign.c_str());
 
-	int family[2] = { AF_UNSPEC, AF_UNSPEC };
-
 	for (unsigned int i=0; i<config.getIRCCount(); i++) {
 		std::string hostname, username, password;
 		config.getIrcDDB(i, hostname, username, password);
@@ -104,22 +102,9 @@ bool CSGSApp::createThread()
 				return false;
 			}
 
-			family[i] = ircDDB->GetFamily();
-			printf("ircDDB host[%d] set to %s, username set to %s and is using %s\n", i, hostname.c_str(), username.c_str(), ((AF_INET==family[i]) ? "IPV4" : ((AF_INET6==family[i]) ? "IPV6" : "UNSPECIFIED FAMILY")));
+			printf("ircDDB host[%d] set to %s, username set to %s\n", i, hostname.c_str(), username.c_str());
 
 			m_thread->setIRC(i, ircDDB);
-		}
-	}
-	
-	if (family[0] == family[1]) {
-		fprintf(stderr, "The two irc Servers must have different family types\n");
-		return false;
-	}
-
-	if (AF_INET == family[0]) {
-		if (AF_INET6 == family[1]) {
-			fprintf(stderr, "The first server in a 2-server configuration must be of type AF_INET6\n");
-			return false;
 		}
 	}
 

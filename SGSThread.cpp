@@ -73,12 +73,14 @@ CSGSThread::~CSGSThread()
 
 void CSGSThread::run()
 {
+	int family[2] = { AF_UNSPEC, AF_UNSPEC };
 	for (int i=0; m_irc[i] && i<2; i++) {
-		int family = m_irc[i]->GetFamily();
-		if (AF_INET6 == family)
-			m_g2Handler[i] = new CG2ProtocolHandler(family, G2_IPV6_PORT);
+		family[i] = m_irc[i]->GetFamily();
+		printf("IRC Server %d family is %s\n", i, ((AF_INET==family[i]) ? "IPV4" : ((AF_INET6==family[i]) ? "IPV6" : "Family UNSPECIFIED")));
+		if (AF_INET6 == family[i])
+			m_g2Handler[i] = new CG2ProtocolHandler(family[i], G2_IPV6_PORT);
 		else
-			m_g2Handler[i] = new CG2ProtocolHandler(family, G2_DV_PORT);
+			m_g2Handler[i] = new CG2ProtocolHandler(family[i], G2_DV_PORT);
 		
 		bool ret = m_g2Handler[i]->open();
 		if (!ret) {
@@ -88,13 +90,33 @@ void CSGSThread::run()
 		}
 	}
 
+	if (m_irc[1] && family[0] == family[1]) {
+		fprintf(stderr, "Each irc server must be from a different IP family\n");
+		m_killed = true;
+	}
+
+	if (m_irc[1] && AF_INET6==family[1]) {
+		fprintf(stderr, "For a two irc server system, the first must be IPV6\n");
+		m_killed = true;
+	}
+
 	// Wait here until we have the essentials to run
-	while (!m_killed && (m_g2Handler[0] == NULL || m_irc == NULL || 0==m_callsign.size()))
+	while (!m_killed && 0==m_callsign.size())
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-	if (m_killed)
+	if (m_killed) {
+		for (int i=0; i<2; i++) {
+			if (m_g2Handler[i]) {
+				m_g2Handler[i]->close();
+				delete m_g2Handler[i];
+			}
+			if (m_irc[i]) {
+				m_irc[i]->close();
+				delete m_irc[i];
+			}
+		}
 		return;
-
+	}
 	m_stopped = false;
 
 	printf("Starting the Smart Group Server thread\n");
