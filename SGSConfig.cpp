@@ -51,50 +51,61 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 	ToUpper(m_callsign);
 	printf("GATEWAY: callsign='%s'\n", m_callsign.c_str());
 	Sircddb *pirc;
-	switch (cfg.lookup("ircddb").getLength()) {
-		case 0:
-			pirc = new Sircddb;
-			pirc->Hostname = "rrv6.openquad.net";
-			pirc->Username = m_callsign;
-			m_ircddb.push_back(pirc);
-			pirc = new Sircddb;
-			pirc->Hostname = "rr.openquad.net";
-			pirc->Username = m_callsign;
-			m_ircddb.push_back(pirc);
-			break;
-		case 1:
-			pirc = new Sircddb;
-			get_value(cfg, "ircddb.[0].hostname", pirc->Hostname, 5, 64, "rr.openquad.net");
-			get_value(cfg, "ircddb.[0].username", pirc->Username, 0, 8, "");
-			if (0 == pirc->Username.size())
-				pirc->Username = m_callsign;
-			else
-				ToUpper(pirc->Username);
-			get_value(cfg, "ircddb.[0].password", pirc->Password, 0, 30, "");
-			m_ircddb.push_back(pirc);
-			break;
-		default:
-			for (int i=0; i<2; i++) {
-				char key[32];
+	if (cfg.exists("ircddb")) {
+		switch (cfg.lookup("ircddb").getLength()) {
+			case 0:
 				pirc = new Sircddb;
-				snprintf(key, 32, "ircddb.[%d].hostname", i);
-				get_value(cfg, key, pirc->Hostname, 5, 64, "rr.openquad.net");
-				snprintf(key, 32, "ircddb.[%d].username", i);
-				get_value(cfg, key, pirc->Username, 0, 8, "");
+				pirc->Hostname = "rrv6.openquad.net";
+				pirc->Username = m_callsign;
+				m_ircddb.push_back(pirc);
+				pirc = new Sircddb;
+				pirc->Hostname = "rr.openquad.net";
+				pirc->Username = m_callsign;
+				m_ircddb.push_back(pirc);
+				break;
+			case 1:
+				pirc = new Sircddb;
+				get_value(cfg, "ircddb.[0].hostname", pirc->Hostname, 5, 64, "rr.openquad.net");
+				get_value(cfg, "ircddb.[0].username", pirc->Username, 0, 8, "");
 				if (0 == pirc->Username.size())
 					pirc->Username = m_callsign;
 				else
 					ToUpper(pirc->Username);
-				snprintf(key, 32, "ircddb.[%d].password", i);
-				get_value(cfg, key, pirc->Password, 0, 30, "");
+				get_value(cfg, "ircddb.[0].password", pirc->Password, 0, 30, "");
 				m_ircddb.push_back(pirc);
-			}
-			break;
+				break;
+			default:
+				for (int i=0; i<2; i++) {
+					char key[32];
+					pirc = new Sircddb;
+					snprintf(key, 32, "ircddb.[%d].hostname", i);
+					get_value(cfg, key, pirc->Hostname, 5, 64, "rr.openquad.net");
+					snprintf(key, 32, "ircddb.[%d].username", i);
+					get_value(cfg, key, pirc->Username, 0, 8, "");
+					if (0 == pirc->Username.size())
+						pirc->Username = m_callsign;
+					else
+						ToUpper(pirc->Username);
+					snprintf(key, 32, "ircddb.[%d].password", i);
+					get_value(cfg, key, pirc->Password, 0, 30, "");
+					m_ircddb.push_back(pirc);
+				}
+				break;
+		}
+	} else {
+		pirc = new Sircddb;
+		pirc->Hostname = "rrv6.openquad.net";
+		pirc->Username = m_callsign;
+		m_ircddb.push_back(pirc);
+		pirc = new Sircddb;
+		pirc->Hostname = "rr.openquad.net";
+		pirc->Username = m_callsign;
+		m_ircddb.push_back(pirc);
 	}
 	
-	for (int i=0; i<cfg.lookup("ircddb").getLength(); i++)
+	for (unsigned int i=0; i<m_ircddb.size(); i++)
 		printf("IRCDDB[%d]: host='%s' user='%s' password='%s'\n", i, m_ircddb[i]->Hostname.c_str(), m_ircddb[i]->Username.c_str(), m_ircddb[i]->Password.c_str());
-	if (2<cfg.lookup("ircddb").getLength())
+	if (cfg.exists("ircddb") && 2<cfg.lookup("ircddb").getLength())
 		fprintf(stderr, "A maximum of two irc servers are supported!");
 
 	// module parameters
