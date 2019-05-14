@@ -248,7 +248,7 @@ CSGSConfig::~CSGSConfig()
 
 	while (m_ircddb.size()) {
 		delete m_ircddb.back();
-		m_module.pop_back();
+		m_ircddb.pop_back();
 	}
 }
 
