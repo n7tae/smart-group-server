@@ -338,10 +338,9 @@ void CGroupHandler::process(CHeaderData &header)
 	CUserData *userData = m_cache->findUser(my);	// userData is a new record (or NULL), so we have to delete or save it
 													// to prevent a memory leak
 	if (NULL == userData) {
-		if (m_irc[0])
-			m_irc[0]->findUser(my);
 		if (m_irc[1])
-			m_irc[0]->findUser(my);
+			m_irc[1]->findUser(my);
+		m_irc[0]->findUser(my);
 	}
 
 	if (0 == your.compare(m_groupCallsign)) {
@@ -937,8 +936,9 @@ void CGroupHandler::sendToRepeaters(CHeaderData& header) const
 {
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
 		CSGSRepeater *repeater = it->second;
-		const bool is_ipv4 = (std::string::npos == repeater->m_address.find(':'));
 		if (repeater != NULL) {
+			printf("sendToRepeater: rptr='%s' dest='%s' addr='%s' gate='%s'\n", repeater->m_repeater.c_str(), repeater->m_destination.c_str(), repeater->m_address.c_str(), repeater->m_gateway.c_str());
+			const bool is_ipv4 = (std::string::npos == repeater->m_address.find(':'));
 			int i = 0;
 			if (is_ipv4 && m_irc[1])
 				i = 1;
@@ -954,8 +954,8 @@ void CGroupHandler::sendToRepeaters(CAMBEData &data) const
 {
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
 		CSGSRepeater *repeater = it->second;
-		const bool is_ipv4 = (std::string::npos == repeater->m_address.find(':'));
 		if (repeater != NULL) {
+			const bool is_ipv4 = (std::string::npos == repeater->m_address.find(':'));
 			int i = 0;
 			if (is_ipv4 && m_irc[1])
 				i = 1;
