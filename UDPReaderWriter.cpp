@@ -98,7 +98,8 @@ bool CUDPReaderWriter::Write(const unsigned char* buffer, unsigned int length, C
 	while (count < length) {
 	 	ssize_t ret = ::sendto(m_fd, buffer+count, length-count, 0, addr.GetPointer(), sizeof(struct sockaddr_storage));
 		if (ret < 0) {
-			printf("Error returned from sendto (port: %u), err: %s\n", m_port, strerror(errno));
+			fprintf(stderr, "sendto ERROR: This is an %s socket, trying to write to [%s]:%u\n", (AF_INET==m_family) ? "IPv6" : (AF_INET6==m_family) ? "IPv6" : "UNKNOWN", addr.GetAddress(), addr.GetPort());
+			//fprintf(stderr, "Error returned from sendto (port: %u), err: %s\n", m_port, strerror(errno));
 			return false;
 		}
 
