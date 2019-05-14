@@ -75,7 +75,10 @@ void CSGSThread::run()
 {
 	int family[2] = { AF_UNSPEC, AF_UNSPEC };
 	for (int i=0; m_irc[i] && i<2; i++) {
-		family[i] = m_irc[i]->GetFamily();
+		while (AF_UNSPEC == family[i]) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
+			family[i] = m_irc[i]->GetFamily();
+		}
 		printf("IRC Server %d family is %s\n", i, ((AF_INET==family[i]) ? "IPV4" : ((AF_INET6==family[i]) ? "IPV6" : "Family UNSPECIFIED")));
 		if (AF_INET6 == family[i])
 			m_g2Handler[i] = new CG2ProtocolHandler(family[i], G2_IPV6_PORT);
