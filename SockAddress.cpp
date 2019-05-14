@@ -181,11 +181,6 @@ size_t CSockAddress::GetSize()
         return sizeof(struct sockaddr_in6);
 }
 
-int CSockAddress::GetFamily()
-{
-    return addr.ss_family;
-}
-
 void CSockAddress::Clear()
 {
     memset(&addr, 0, sizeof(struct sockaddr_storage));

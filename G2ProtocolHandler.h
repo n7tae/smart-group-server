@@ -58,6 +58,7 @@ private:
 	unsigned int     m_length;
 	std::string      m_address;
 	unsigned short   m_port;
+	int              m_family;
 
 	bool readPackets();
 };

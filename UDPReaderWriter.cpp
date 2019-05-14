@@ -43,13 +43,13 @@ bool CUDPReaderWriter::Open()
 	if (m_port > 0U && (m_family==AF_INET || m_family==AF_INET6)) {
 		m_addr.Initialize(m_family, m_port, "ANY_PORT");
 
-		int reuse = 1;
-		if (::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == -1) {
-		 	printf("Cannot set the UDP socket option (port: %u), err: %s\n", m_port, strerror(errno));
-		 	return false;
-		}
+		// int reuse = 1;
+		// if (::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == -1) {
+		//  	printf("Cannot set the UDP socket option (port: %u), err: %s\n", m_port, strerror(errno));
+		//  	return false;
+		// }
 
-		if (bind(m_fd, m_addr.GetPointer(), sizeof(struct sockaddr)) == -1) {
+		if (bind(m_fd, m_addr.GetPointer(), sizeof(struct sockaddr_storage)) == -1) {
 			printf("Cannot bind the UDP address (port: %u), err: %s\n", m_port, strerror(errno));
 			return false;
 		}

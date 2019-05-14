@@ -32,6 +32,7 @@ m_type(GT_NONE),
 m_buffer(NULL),
 m_length(0U)
 {
+	m_family = family;
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 }
 
@@ -58,7 +59,7 @@ bool CG2ProtocolHandler::writeHeader(const CHeaderData& header)
 	CSockAddress saddr;
 	std::string addr = header.getYourAddress();
 	auto it = portmap.find(addr);
-	if (addr.npos == addr.find(':')) {
+	if (AF_INET6 == m_family) {
 		if (portmap.end() == it)
 			saddr.Initialize(AF_INET, G2_DV_PORT, addr.c_str());
 		else
@@ -91,7 +92,7 @@ bool CG2ProtocolHandler::writeAMBE(const CAMBEData& data)
 	CSockAddress saddr;
 	std::string addr = data.getYourAddress();
 	auto it = portmap.find(addr);
-	if (addr.npos == addr.find(':')) {
+	if (AF_INET6 == m_family) {
 		if (portmap.end() == it)
 			saddr.Initialize(AF_INET, G2_DV_PORT, addr.c_str());
 		else
@@ -112,7 +113,7 @@ bool CG2ProtocolHandler::writePing(const std::string &addr)
 	memcpy(test, "PING", 4);
 	auto it = portmap.find(addr);
 	CSockAddress saddr;
-	if (addr.npos == addr.find(':')) {
+	if (AF_INET6 == m_family) {
 		if (portmap.end() == it)
 			saddr.Initialize(AF_INET, G2_DV_PORT, addr.c_str());
 		else
@@ -157,8 +158,7 @@ bool CG2ProtocolHandler::readPackets()
 	// save the incoming port (this is to enable mobile hotspots)
 	// We will only save it if it's different from the "standard" port
 	m_port = addr.GetPort();
-	const int family = addr.GetFamily();
-	if ((AF_INET==family && G2_DV_PORT!=m_port) || (AF_INET6==family && G2_IPV6_PORT!=m_port)) {
+	if ((AF_INET==m_family && G2_DV_PORT!=m_port) || (AF_INET6==m_family && G2_IPV6_PORT!=m_port)) {
 		m_address.assign(addr.GetAddress());
 		if (portmap.end() == portmap.find(m_address)) {
 			if (GT_HEADER == m_type)

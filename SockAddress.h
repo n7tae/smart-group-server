@@ -35,7 +35,6 @@ public:
 	unsigned short GetPort();
 	struct sockaddr *GetPointer();
 	size_t GetSize();
-	int GetFamily();
 	void Clear();
 
 private:
