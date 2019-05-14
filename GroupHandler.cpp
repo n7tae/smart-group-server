@@ -177,7 +177,6 @@ void CGroupHandler::setG2Handler(CG2ProtocolHandler *handler0, CG2ProtocolHandle
 void CGroupHandler::setIRC(CIRCDDB *irc0, CIRCDDB *irc1)
 {
 	assert(irc0 != NULL);
-	assert(irc1 != NULL);
 
 	m_irc[0] = irc0;
 	m_irc[1] = irc1;
