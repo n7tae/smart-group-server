@@ -42,7 +42,7 @@ public:
 
 	bool setDVTOOLData(const unsigned char *data, unsigned int length, bool check);
 
-	unsigned int getId() const;
+	unsigned short getId() const;
 	void setId(unsigned int id);
 
 	unsigned char getBand1() const;
@@ -91,7 +91,7 @@ public:
 
 	static void initialise();
 	static void finalise();
-	static unsigned int createId();
+	static unsigned short createId();
 
 	CHeaderData& operator=(const CHeaderData& header);
 

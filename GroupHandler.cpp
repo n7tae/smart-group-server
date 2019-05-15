@@ -958,7 +958,7 @@ void CGroupHandler::sendToRepeaters(CAMBEData &data) const
 			int i = 0;
 			if (is_ipv4 && m_irc[1])
 				i = 1;
-			data.setDestination(repeater->m_address, G2_DV_PORT);
+			data.setDestination(repeater->m_address, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
 			m_g2Handler[i]->writeAMBE(data);
 		}
 	}
@@ -1022,7 +1022,7 @@ void CGroupHandler::sendAck(const CUserData &user, const std::string &text) cons
 
 	CAMBEData data;
 	data.setId(id);
-	data.setDestination(user.getAddress(), G2_DV_PORT);
+	data.setDestination(user.getAddress(), is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
 
 	unsigned char buffer[DV_FRAME_MAX_LENGTH_BYTES];
 	::memcpy(buffer + 0U, NULL_AMBE_DATA_BYTES, VOICE_FRAME_LENGTH_BYTES);

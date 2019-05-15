@@ -117,8 +117,10 @@ public:
 
 	static void clock(unsigned int ms);
 
+    // these two process functions are for the G2Handler
 	void process(CHeaderData &header);
 	void process(CAMBEData &data);
+    
 	bool remoteLink(const std::string &reflector);
 	void updateReflectorInfo();
 	DSTAR_LINKTYPE getLinkType();
@@ -129,6 +131,7 @@ public:
 
 	bool logoff(const std::string& callsign);
 
+    // these two process functions are for linked reflectors
 	bool process(CHeaderData &header, DIRECTION direction, AUDIO_SOURCE source);
 	bool process(CAMBEData &data, DIRECTION direction, AUDIO_SOURCE source);
 

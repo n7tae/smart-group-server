@@ -41,7 +41,7 @@ bool CUDPReaderWriter::Open()
 	}
 
 	if (m_port > 0U && (m_family==AF_INET || m_family==AF_INET6)) {
-		m_addr.Initialize(m_family, m_port, "ANY_PORT");
+		m_addr.Initialize(m_family, m_port, "ANY_ADDRESS");
 
 		// int reuse = 1;
 		// if (::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == -1) {

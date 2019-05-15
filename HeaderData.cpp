@@ -36,9 +36,13 @@ void CHeaderData::finalise()
 {
 }
 
-unsigned int CHeaderData::createId()
+unsigned short CHeaderData::createId()
 {
-	return (::rand() % 65535U) + 1U;
+    int rval = 0;
+    while (0 == rval) {
+        rval = rand() % 0xffff;
+    }
+	return (unsigned short)rval;
 }
 
 CHeaderData::CHeaderData() :
@@ -105,9 +109,7 @@ m_errors(header.m_errors)
 	::memcpy(m_rptCall2, header.m_rptCall2, LONG_CALLSIGN_LENGTH);
 }
 
-CHeaderData::CHeaderData(const std::string& myCall1,  const std::string& myCall2, const std::string& yourCall,
-						 const std::string& rptCall1, const std::string& rptCall2, unsigned char flag1,
-						 unsigned char flag2, unsigned char flag3) :
+CHeaderData::CHeaderData(const std::string& myCall1,  const std::string& myCall2, const std::string& yourCall, const std::string& rptCall1, const std::string& rptCall2, unsigned char flag1, unsigned char flag2, unsigned char flag3) :
 m_rptSeq(0U),
 m_id(0U),
 m_band1(0U),
@@ -492,7 +494,7 @@ unsigned int CHeaderData::getDPlusData(unsigned char* data, unsigned int length,
 	return 58U;
 }
 
-unsigned int CHeaderData::getId() const
+unsigned short CHeaderData::getId() const
 {
 	return m_id;
 }

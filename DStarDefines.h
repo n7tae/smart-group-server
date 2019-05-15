@@ -107,12 +107,11 @@ const unsigned char SCRAMBLER_BYTE1 = 0x70U;
 const unsigned char SCRAMBLER_BYTE2 = 0x4FU;
 const unsigned char SCRAMBLER_BYTE3 = 0x93U;
 
-const unsigned int  DPLUS_PORT  = 20001U;
-const unsigned int  DEXTRA_PORT = 30001U;
-const unsigned int  DCS_PORT    = 30051U;
-const unsigned int  G2_DV_PORT  = 40000U;
-const unsigned int  G2_IPV6_PORT = 9011U;
-const unsigned int  G2_DD_PORT  = 40001U;
+const unsigned short  DEXTRA_PORT = 30001U;
+const unsigned short  DCS_PORT    = 30051U;
+const unsigned short  G2_DV_PORT  = 40000U;
+const unsigned short  G2_IPV6_PORT = 9011U;
+const unsigned short  G2_DD_PORT  = 40001U;
 
 const unsigned int NETWORK_TIMEOUT  = 2U;		// Network timeout for G2, DCS, DExtra, and D-Plus
 const unsigned int REPEATER_TIMEOUT = 2U;		// Repeater timeout

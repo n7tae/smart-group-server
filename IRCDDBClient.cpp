@@ -170,68 +170,6 @@ bool CIRCDDBClient::sendHeardWithTXMsg(const std::string& myCall, const std::str
 	return d->app->sendHeard(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, dest, msg, std::string(""));
 }
 
-
-
-bool CIRCDDBClient::sendHeardWithTXStats( const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors)
-{
-	if ((num_dv_frames <= 0) || (num_dv_frames > 65535)) {
-		printf("CIRCDDBClient::sendHeardWithTXStats:num_dv_frames=%d not in range 1-65535\n", num_dv_frames);
-		return false;
-	}
-	
-	if (num_dv_silent_frames > num_dv_frames) {
-		printf("CIRCDDBClient::sendHeardWithTXStats:num_dv_silent_frames=%d > num_dv_frames=%d\n", num_dv_silent_frames, num_dv_frames);
-		return false;
-	}
-	
-	if (num_bit_errors > (4*num_dv_frames)) { // max 4 bit errors per frame
-		printf("CIRCDDBClient::sendHeardWithTXStats:num_bit_errors > (4*num_dv_frames), %d > 4*%d\n", num_bit_errors, num_dv_frames);
-		return false;
-	}
-	
-	if (myCall.size() != 8) {
-		printf("CIRCDDBClient::sendHeardWithTXStats:myCall='%s' len != 8\n", myCall.c_str());
-		return false;
-	}
-	
-	if (myCallExt.size() != 4) {
-		printf("CIRCDDBClient::sendHeardWithTXStats:myCallExt='%s' len != 4\n", myCallExt.c_str());
-		return false;
-	}
-	
-	if (yourCall.size() != 8) {
-		printf("CIRCDDBClient::sendHeardWithTXStats:yourCall='%s' len != 8\n", yourCall.c_str());
-		return false;
-	}
-	
-	if (rpt1.size() != 8) {
-		printf("CIRCDDBClient::sendHeardWithTXStats:rpt1='%s' len != 8\n", rpt1.c_str());
-		return false;
-	}
-	
-	if (rpt2.size() != 8) {
-		printf("CIRCDDBClient::sendHeardWithTXStats:rpt2='%s' len != 8\n", rpt2.c_str());
-		return false;
-	}
-
-	char str[10];
-	snprintf(str, 10, "%04x", num_dv_frames);
-	std::string stats(str);
-
-	if (num_dv_silent_frames >= 0) {
-		snprintf(str, 10, "%02x", (num_dv_silent_frames * 100) / num_dv_frames);
-		stats.append(str);
-
-		if (num_bit_errors >= 0) {
-			snprintf(str, 10, "%02x", (num_bit_errors * 125) / (num_dv_frames * 3));
-			stats.append(str);
-		}
-	}
-	stats.resize(20, '_');
-
-	return d->app->sendHeard(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, std::string("        "), std::string(""), stats);
-}
-
 // Send query for a gateway/reflector, a false return implies a network error
 bool CIRCDDBClient::findGateway(const std::string& gatewayCallsign)
 {

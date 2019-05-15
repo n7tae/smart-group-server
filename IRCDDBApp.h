@@ -34,24 +34,24 @@ class IRCDDBAppPrivate;
 class IRCDDBApp : public IRCApplication
 {
 public:
-	IRCDDBApp(const std::string& update_channel);
+	IRCDDBApp(const std::string &update_channel);
 
 	virtual ~IRCDDBApp();
 
-	virtual void userJoin(const std::string& nick, const std::string& name, const std::string& host);
+	virtual void userJoin(const std::string &nick, const std::string &name, const std::string &host);
 
-	virtual void userLeave(const std::string& nick);
+	virtual void userLeave(const std::string &nick);
 
-	virtual void userChanOp(const std::string& nick, bool op);
+	virtual void userChanOp(const std::string &nick, bool op);
 	virtual void userListReset();
 
 	virtual void msgChannel(IRCMessage *m);
 	virtual void msgQuery(IRCMessage *m);
 
-	virtual void setCurrentNick(const std::string& nick);
-	virtual void setTopic(const std::string& topic);
+	virtual void setCurrentNick(const std::string &nick);
+	virtual void setTopic(const std::string &topic);
 
-	virtual void setBestServer(const std::string& ircUser);
+	virtual void setBestServer(const std::string &ircUser);
 
 	virtual void setSendQ(IRCMessageQueue *s);
 	virtual IRCMessageQueue *getSendQ();
@@ -64,34 +64,32 @@ public:
 	IRCMessage *getReplyMessage();
 
 	bool findUser(const std::string& s);
-	bool findRepeater(const std::string& s);
-	bool findGateway(const std::string& s);
+	bool findRepeater(const std::string &s);
+	bool findGateway(const std::string &s);
 
-	bool sendHeard(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1,
-		unsigned char flag2, unsigned char flag3, const std::string& destination, const std::string& tx_msg, const std::string& tx_stats);
+	bool sendHeard(const std::string &myCall, const std::string &myCallExt, const std::string &yourCall, const std::string &rpt1, const std::string &rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string &destination, const std::string &tx_msg, const std::string &tx_stats);
 
 	void sendSGSInfo(const std::string &subcommand, const std::vector<std::string> &pars);
 
 	int getConnectionState();
 
-	void rptrQRG(const std::string& callsign, double txFrequency, double duplexShift, double range, double agl);
+	void rptrQRG(const std::string &callsign, double txFrequency, double duplexShift, double range, double agl);
 
-	void rptrQTH(const std::string& callsign, double latitude, double longitude, const std::string& desc1, const std::string& desc2, const std::string& infoURL);
+	void rptrQTH(const std::string &callsign, double latitude, double longitude, const std::string &desc1, const std::string &desc2, const std::string &infoURL);
 
-	void kickWatchdog(const std::string& callsign, const std::string& wdInfo);
+	void kickWatchdog(const std::string &callsign, const std::string &wdInfo);
 
 protected:
 	void Entry();
 
 private:
 	void doUpdate(std::string& msg);
-	void doNotFound(std::string& msg, std::string& retval);
-	std::string getIPAddress(std::string& zonerp_cs);
+	void doNotFound(std::string &msg, std::string &retval);
+	std::string getIPAddress(std::string &zonerp_cs);
 	bool findServerUser();
-	unsigned int calculateUsn(const std::string& nick);
+	unsigned int calculateUsn(const std::string &nick);
 	std::string getLastEntryTime(int tableID);
 	IRCDDBAppPrivate *d;
 	time_t m_maxTime;
 	std::future<void> m_future;
 };
-

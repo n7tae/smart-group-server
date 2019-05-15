@@ -37,8 +37,8 @@ enum IRCDDB_RESPONSE_TYPE {
 class CIRCDDB
 {
 public:
-	CIRCDDB();
-	virtual ~CIRCDDB();
+	CIRCDDB() {}
+	virtual ~CIRCDDB() {}
 
 	virtual int GetFamily() = 0;
 
@@ -89,18 +89,6 @@ public:
 	//   tx_message:  20-char TX message or empty string, if the user did not
 	//       send a TX message
 	virtual bool sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message) = 0;
-
-	// this method should be called at the end of a transmission
-	//  num_dv_frames: number of DV frames sent out (96 bit frames, 20ms)
-	//  num_dv_silent_frames: number of DV silence frames sent out in the
-	//	last transmission, or -1 if the information is not available
-	//  num_bit_errors: number of bit errors of the received data. This should
-	//      be the derived from the first Golay block of the voice data. This
-	//      error correction code only looks at 24 bits of the 96 bit frame.
-	//      So, the overall bit error rate is calculated like this:
-	//      BER = num_bit_errors / (num_dv_frames * 24)
-	//      Set num_bit_errors = -1, if the error information is not available.
-	virtual bool sendHeardWithTXStats(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, int num_dv_frames, int num_dv_silent_frames, int num_bit_errors) = 0;
 
 	// The following three functions don't block waiting for a reply, they just send the data
 
