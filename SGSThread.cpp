@@ -314,8 +314,8 @@ void CSGSThread::processIrcDDB(const int i)
 					if (address.size()) {
 						//printf("USER[%d]: %s %s %s %s\n", i, user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateUser(user, repeater, gateway, address, timestamp, DP_DEXTRA, false, false);
-					} else {
-						printf("USER: %s has no IP address!\n", user.c_str());
+					//} else {
+					//	printf("USER: %s has no IP address!\n", user.c_str());
 					}
 				}
 				break;
@@ -329,8 +329,8 @@ void CSGSThread::processIrcDDB(const int i)
 					if (address.size()) {
 						//printf("REPEATER[%d]: %s %s %s\n", i, repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateRepeater(repeater, gateway, address, DP_DEXTRA, false, false);
-					} else {
-						printf("REPEATER: %s NOT FOUND\n", repeater.c_str());
+					//} else {
+					//	printf("REPEATER: %s NOT FOUND\n", repeater.c_str());
 					}
 				}
 				break;
@@ -348,8 +348,8 @@ void CSGSThread::processIrcDDB(const int i)
 					if (address.size()) {
 						//printf("GATEWAY[%d]: %s %s\n", i, gateway.c_str(), address.c_str());
 						m_cache.updateGateway(gateway, address, DP_DEXTRA, false, false);
-					} else {
-						printf("GATEWAY: %s NOT FOUND\n", gateway.c_str());
+					//} else {
+					//	printf("GATEWAY: %s NOT FOUND\n", gateway.c_str());
 					}
 				}
 				break;
