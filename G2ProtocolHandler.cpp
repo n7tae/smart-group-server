@@ -59,7 +59,7 @@ bool CG2ProtocolHandler::writeHeader(const CHeaderData& header)
 	CSockAddress saddr;
 	std::string addr = header.getYourAddress();
 	auto it = portmap.find(addr);
-	if (AF_INET6 == m_family) {
+	if (AF_INET == m_family) {
 		if (portmap.end() == it)
 			saddr.Initialize(AF_INET, G2_DV_PORT, addr.c_str());
 		else
@@ -92,7 +92,7 @@ bool CG2ProtocolHandler::writeAMBE(const CAMBEData& data)
 	CSockAddress saddr;
 	std::string addr = data.getYourAddress();
 	auto it = portmap.find(addr);
-	if (AF_INET6 == m_family) {
+	if (AF_INET == m_family) {
 		if (portmap.end() == it)
 			saddr.Initialize(AF_INET, G2_DV_PORT, addr.c_str());
 		else
@@ -113,7 +113,7 @@ bool CG2ProtocolHandler::writePing(const std::string &addr)
 	memcpy(test, "PING", 4);
 	auto it = portmap.find(addr);
 	CSockAddress saddr;
-	if (AF_INET6 == m_family) {
+	if (AF_INET == m_family) {
 		if (portmap.end() == it)
 			saddr.Initialize(AF_INET, G2_DV_PORT, addr.c_str());
 		else
