@@ -758,6 +758,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 				if (std::string::npos == it->second->m_address.find(':') && m_irc[1])
 					i = 1;
 				m_g2Handler[i]->writePing(it->second->m_address);
+                printf("sending PING to %s\n", it->second->m_address.c_str());
 			}
 		}
 		m_pingTimer.start();
@@ -1020,7 +1021,7 @@ void CGroupHandler::sendAck(const CUserData &user, const std::string &text) cons
 	CSlowDataEncoder slowData;
 	slowData.setTextData(text);
 
-    printf("Sending ack user=%s rptr=%s gate=%s addr=%s index=%d\n", user.getUser().c_str(), user.getRepeater().c_str(), user.getGateway().c_str(), user.getAddress().c_str(), index);
+    //printf("Sending ack user=%s rptr=%s gate=%s addr=%s index=%d\n", user.getUser().c_str(), user.getRepeater().c_str(), user.getGateway().c_str(), user.getAddress().c_str(), index);
 	CAMBEData data;
 	data.setId(id);
 	data.setDestination(user.getAddress(), is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
