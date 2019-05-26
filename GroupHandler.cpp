@@ -745,20 +745,16 @@ void CGroupHandler::clockInt(unsigned int ms)
 {
 	m_pingTimer.clock(ms);
 	if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
-		//for (auto it = m_users.begin(); it != m_users.end(); it++) {
-		//	CSGSUser *user = it->second;
-		//	if (user != NULL) {
-		//		in_addr addr;
-		//		if (m_cache->findUserAddress(user->getCallsign(), addr))
-		//			m_g2Handler->writePing(addr);
-		//	}
-		for (auto it=m_repeaters.begin(); it!=m_repeaters.end(); it++) {
-			if (it->second) {
-				int i = 0;
-				if (std::string::npos == it->second->m_address.find(':') && m_irc[1])
-					i = 1;
-				m_g2Handler[i]->writePing(it->second->m_address);
-                printf("sending PING to %s\n", it->second->m_address.c_str());
+		for (auto it = m_users.begin(); it != m_users.end(); it++) {
+			CSGSUser *user = it->second;
+			if (user != NULL) {
+				std::string addr;
+				if (m_cache->findUserAddress(user->getCallsign(), addr)) {
+                    int i = 0;
+                    if (std::string::npos==addr.find(':') && m_irc[1])
+                        i = 1;
+					m_g2Handler[i]->writePing(addr);
+                }
 			}
 		}
 		m_pingTimer.start();

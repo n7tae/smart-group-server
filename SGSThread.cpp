@@ -345,7 +345,7 @@ void CSGSThread::processIrcDDB(const int i)
 
 					CDCSHandler::gatewayUpdate(gateway, address);
 
-					if (0 == address.size()) {
+					if (address.size()) {
 						//printf("GATEWAY[%d]: %s %s\n", i, gateway.c_str(), address.c_str());
 						m_cache.updateGateway(gateway, address, DP_DEXTRA, false, false);
 					} else {
