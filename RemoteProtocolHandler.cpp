@@ -66,7 +66,7 @@ RPH_TYPE CRemoteProtocolHandler::readType()
 	if (length <= 0)
 		return m_type;
 
-	// CUtils::dump("Incoming", m_inBuffer, length);
+	//dump("Incoming", m_inBuffer, length);
 
 	if (memcmp(m_inBuffer, "LIN", 3U) == 0) {
 		printf("remote login from %s on port %u\n", addr.GetAddress(), addr.GetPort());
@@ -256,9 +256,9 @@ bool CRemoteProtocolHandler::sendCallsigns(const std::list<std::string> &repeate
 		p += LONG_CALLSIGN_LENGTH;
 	}
 
-	// CUtils::dump(wxT("Outgoing"), m_outBuffer, p - m_outBuffer);
+	//dump(wxT("Outgoing callsigns"), m_outBuffer, p - m_outBuffer);
 	CSockAddress addr;
-	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	addr.Initialize(m_family, m_port, m_address.c_str());
 	return m_socket.Write(m_outBuffer, p - m_outBuffer, addr);
 }
 
@@ -319,9 +319,9 @@ bool CRemoteProtocolHandler::sendGroup(const CRemoteGroup &data)
 		p += sizeof(uint32_t);
 	}
 
-	// CUtils::dump("Outgoing", m_outBuffer, p - m_outBuffer);
+	//dump("Outgoing group", m_outBuffer, p - m_outBuffer);
 	CSockAddress addr;
-	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	addr.Initialize(m_family, m_port, m_address.c_str());
 	return m_socket.Write(m_outBuffer, p - m_outBuffer, addr);
 }
 
@@ -339,9 +339,9 @@ bool CRemoteProtocolHandler::sendACK()
 {
 	memcpy(m_outBuffer + 0U, "ACK", 3U);
 
-	// CUtils::dump("Outgoing", m_outBuffer, 3U);
+	//dump("Outgoing ack", m_outBuffer, 3U);
 	CSockAddress addr;
-	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	addr.Initialize(m_family, m_port, m_address.c_str());
 	return m_socket.Write(m_outBuffer, 3U, addr);
 }
 
@@ -354,9 +354,9 @@ bool CRemoteProtocolHandler::sendNAK(const std::string &text)
 	for (unsigned int i = 0U; i < text.size(); i++)
 		m_outBuffer[i + 3U] = text.at(i);
 
-	// CUtils::dump("Outgoing", m_outBuffer, 3U + text.size() + 1U);
+	//dump("Outgoing nak", m_outBuffer, 3U + text.size() + 1U);
 	CSockAddress addr;
-	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	addr.Initialize(m_family, m_port, m_address.c_str());
 	return m_socket.Write(m_outBuffer, 3U + text.size() + 1U, addr);
 }
 
@@ -367,8 +367,8 @@ bool CRemoteProtocolHandler::sendRandom(uint32_t random)
 	uint32_t temp = wxUINT32_SWAP_ON_BE(random);
 	memcpy(m_outBuffer + 3U, &temp, sizeof(uint32_t));
 
-	// CUtils::dump("Outgoing", m_outBuffer, 3U + sizeof(uint32_t));
+	//dump("Outgoing random", m_outBuffer, 3U + sizeof(uint32_t));
 	CSockAddress addr;
-	addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	addr.Initialize(m_family, m_port, m_address.c_str());
 	return m_socket.Write(m_outBuffer, 3U + sizeof(uint32_t), addr);
 }
