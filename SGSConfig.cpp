@@ -50,17 +50,15 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		return;
 	ToUpper(m_callsign);
 	printf("GATEWAY: callsign='%s'\n", m_callsign.c_str());
+
 	Sircddb *pirc;
 	if (cfg.exists("ircddb")) {
 		switch (cfg.lookup("ircddb").getLength()) {
 			case 0:
 				pirc = new Sircddb;
-				pirc->Hostname = "rrv6.openquad.net";
-				pirc->Username = m_callsign;
-				m_ircddb.push_back(pirc);
-				pirc = new Sircddb;
 				pirc->Hostname = "rr.openquad.net";
 				pirc->Username = m_callsign;
+                pirc->Password.empty();
 				m_ircddb.push_back(pirc);
 				break;
 			case 1:

@@ -6,7 +6,7 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 
 ### What's New
 
-* **V# 190527** The sgs is now IPv4/IPv6 dual stack capabile. With a world routable 128-bit address space, IPv6 holds significant potential advanatages for routing methodologies, including *Group Routing*. Of course, to use IPv6, it must be available and enabled on the  machine on which the sgs server is installed.
+* **V# 190527** The sgs is now IPv4/IPv6 dual-stack capabile. With a world routable 128-bit address space, IPv6 holds significant potential advanatages for routing methodologies, including *Group Routing*. Of course, to use IPv6, it must be available and enabled on the  machine on which the sgs server is installed. To enable *sgs* dual-stack operation, see the *Configuring* section.
 
 * **V# 190218** The sgs process no longer runs as root.  A system user "sgs" is created during installation.
 
@@ -77,15 +77,17 @@ Before you install the group server, you need to create a configuration file cal
 
 Your callsign parameter in the ircddb section of your configuration file is the callsign that will be used for logging into QuadNet. THIS NEEDS TO BE A UNIQUE CALLSIGN on QuadNet. Don't use your callsign if you are already using it for a repeater or a hot-spot. Ideally, you should use a Club callsign. Check with your club to see if you can use your club's callsign. Of course, don't do this if your club hosts a D-Star repeater with this callsign. If your club callsign is not available, either apply to be a trustee for a new callsign from you club, or get together with three of your friends and start a club. All the information you need is at arrl.org or w5yi.org. It's not difficult to do, and once you file your application, you'll get your new Club Callsign very quickly.
 
-By not specifing an **ircddb** section in your configuration file, by default, the sgs server will connect to rr.openquad.net for an IPv4 connection and rrv6.openquad.net for an IPv6 connection. If the machine on which your installation is installed doesn't have IPv6 connectivity, you need to include an **ircddb** section in your configuration file specifying only IPv4 server:
+By default, not specifing an **ircddb** section in your configuration file, the sgs server will only connect to rr.openquad.net for an IPv4 connection. If the machine on which your *smart-group-server* is installed has IPv6 connectivity and you want your server to have IPv4/IPv6 dual-stack capability, you need to include an **ircddb** section in your configuration file specifying both the IPv4 and the IPv6 server:
 ```
 ircddb = (
     {
+        hostname = "rrv6.openquad.net"
+    }, {
         hostname = "rr.openquad.net"
     }
 )
 ```
-If you want your *smart-group-server* to have only IPv6 connectivity, replace the *rr* with *rrv6*. The *example.cfg* file shows how both servers can be specified. Please note that the definition for the IPv6 server must appear before the definition for IPv4 server.
+If you want your *smart-group-server* to have only IPv6 connectivity, simply don't define the second ircddb section. Please note that for dual-stack operation, the definition for the IPv6 server must appear before the definition for IPv4 server.
 
 ## Installing and Uninstalling
 
