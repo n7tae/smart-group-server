@@ -262,49 +262,6 @@ bool CHeaderData::setDExtraData(const unsigned char *data, unsigned int length, 
 	}
 }
 
-bool CHeaderData::setDPlusData(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
-{
-	assert(data != NULL);
-	assert(length >= 58U);
-
-	if (data[0] != 0x3A || data[1] != 0x80) {
-		dump("Invalid header length from D-Plus", data, length);
-		return false;
-	}
-
-	m_band1  = data[11];
-	m_band2  = data[12];
-	m_band3  = data[13];
-	m_id     = data[14] * 256U + data[15];
-
-	m_flag1 = data[17U];
-	m_flag2 = data[18U];
-	m_flag3 = data[19U];
-
-	::memcpy(m_rptCall2, data + 20U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_rptCall1, data + 28U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_yourCall, data + 36U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_myCall1,  data + 44U, LONG_CALLSIGN_LENGTH);
-	::memcpy(m_myCall2,  data + 52U, SHORT_CALLSIGN_LENGTH);
-
-	m_yourAddress = yourAddress;
-	m_yourPort    = yourPort;
-	m_myPort      = myPort;
-
-	if (check) {
-		CCCITTChecksum cksum;
-		cksum.update(data + 17U, RADIO_HEADER_LENGTH_BYTES - 2U);
-		bool valid = cksum.check(data + 17U + RADIO_HEADER_LENGTH_BYTES - 2U);
-
-		if (!valid)
-			dump("Header checksum failure from D-Plus", data + 17U, RADIO_HEADER_LENGTH_BYTES);
-
-		return valid;
-	} else {
-		return true;
-	}
-}
-
 bool CHeaderData::setDVTOOLData(const unsigned char *data, unsigned int length, bool check)
 {
 	assert(data != NULL);
@@ -442,56 +399,6 @@ unsigned int CHeaderData::getDExtraData(unsigned char* data, unsigned int length
 	}
 
 	return 56U;
-}
-
-unsigned int CHeaderData::getDPlusData(unsigned char* data, unsigned int length, bool check) const
-{
-	assert(data != NULL);
-	assert(length >= 58U);
-
-	data[0]  = 0x3A;
-	data[1]  = 0x80;
-
-	data[2]  = 'D';
-	data[3]  = 'S';
-	data[4]  = 'V';
-	data[5]  = 'T';
-
-	data[6]  = 0x10;
-	data[7]  = 0x00;
-	data[8]  = 0x00;
-	data[9]  = 0x00;
-	data[10] = 0x20;
-
-	data[11] = m_band1;
-	data[12] = m_band2;
-	data[13] = m_band3;
-
-	data[14] = m_id % 256U;			// Unique session id
-	data[15] = m_id / 256U;
-
-	data[16] = 0x80;
-
-	data[17] = 0x00;				// Flags 1, 2, and 3
-	data[18] = 0x00;
-	data[19] = 0x00;
-
-	::memcpy(data + 20U, m_rptCall2, LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 28U, m_rptCall1, LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 36U, m_yourCall, LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 44U, m_myCall1,  LONG_CALLSIGN_LENGTH);
-	::memcpy(data + 52U, m_myCall2,  SHORT_CALLSIGN_LENGTH);
-
-	if (check) {
-		CCCITTChecksum csum;
-		csum.update(data + 17, 4U * LONG_CALLSIGN_LENGTH + SHORT_CALLSIGN_LENGTH + 3U);
-		csum.result(data + 56);
-	} else {
-		data[56] = 0xFF;
-		data[57] = 0xFF;
-	}
-
-	return 58U;
 }
 
 unsigned short CHeaderData::getId() const

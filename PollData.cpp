@@ -130,18 +130,6 @@ bool CPollData::setDCSData(const unsigned char *data, unsigned int length, const
 	return true;
 }
 
-bool CPollData::setDPlusData(const unsigned char * /*data*/, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
-{
-	assert(yourPort > 0U);
-
-	m_length      = length;
-	m_yourAddress = yourAddress;
-	m_yourPort    = yourPort;
-	m_myPort      = myPort;
-
-	return true;
-}
-
 unsigned int CPollData::getDExtraData(unsigned char *data, unsigned int length) const
 {
 	assert(data != NULL);
@@ -191,18 +179,6 @@ unsigned int CPollData::getDCSData(unsigned char *data, unsigned int length) con
 
 		return 22U;
 	}
-}
-
-unsigned int CPollData::getDPlusData(unsigned char *data, unsigned int length) const
-{
-	assert(data != NULL);
-	assert(length >= 3U);
-
-	data[0U] = 0x03;
-	data[1U] = 0x60;
-	data[2U] = 0x00;
-
-	return 3U;
 }
 
 std::string CPollData::getData1() const

@@ -105,36 +105,6 @@ bool CAMBEData::setDExtraData(const unsigned char *data, unsigned int length, co
 	return true;
 }
 
-bool CAMBEData::setDPlusData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
-{
-	assert(data != NULL);
-	assert(length >= 29U);
-
-	if ((data[0] != 0x1D && data[0] != 0x20) || data[1] != 0x80) {
-		dump("Invalid AMBE length from D-Plus", data, length);
-		return false;
-	}
-
-	m_band1  = data[11];
-	m_band2  = data[12];
-	m_band3  = data[13];
-	m_id     = data[14] * 256U + data[15];
-	m_outSeq = data[16];
-
-	if (isEnd()) {
-		memset(m_data, 0x00U, DV_FRAME_LENGTH_BYTES);
-		memcpy(m_data, END_PATTERN_BYTES, END_PATTERN_LENGTH_BYTES);
-	} else {
-		memcpy(m_data, data + 17U, DV_FRAME_LENGTH_BYTES);
-	}
-
-	m_yourAddress = yourAddress;
-	m_yourPort    = yourPort;
-	m_myPort      = myPort;
-
-	return true;
-}
-
 bool CAMBEData::setDCSData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
 {
 	assert(data != NULL);
@@ -215,50 +185,6 @@ unsigned int CAMBEData::getDExtraData(unsigned char* data, unsigned int length) 
 	memcpy(data + 15U, m_data, DV_FRAME_LENGTH_BYTES);
 
 	return 15U + DV_FRAME_LENGTH_BYTES;
-}
-
-unsigned int CAMBEData::getDPlusData(unsigned char *data, unsigned int length) const
-{
-	assert(data != NULL);
-	assert(length >= 32U);
-
-	if (isEnd()) {
-		data[0]  = 0x20;
-		data[1]  = 0x80;
-	} else {
-		data[0]  = 0x1D;
-		data[1]  = 0x80;
-	}
-
-	data[2]  = 'D';
-	data[3]  = 'S';
-	data[4]  = 'V';
-	data[5]  = 'T';
-
-	data[6]  = 0x20;
-	data[7]  = 0x00;
-	data[8]  = 0x00;
-	data[9]  = 0x00;
-	data[10] = 0x20;
-
-	data[11] = m_band1;
-	data[12] = m_band2;
-	data[13] = m_band3;
-
-	data[14] = m_id % 256U;			// Unique session id
-	data[15] = m_id / 256U;
-
-	data[16] = m_outSeq;
-
-	if (isEnd()) {
-		memcpy(data + 17U, NULL_AMBE_DATA_BYTES, VOICE_FRAME_LENGTH_BYTES);
-		memcpy(data + 26U, END_PATTERN_BYTES, END_PATTERN_LENGTH_BYTES);	// Add the end flag
-		return 17U + DV_FRAME_MAX_LENGTH_BYTES;
-	} else {
-		// All other cases, just copy the payload
-		memcpy(data + 17U, m_data, DV_FRAME_LENGTH_BYTES);
-		return 17U + DV_FRAME_LENGTH_BYTES;
-	}
 }
 
 unsigned int CAMBEData::getDCSData(unsigned char *data, unsigned int length) const

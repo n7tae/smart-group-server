@@ -32,11 +32,9 @@ public:
 
 	bool setG2Data(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort);
 	bool setDExtraData(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
-	bool setDPlusData(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
 	void setDCSData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
 
 	unsigned int getDExtraData(unsigned char *data, unsigned int length, bool check) const;
-	unsigned int getDPlusData(unsigned char *data, unsigned int length, bool check) const;
 	unsigned int getG2Data(unsigned char *data, unsigned int length, bool check) const;
 	void         getDCSData(unsigned char *data, unsigned int length) const;
 

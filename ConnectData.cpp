@@ -208,51 +208,6 @@ bool CConnectData::setDCSData(const unsigned char *data, unsigned int length, co
 	return true;
 }
 
-bool CConnectData::setDPlusData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
-{
-	assert(data != NULL);
-	assert(length >= 5U);
-	assert(yourPort > 0U);
-
-	switch (length) {
-		case 5U:
-			switch (data[4U]) {
-				case 0x01:
-					m_type = CT_LINK1;
-					break;
-				case 0x00:
-					m_type = CT_UNLINK;
-					break;
-			}
-			break;
-
-		case 8U: {
-				std::string reply((const char*)(data + 4U), 4U);
-				printf("D-Plus reply is %.4s\n", reply.c_str());
-
-				if (::memcmp(data + 4U, "OKRW", 4U) == 0)
-					m_type = CT_ACK;
-				else
-					m_type = CT_NAK;
-			}
-			break;
-
-		case 28U:
-			m_repeater = std::string((const char*)(data + 4U), LONG_CALLSIGN_LENGTH);
-			m_type = CT_LINK2;
-			break;
-
-		default:
-			return false;
-	}
-
-	m_yourAddress = yourAddress;
-	m_yourPort    = yourPort;
-	m_myPort      = myPort;
-
-	return true;
-}
-
 unsigned int CConnectData::getDExtraData(unsigned char *data, unsigned int length) const
 {
 	assert(data != NULL);
@@ -365,81 +320,6 @@ unsigned int CConnectData::getDCSData(unsigned char *data, unsigned int length) 
 			data[LONG_CALLSIGN_LENGTH + 4U] = 'K';
 			data[LONG_CALLSIGN_LENGTH + 5U] = 0x00;
 			return 14U;
-
-		default:
-			return 0U;
-	}
-}
-
-unsigned int CConnectData::getDPlusData(unsigned char *data, unsigned int length) const
-{
-	assert(data != NULL);
-	assert(length >= 28U);
-
-	switch (m_type) {
-		case CT_LINK1:
-			data[0U] = 0x05;
-			data[1U] = 0x00;
-			data[2U] = 0x18;
-			data[3U] = 0x00;
-			data[4U] = 0x01;
-			return 5U;
-
-		case CT_LINK2: {
-				data[0U]  = 0x1C;
-				data[1U]  = 0xC0;
-				data[2U]  = 0x04;
-				data[3U]  = 0x00;
-
-				for (unsigned int i = 4U; i < 20U; i++)
-					data[i] = 0x00;
-
-				std::string callsign = m_repeater;
-				Trim(callsign);
-
-				for (unsigned int i = 0U; i < callsign.size(); i++)
-					data[i + 4U] = callsign.at(i);
-
-				data[20U] = 'D';
-				data[21U] = 'V';
-				data[22U] = '0';
-				data[23U] = '1';
-				data[24U] = '9';
-				data[25U] = '9';
-				data[26U] = '9';
-				data[27U] = '9';
-			}
-			return 28U;
-
-		case CT_UNLINK:
-			data[0U] = 0x05;
-			data[1U] = 0x00;
-			data[2U] = 0x18;
-			data[3U] = 0x00;
-			data[4U] = 0x00;
-			return 5U;
-
-		case CT_ACK:
-			data[0U] = 0x08;
-			data[1U] = 0xC0;
-			data[2U] = 0x04;
-			data[3U] = 0x00;
-			data[4U] = 'O';
-			data[5U] = 'K';
-			data[6U] = 'R';
-			data[7U] = 'W';
-			return 8U;
-
-		case CT_NAK:
-			data[0U] = 0x08;
-			data[1U] = 0xC0;
-			data[2U] = 0x04;
-			data[3U] = 0x00;
-			data[4U] = 'B';
-			data[5U] = 'U';
-			data[6U] = 'S';
-			data[7U] = 'Y';
-			return 8U;
 
 		default:
 			return 0U;

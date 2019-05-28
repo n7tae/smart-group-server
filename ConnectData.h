@@ -43,11 +43,9 @@ public:
 	~CConnectData();
 
 	bool setDExtraData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
-	bool setDPlusData( const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
 	bool setDCSData(   const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
 
 	unsigned int getDExtraData(unsigned char *data, unsigned int length) const;
-	unsigned int getDPlusData( unsigned char *data, unsigned int length) const;
 	unsigned int getDCSData(   unsigned char *data, unsigned int length) const;
 
 	std::string   getRepeater() const;
