@@ -6,8 +6,9 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 
 ### What's New
 
-* **V# 190218** The sgs process no longer runs as root.  A system user "sgs" is
-created during installation.
+* **V# 190527** The sgs is now IPv4/IPv6 dual stack capabile. With a world routable 128-bit address space, IPv6 holds significant potential advanatages for routing methodologies, including *Group Routing*. Of course, to use IPv6, it must be available and enabled on the  machine on which the sgs server is installed.
+
+* **V# 190218** The sgs process no longer runs as root.  A system user "sgs" is created during installation.
 
 * **V# 180706** Smart Groups can now be declared as "RxOnly" meaning that subscribed users will only be able to hear traffic from a linked reflector. The RxOnly Smart Group will hear subscribe and unsubscribe transmissions but voice data will not be re-broadcast to other subscribers or a linked reflector. If you try to configure a Smart Group with the RxOnly characterisitic without also specifying a linked reflector, the RxOnly declaration will be ignored.
 * Also new in this release, the sgs.cfg file installed in the CFGDIR (usually /usr/local/etc) is now installed as a symbolic link pointing to the sgs.cfg in the build directory. This means you can edit the configuration file at user level permission and then simply restart the sgs program: `sudo systemctl restart sgs`.
@@ -52,9 +53,11 @@ The smart-group-server is installed as a systemd service. If you want to run thi
 
 ## Adminstrative Requirements
 
-This Smart Group Server should have a unique IP address when it logs into QuadNet. That means you probably won't be able to run it from your home if you also have an ircddb gateway running from home. You probably shouldn't run it from your home anyway. The computer your Smart Group Server is running on should have reliable, 24/7 internet access and reliable, 24/7 power. It should also be properly protected from hackers. There are plenty of companies that provide virtual severs that easily fulfill these requirements for verly little money. (You don't need much horse-power for a typical Smart Group Server. For example, a $5/month server on Amazon Lightsail works fine.)
+This Smart Group Server should have a unique IP address when it logs into QuadNet. That means you probably won't be able to run it from your home if you also have an ircddb gateway running from home. You probably shouldn't run it from your home anyway. The computer your Smart Group Server is running on should have reliable, 24/7 internet access and reliable, 24/7 power. It should also be properly protected from hackers. There are plenty of companies that provide virtual severs that easily fulfill these requirements for verly little money. (You don't need much horse-power for a typical Smart Group Server.)
 
-Also the Smart Group Server needs to have a unique callsign in QuadNet, one that will not be used by another client on QuadNet. Ideally, you should use a Club callsign, see the Configuring section below.
+If you are going to use the IPv4/IPv6 dual-stack capability, the server should have IPv6 already enabled.
+
+Also the Smart Group Server needs to have a **unique callsign in QuadNet**, one that will not be used by another client on QuadNet. Ideally, you should use a Club callsign, see the Configuring section below.
 
 ## Building
 
@@ -73,6 +76,16 @@ Change to the smart-group-server directory and type `make`. This should make the
 Before you install the group server, you need to create a configuration file called `sgs.cfg`. There is an example configuration file: `example.cfg`. The smart-group-server supports an unlimited number of channels. However there will be a practical limit based on you hardware capability. Also remember that a unique port is created for each DExtra or DCS link on a running smart-group-server. At some point you system will simply run out of connections. Be sure you look and the "StarNet Groups" tab on the openquad.net web page to be sure your new channel callsigns and logoff callsigns are not already in use! Each channel you define requires a band letter. Bands can be shared between channels. Choose any uppercase letter from 'A' to 'Z'. Each channel will have a group logon callsign and a group logoff callsign. The logon and logoff will differ only in the last letter of the callsign. PLEASE DON'T CHOOSE a channel callsign beginning in "REF", "XRF", "XLX", "DCS" or "CCS". While it is possible, it's really confusing for new-comers on QuadNet. Also, avoid subscribe and unsubscribe callsigns that end in "U". Jonathan's ircddbgateway will interpret this as an unlink command and never send it to the smart-group-server.
 
 Your callsign parameter in the ircddb section of your configuration file is the callsign that will be used for logging into QuadNet. THIS NEEDS TO BE A UNIQUE CALLSIGN on QuadNet. Don't use your callsign if you are already using it for a repeater or a hot-spot. Ideally, you should use a Club callsign. Check with your club to see if you can use your club's callsign. Of course, don't do this if your club hosts a D-Star repeater with this callsign. If your club callsign is not available, either apply to be a trustee for a new callsign from you club, or get together with three of your friends and start a club. All the information you need is at arrl.org or w5yi.org. It's not difficult to do, and once you file your application, you'll get your new Club Callsign very quickly.
+
+By not specifing an **ircddb** section in your configuration file, by default, the sgs server will connect to rr.openquad.net for an IPv4 connection and rrv6.openquad.net for an IPv6 connection. If the machine on which your installation is installed doesn't have IPv6 connectivity, you need to include an **ircddb** section in your configuration file specifying only IPv4 server:
+```
+ircddb = (
+    {
+        hostname = "rr.openquad.net"
+    }
+)
+```
+If you want your *smart-group-server* to have only IPv6 connectivity, replace the *rr* with *rrv6*. The *example.cfg* file shows how both servers can be specified. Please note that the definition for the IPv6 server must appear before the definition for IPv4 server.
 
 ## Installing and Uninstalling
 
