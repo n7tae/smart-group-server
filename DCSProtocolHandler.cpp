@@ -109,6 +109,8 @@ bool CDCSProtocolHandler::readPackets()
 	// No more data?
 	CSockAddress addr;
 	int length = m_socket.Read(m_buffer, BUFFER_LENGTH, addr);
+    m_yourAddress = addr.GetAddress();
+    m_yourPort = addr.GetPort();
 	if (length <= 0)
 		return false;
 
