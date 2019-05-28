@@ -59,7 +59,7 @@ bool CDExtraProtocolHandler::writeHeader(const CHeaderData& header)
 	unsigned int length = header.getDExtraData(buffer, 60U, true);
 
 #if defined(DUMP_TX)
-	CUtils::dump("Sending Header", buffer, length);
+	dump("Sending Header", buffer, length);
 #endif
 	CSockAddress addr;
 	addr.Initialize(m_family, header.getYourPort(), header.getYourAddress().c_str());
@@ -78,7 +78,7 @@ bool CDExtraProtocolHandler::writeAMBE(const CAMBEData& data)
 	unsigned int length = data.getDExtraData(buffer, 40U);
 
 #if defined(DUMP_TX)
-	CUtils::dump("Sending Data", buffer, length);
+	dump("Sending Data", buffer, length);
 #endif
 	CSockAddress addr;
 	addr.Initialize(m_family, data.getYourPort(), data.getYourAddress().c_str());
@@ -91,7 +91,7 @@ bool CDExtraProtocolHandler::writePoll(const CPollData& poll)
 	unsigned int length = poll.getDExtraData(buffer, 20U);
 
 #if defined(DUMP_TX)
-	CUtils::dump("Sending Poll", buffer, length);
+	dump("Sending Poll", buffer, length);
 #endif
 	CSockAddress addr;
 	addr.Initialize(m_family, poll.getYourPort(), poll.getYourAddress().c_str());
@@ -104,7 +104,7 @@ bool CDExtraProtocolHandler::writeConnect(const CConnectData& connect)
 	unsigned int length = connect.getDExtraData(buffer, 20U);
 
 #if defined(DUMP_TX)
-	CUtils::dump("Sending Connect", buffer, length);
+	dump("Sending Connect", buffer, length);
 #endif
 	CSockAddress addr;
 	addr.Initialize(m_family, connect.getYourPort(), connect.getYourAddress().c_str());

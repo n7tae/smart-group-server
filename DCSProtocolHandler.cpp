@@ -58,7 +58,7 @@ bool CDCSProtocolHandler::writeData(const CAMBEData& data)
 	unsigned int length = data.getDCSData(buffer, 100U);
 
 #if defined(DUMP_TX)
-	CUtils::dump("Sending Data", buffer, length);
+	dump("Sending Data", buffer, length);
 #endif
 	CSockAddress addr;
 	addr.Initialize(m_family, data.getYourPort(), data.getYourAddress().c_str());
@@ -71,7 +71,7 @@ bool CDCSProtocolHandler::writePoll(const CPollData& poll)
 	unsigned int length = poll.getDCSData(buffer, 25U);
 
 #if defined(DUMP_TX)
-	CUtils::dump("Sending Poll", buffer, length);
+	dump("Sending Poll", buffer, length);
 #endif
 	CSockAddress addr;
 	addr.Initialize(m_family, poll.getYourPort(), poll.getYourAddress().c_str());
@@ -84,7 +84,7 @@ bool CDCSProtocolHandler::writeConnect(const CConnectData& connect)
 	unsigned int length = connect.getDCSData(buffer, 520U);
 
 #if defined(DUMP_TX)
-	CUtils::dump("Sending Connect", buffer, length);
+	dump("Sending Connect", buffer, length);
 #endif
 	CSockAddress addr;
 	addr.Initialize(m_family, connect.getYourPort(), connect.getYourAddress().c_str());
@@ -122,7 +122,7 @@ bool CDCSProtocolHandler::readPackets()
 			return false;
 		}
 	} else if (m_buffer[0] == 'E' && m_buffer[1] == 'E' && m_buffer[2] == 'E' && m_buffer[3] == 'E') {
-		// CUtils::dump("Status data", m_buffer, m_length);
+		//dump("Status data", m_buffer, m_length);
 		return true;
 	} else {
 		switch (m_length) {
@@ -136,7 +136,7 @@ bool CDCSProtocolHandler::readPackets()
 				m_type = DC_CONNECT;
 				return false;
 			case 35U:
-				// CUtils::dump("Status data", m_buffer, m_length);
+				//dump("Status data", m_buffer, m_length);
 				return true;
 			default:
 				break;
@@ -144,7 +144,7 @@ bool CDCSProtocolHandler::readPackets()
 	}
 
 	// An unknown type
-	// CUtils::dump("Unknown packet type from DCS", m_buffer, m_length);
+	//dump("Unknown packet type from DCS", m_buffer, m_length);
 	return true;
 }
 
