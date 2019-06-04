@@ -43,14 +43,14 @@ CUserData *CCacheManager::findUser(const std::string& user)
 
 	std::string gateway(ur->getRepeater()); // it's not a gateway yet
 	CRepeaterRecord *rr = m_repeaterCache.find(gateway);
-	if (rr == NULL) {
-		gateway = ur->getRepeater();
+	if (rr == NULL) {   // NULL here means the gateway has the same base as the repeater module, i.e. WA0ABC_B and WA0ABC_G
+		gateway = ur->getRepeater();    // so we will build the gateway cs based on the repeater cs
 		gateway.resize(LONG_CALLSIGN_LENGTH - 1U, ' ');
 		gateway.push_back('G');	          // now it's a gateway
 	} else
 		gateway = rr->getGateway();
 
-	CGatewayRecord *gr = m_gatewayCache.find(gateway);
+	CGatewayRecord *gr = m_gatewayCache.find(gateway);  // finally, we need the IP address
 	if (gr == NULL) {
 		mux.unlock();
 		return NULL;
@@ -129,6 +129,9 @@ CRepeaterData* CCacheManager::findRepeater(const std::string& repeater)
 
 void CCacheManager::updateUser(const std::string& user, const std::string& repeater, const std::string& gateway, const std::string& address, const std::string& timestamp, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
 {
+    if (std::string::npos != user.find("N7TAE")) {
+        printf("updateUser %s IP is %s\n", user.c_str(), address.c_str());
+    }
 	mux.lock();
 	std::string repeater7 = repeater.substr(0, LONG_CALLSIGN_LENGTH - 1U);
 	std::string gateway7  = gateway.substr(0, LONG_CALLSIGN_LENGTH - 1U);
@@ -159,6 +162,9 @@ void CCacheManager::updateRepeater(const std::string& repeater, const std::strin
 
 void CCacheManager::updateGateway(const std::string& gateway, const std::string& address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
 {
+    if (std::string::npos != gateway.find("N7TAE")) {
+        printf("updateGateway %s IP is %s\n", gateway.c_str(), address.c_str());
+    }
 	mux.lock();
 	m_gatewayCache.update(gateway, address, protocol, addrLock, protoLock);
 	mux.unlock();
