@@ -313,7 +313,7 @@ void CSGSThread::processIrcDDB(const int i)
 
 					if (address.size()) {
                         if (0 == user.find("N7TAE"))
-						    printf("USER[%d]: %s %s %s %s\n", i, user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
+						    printf("IRC[%d]: %s %s %s %s\n", i, user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateUser(user, repeater, gateway, address, timestamp, DP_DEXTRA, false, false);
 					//} else {
 					//	printf("USER: %s has no IP address!\n", user.c_str());
