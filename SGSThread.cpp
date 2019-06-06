@@ -37,7 +37,45 @@
 #include "AMBEData.h"
 #include "Utils.h"
 
+// For UDPRandomPort (K2DLS)
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+
+unsigned int dextra_src = 0;
+unsigned int dcs_src = 0;
+
 const unsigned int REMOTE_DUMMY_PORT = 65015U;
+
+// Added by Dan Srebnick K2DLS (06/2019)
+unsigned int UDPRandomPort ()
+{
+    struct sockaddr_in addr;
+    socklen_t addrLen;
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (fd == -1) {
+        printf("Failed to create socket");
+    }
+
+    addr.sin_family = AF_INET;
+    addr.sin_port = 0;
+    addr.sin_addr.s_addr = INADDR_ANY;
+
+    addr.sin_port = 0;
+    if (bind(fd, (const struct sockaddr *)&addr, sizeof(addr)) == -1) {
+        printf("Failed to bind");
+    }
+    addrLen = sizeof(addr);
+    if (getsockname(fd, (struct sockaddr *)&addr, &addrLen) == -1) {
+        printf("getsockname() failed");
+    }
+    printf("Random UDP port obtained: %d \n", addr.sin_port);
+    return addr.sin_port;
+}
 
 CSGSThread::CSGSThread(unsigned int countDExtra, unsigned int countDCS) :
 m_countDExtra(countDExtra),
@@ -126,8 +164,18 @@ void CSGSThread::run()
 
 	loadReflectors(DEXTRA_HOSTS_FILE_NAME, DP_DEXTRA);
 	loadReflectors(DCS_HOSTS_FILE_NAME, DP_DCS);
-	CDExtraProtocolHandlerPool dextraPool(DEXTRA_PORT);
-	CDCSProtocolHandlerPool dcsPool(DCS_PORT);
+
+        // We want a random DEXtra source port ge 32768
+        while (dextra_src < 32768) {
+           dextra_src = UDPRandomPort ();
+        }
+        CDExtraProtocolHandlerPool dextraPool(dextra_src);
+
+        // We want a random DCS source port ge 32768
+        while (dcs_src < 32768) {
+           dcs_src = UDPRandomPort ();
+        }
+        CDCSProtocolHandlerPool dcsPool(dcs_src);
 
 	CDExtraHandler::setCallsign(m_callsign);
 	CDExtraHandler::setDExtraProtocolHandlerPool(&dextraPool);
