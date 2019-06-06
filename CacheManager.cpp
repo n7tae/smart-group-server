@@ -129,9 +129,9 @@ CRepeaterData* CCacheManager::findRepeater(const std::string& repeater)
 
 void CCacheManager::updateUser(const std::string& user, const std::string& repeater, const std::string& gateway, const std::string& address, const std::string& timestamp, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
 {
-    if (0 == user.find("N7TAE")) {
-        printf("updateUser %s IP is %s\n", user.c_str(), address.c_str());
-    }
+    //if (0 == user.find("N7TAE")) {
+    //   printf("updateUser %s IP is %s\n", user.c_str(), address.c_str());
+    //}
 	mux.lock();
 	std::string repeater7 = repeater.substr(0, LONG_CALLSIGN_LENGTH - 1U);
 	std::string gateway7  = gateway.substr(0, LONG_CALLSIGN_LENGTH - 1U);
@@ -162,9 +162,9 @@ void CCacheManager::updateRepeater(const std::string& repeater, const std::strin
 
 void CCacheManager::updateGateway(const std::string& gateway, const std::string& address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
 {
-    if (0 == gateway.find("N7TAE")) {
-        printf("updateGateway %s IP is %s\n", gateway.c_str(), address.c_str());
-    }
+ // if (0 == gateway.find("N7TAE")) {
+ //     printf("updateGateway %s IP is %s\n", gateway.c_str(), address.c_str());
+ // }
 	mux.lock();
 	m_gatewayCache.update(gateway, address, protocol, addrLock, protoLock);
 	mux.unlock();

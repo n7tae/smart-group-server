@@ -22,12 +22,9 @@
 #include "DCSProtocolHandlerPool.h"
 #include "Utils.h"
 
-CDCSProtocolHandlerPool::CDCSProtocolHandlerPool(const unsigned short port) :
-m_basePort(port)
+CDCSProtocolHandlerPool::CDCSProtocolHandlerPool()
 {
-	assert(port > 0U);
 	m_index = m_pool.end();
-	printf("DCS UDP port base = %u\n", port);
 }
 
 CDCSProtocolHandlerPool::~CDCSProtocolHandlerPool()
@@ -41,21 +38,18 @@ CDCSProtocolHandlerPool::~CDCSProtocolHandlerPool()
 
 CDCSProtocolHandler *CDCSProtocolHandlerPool::getHandler()
 {
-	unsigned short port = m_basePort;
-	while (m_pool.end() != m_pool.find(port))
-		port++;	// find an unused port
-	CDCSProtocolHandler *proto = new CDCSProtocolHandler(AF_INET, port);
+	CDCSProtocolHandler *proto = new CDCSProtocolHandler(AF_INET);
 	if (proto) {
 		if (proto->open()) {
-			m_pool[port] = proto;
-			printf("New CDCSProtocolHandler now on port %u.\n", port);
+			m_pool[proto->getPort()] = proto;
+			printf("New CDCSProtocolHandler now on port %u.\n", proto->getPort());
 		} else {
 			delete proto;
 			proto = NULL;
-			printf("ERROR: Can't open new DCS UDP port %u!\n", port);
+			printf("ERROR: Can't open new DCS port!\n");
 		}
 	} else
-		printf("ERROR: Can't allocate new CDCSProtocolHandler at port %u\n", port);
+		printf("ERROR: Can't allocate new CDCSProtocolHandler\n");
 	return proto;
 }
 

@@ -24,15 +24,14 @@
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
-CDCSProtocolHandler::CDCSProtocolHandler(int family, unsigned short port) :
+CDCSProtocolHandler::CDCSProtocolHandler(int family) :
 m_family(family),
-m_socket(family, port),
+m_socket(family, 0),
 m_type(DC_NONE),
 m_buffer(NULL),
 m_length(0U),
 m_yourAddress(),
-m_yourPort(0U),
-m_myPort(port)
+m_yourPort(0U)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 }
@@ -49,7 +48,7 @@ bool CDCSProtocolHandler::open()
 
 unsigned short CDCSProtocolHandler::getPort() const
 {
-	return m_myPort;
+	return m_socket.getPort();
 }
 
 bool CDCSProtocolHandler::writeData(const CAMBEData& data)
@@ -155,7 +154,7 @@ CAMBEData* CDCSProtocolHandler::readData()
 
 	CAMBEData* data = new CAMBEData;
 
-	bool res = data->setDCSData(m_buffer, m_length, m_yourAddress, m_yourPort, m_myPort);
+	bool res = data->setDCSData(m_buffer, m_length, m_yourAddress, m_yourPort, m_socket.getPort());
 	if (!res) {
 		delete data;
 		return NULL;
@@ -171,7 +170,7 @@ CPollData* CDCSProtocolHandler::readPoll()
 
 	CPollData* poll = new CPollData;
 
-	bool res = poll->setDCSData(m_buffer, m_length, m_yourAddress, m_yourPort, m_myPort);
+	bool res = poll->setDCSData(m_buffer, m_length, m_yourAddress, m_yourPort, m_socket.getPort());
 	if (!res) {
 		delete poll;
 		return NULL;
@@ -187,7 +186,7 @@ CConnectData* CDCSProtocolHandler::readConnect()
 
 	CConnectData* connect = new CConnectData;
 
-	bool res = connect->setDCSData(m_buffer, m_length, m_yourAddress, m_yourPort, m_myPort);
+	bool res = connect->setDCSData(m_buffer, m_length, m_yourAddress, m_yourPort, m_socket.getPort());
 	if (!res) {
 		delete connect;
 		return NULL;

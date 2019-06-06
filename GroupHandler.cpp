@@ -933,8 +933,8 @@ void CGroupHandler::sendToRepeaters(CHeaderData& header) const
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
 		CSGSRepeater *repeater = it->second;
 		if (repeater != NULL) {
-            if (0 == repeater->m_repeater.find("N7TAE"))
-			    printf("sendToRepeater: rptr='%s' dest='%s' addr='%s' gate='%s'\n", repeater->m_repeater.c_str(), repeater->m_destination.c_str(), repeater->m_address.c_str(), repeater->m_gateway.c_str());
+            //if (0 == repeater->m_repeater.find("N7TAE"))
+			//    printf("sendToRepeater: rptr='%s' dest='%s' addr='%s' gate='%s'\n", repeater->m_repeater.c_str(), repeater->m_destination.c_str(), repeater->m_address.c_str(), repeater->m_gateway.c_str());
 			const bool is_ipv4 = (std::string::npos == repeater->m_address.find(':'));
 			int i = 0;
 			if (is_ipv4 && m_irc[1])

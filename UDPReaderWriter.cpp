@@ -36,11 +36,11 @@ bool CUDPReaderWriter::Open()
 {
 	m_fd = socket(m_family, SOCK_DGRAM, 0);
 	if (m_fd < 0) {
-		printf("Cannot create the UDP socket, err: %s\n", strerror(errno));
+		fprintf(stderr, "Cannot create the UDP socket, err: %s\n", strerror(errno));
 		return false;
 	}
 
-	if (m_port > 0U && (m_family==AF_INET || m_family==AF_INET6)) {
+	if (m_family==AF_INET || m_family==AF_INET6) {
 		m_addr.Initialize(m_family, m_port, "ANY_ADDRESS");
 
 		// int reuse = 1;
@@ -50,12 +50,24 @@ bool CUDPReaderWriter::Open()
 		// }
 
 		if (bind(m_fd, m_addr.GetPointer(), sizeof(struct sockaddr_storage)) == -1) {
-			printf("Cannot bind the UDP address (port: %u), err: %s\n", m_port, strerror(errno));
+			fprintf(stderr, "Cannot bind the UDP address (port: %u), err: %s\n", m_port, strerror(errno));
 			return false;
 		}
+
+        if (0 == m_port) {  // we're trying to set up an ephemeral port! Get the assigned port number!
+            CSockAddress addr;
+            addr.Initialize(m_family, 0, "ANY_PORT");
+            socklen_t size = addr.GetSize();
+            if (-1 == getsockname(m_fd, addr.GetPointer(), &size)) {
+                fprintf(stderr, "CUDPReaderWriter::Open error: Can't getsockname()\n");
+                Close();
+                return false;
+            }
+            m_port = addr.GetPort();
+        }
 	} else
 		return false;
-	
+
 
 	return true;
 }
@@ -74,18 +86,18 @@ int CUDPReaderWriter::Read(unsigned char *buffer, unsigned int length, CSockAddr
 
 	int ret = select(m_fd + 1, &readFds, NULL, NULL, &tv);
 	if (ret < 0) {
-		printf("Error returned from UDP select (port: %u), err: %s\n", m_port, strerror(errno));
+		fprintf(stderr, "Error returned from UDP select (port: %u), err: %s\n", m_port, strerror(errno));
 		return -1;
 	}
 
-	if (0 == ret) 
+	if (0 == ret)
 		return 0;
 
 	socklen_t size = sizeof(struct sockaddr_storage);
 
 	ssize_t len = recvfrom(m_fd, buffer, length, 0, addr.GetPointer(), &size);
 	if (len <= 0) {
-		printf("Error returned from recvfrom (port: %u), err: %s\n", m_port, strerror(errno));
+		fprintf(stderr, "Error returned from recvfrom (port: %u), err: %s\n", m_port, strerror(errno));
 		return -1;
 	}
 

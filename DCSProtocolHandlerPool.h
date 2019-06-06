@@ -26,7 +26,7 @@
 
 class CDCSProtocolHandlerPool {
 public:
-	CDCSProtocolHandlerPool(const unsigned short port);
+	CDCSProtocolHandlerPool();
 	~CDCSProtocolHandlerPool();
 
 	CDCSProtocolHandler *getHandler();
@@ -42,7 +42,4 @@ public:
 private:
 	std::map<unsigned short,CDCSProtocolHandler *> m_pool;
 	std::map<unsigned short,CDCSProtocolHandler *>::iterator m_index;
-	unsigned short m_basePort;
-	//std::string m_address;
 };
-

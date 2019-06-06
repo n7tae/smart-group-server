@@ -26,7 +26,7 @@
 
 class CDExtraProtocolHandlerPool {
 public:
-	CDExtraProtocolHandlerPool(const unsigned short port);
+	CDExtraProtocolHandlerPool();
 	~CDExtraProtocolHandlerPool();
 
 	CDExtraProtocolHandler *getHandler();
@@ -43,7 +43,5 @@ public:
 private:
 	std::map<unsigned short, CDExtraProtocolHandler *> m_pool;
 	std::map<unsigned short, CDExtraProtocolHandler *>::iterator m_index;
-	unsigned short m_basePort;
 	std::string m_address;
 };
-

@@ -37,7 +37,7 @@ enum DCS_TYPE {
 
 class CDCSProtocolHandler {
 public:
-	CDCSProtocolHandler(int family, unsigned short port);
+	CDCSProtocolHandler(int family);
 	~CDCSProtocolHandler();
 
 	bool open();
@@ -63,8 +63,6 @@ private:
 	unsigned int     m_length;
 	std::string      m_yourAddress;
 	unsigned short   m_yourPort;
-	unsigned short   m_myPort;
 
 	bool readPackets();
 };
-

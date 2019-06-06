@@ -22,12 +22,9 @@
 #include "DExtraProtocolHandlerPool.h"
 #include "Utils.h"
 
-CDExtraProtocolHandlerPool::CDExtraProtocolHandlerPool(const unsigned short port) :
-m_basePort(port)
+CDExtraProtocolHandlerPool::CDExtraProtocolHandlerPool()
 {
-	assert(port > 0U);
 	m_index = m_pool.end();
-	printf("DExtra UDP port base = %u\n", port);
 }
 
 CDExtraProtocolHandlerPool::~CDExtraProtocolHandlerPool()
@@ -41,21 +38,18 @@ CDExtraProtocolHandlerPool::~CDExtraProtocolHandlerPool()
 
 CDExtraProtocolHandler* CDExtraProtocolHandlerPool::getHandler()
 {
-	unsigned int port = m_basePort;
-	while (m_pool.end() != m_pool.find(port))
-		port++;	// find an unused port
-	CDExtraProtocolHandler *proto = new CDExtraProtocolHandler(AF_INET, port);
+	CDExtraProtocolHandler *proto = new CDExtraProtocolHandler(AF_INET);
 	if (proto) {
 		if (proto->open()) {
-			m_pool[port] = proto;
-			printf("New CDExtraProtocolHandler now on UDP port %u.\n", port);
+			m_pool[proto->getPort()] = proto;
+			printf("New CDExtraProtocolHandler now on UDP port %u.\n", proto->getPort());
 		} else {
 			delete proto;
 			proto = NULL;
-			printf("ERROR: Can't open new DExtra UDP port %u!\n", port);
+			printf("ERROR: Can't open new DExtra port!\n");
 		}
 	} else
-		printf("ERROR: Can't allocate new CDExtraProtocolHandler at port %u\n", port);
+		printf("ERROR: Can't allocate new CDExtraProtocolHandler\n");
 	return proto;
 }
 

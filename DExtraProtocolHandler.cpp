@@ -25,15 +25,14 @@
 
 const unsigned int BUFFER_LENGTH = 1000U;
 
-CDExtraProtocolHandler::CDExtraProtocolHandler(int family, unsigned short port) :
+CDExtraProtocolHandler::CDExtraProtocolHandler(int family) :
 m_family(family),
-m_socket(family, port),
+m_socket(family, 0),
 m_type(DE_NONE),
 m_buffer(NULL),
 m_length(0U),
 m_yourAddress(),
-m_yourPort(0U),
-m_myPort(port)
+m_yourPort(0U)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 }
@@ -50,7 +49,7 @@ bool CDExtraProtocolHandler::open()
 
 unsigned short CDExtraProtocolHandler::getPort() const
 {
-	return m_myPort;
+	return m_socket.getPort();
 }
 
 bool CDExtraProtocolHandler::writeHeader(const CHeaderData& header)
@@ -173,7 +172,7 @@ CHeaderData* CDExtraProtocolHandler::newHeader()
 	CHeaderData* header = new CHeaderData;
 
 	// DExtra checksums are unreliable
-	bool res = header->setDExtraData(m_buffer, m_length, false, m_yourAddress, m_yourPort, m_myPort);
+	bool res = header->setDExtraData(m_buffer, m_length, false, m_yourAddress, m_yourPort, m_socket.getPort());
 	if (!res) {
 		delete header;
 		return NULL;
@@ -189,7 +188,7 @@ CAMBEData* CDExtraProtocolHandler::newAMBE()
 
 	CAMBEData* data = new CAMBEData;
 
-	bool res = data->setDExtraData(m_buffer, m_length, m_yourAddress, m_yourPort, m_myPort);
+	bool res = data->setDExtraData(m_buffer, m_length, m_yourAddress, m_yourPort, m_socket.getPort());
 	if (!res) {
 		delete data;
 		return NULL;
@@ -205,7 +204,7 @@ CPollData* CDExtraProtocolHandler::newPoll()
 
 	CPollData* poll = new CPollData;
 
-	bool res = poll->setDExtraData(m_buffer, m_length, m_yourAddress, m_yourPort, m_myPort);
+	bool res = poll->setDExtraData(m_buffer, m_length, m_yourAddress, m_yourPort, m_socket.getPort());
 	if (!res) {
 		delete poll;
 		return NULL;
@@ -221,7 +220,7 @@ CConnectData* CDExtraProtocolHandler::newConnect()
 
 	CConnectData* connect = new CConnectData;
 
-	bool res = connect->setDExtraData(m_buffer, m_length, m_yourAddress, m_yourPort, m_myPort);
+	bool res = connect->setDExtraData(m_buffer, m_length, m_yourAddress, m_yourPort, m_socket.getPort());
 	if (!res) {
 		delete connect;
 		return NULL;

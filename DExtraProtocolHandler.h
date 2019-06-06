@@ -39,7 +39,7 @@ enum DEXTRA_TYPE {
 
 class CDExtraProtocolHandler {
 public:
-	CDExtraProtocolHandler(int family, unsigned short port);
+	CDExtraProtocolHandler(int family);
 	~CDExtraProtocolHandler();
 
 	bool open();
@@ -67,7 +67,6 @@ private:
 	unsigned int     m_length;
 	std::string      m_yourAddress;
 	unsigned short   m_yourPort;
-	unsigned short   m_myPort;
 
 	bool readPackets();
 };
