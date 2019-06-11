@@ -6,6 +6,8 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 
 ### What's New
 
+Please note that not all minor bug fixes are listed
+
 * **V# 190606** Outgoing DExtra and DCS linking ports are now auto-magically chosen from the ephemeral range. This will allow you to co-install a reflector and a smart-group-server on the same machine.
 
 * **V# 190527** The sgs is now IPv4/IPv6 dual-stack capabile. With a world routable 128-bit address space, IPv6 holds significant potential advanatages for routing methodologies, including *Group Routing*. Of course, to use IPv6, it must be available and enabled on the  machine on which the sgs server is installed. To enable *sgs* dual-stack operation, see the *Configuring* section.

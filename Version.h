@@ -22,4 +22,4 @@
 #include <string>
 
 const std::string VENDOR_NAME("Thomas A. Early, N7TAE");
-const std::string VERSION("190606");
+const std::string VERSION("190611");

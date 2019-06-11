@@ -92,15 +92,11 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		}
 	} else {
 		pirc = new Sircddb;
-		pirc->Hostname = "rrv6.openquad.net";
-		pirc->Username = m_callsign;
-		m_ircddb.push_back(pirc);
-		pirc = new Sircddb;
 		pirc->Hostname = "rr.openquad.net";
 		pirc->Username = m_callsign;
 		m_ircddb.push_back(pirc);
 	}
-	
+
 	for (unsigned int i=0; i<m_ircddb.size(); i++)
 		printf("IRCDDB[%d]: host='%s' user='%s' password='%s'\n", i, m_ircddb[i]->Hostname.c_str(), m_ircddb[i]->Username.c_str(), m_ircddb[i]->Password.c_str());
 	if (cfg.exists("ircddb") && 2<cfg.lookup("ircddb").getLength())
