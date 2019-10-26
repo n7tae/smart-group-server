@@ -32,6 +32,7 @@ struct Smodule {
 	std::string reflector;
 	bool txmsgswitch;
 	bool listen_only;
+	bool showlink;
 	unsigned int usertimeout;
 	CALLSIGN_SWITCH callsignswitch;
 };
@@ -51,8 +52,7 @@ public:
 
 	void getIrcDDB(int irc, std::string &hostname, std::string &username, std::string &password) const;
 
-	void getGroup(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info,
-		unsigned int &userTimeout, CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, bool &listen_only, std::string &reflector) const;
+	void getGroup(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info, unsigned int &userTimeout, CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, bool &listen_only, bool &showlink, std::string &reflector) const;
 
 	void getRemote(bool &enabled, std::string &password, unsigned short &port, bool &is_ipv6) const;
 

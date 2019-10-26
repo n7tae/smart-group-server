@@ -194,6 +194,9 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		sprintf(key, "module.[%d].txmsgswitch", i);
 		get_value(cfg, key, pmod->txmsgswitch, true);
 
+		sprintf(key, "module.[%d].showlink", i);
+		get_value(cfg, key, pmod->showlink, true);
+
 		sprintf(key, "module.[%d].reflector", i);
 		if (! get_value(cfg, key, basename, 8, 8, "")) {
 			printf("reflector %d must be undefined or exactly 8 chars!\n", i);
@@ -205,7 +208,12 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS")) && isdigit(basename[3]) && isdigit(basename[4]) && isdigit(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
 				pmod->reflector = basename;
 		}
-		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' usertimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'\n", i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->usertimeout, SCS_GROUP_CALLSIGN==pmod->callsignswitch ? "Group" : "User", pmod->txmsgswitch ? "true" : "false", pmod->reflector.c_str());
+		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' usertimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'", i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->usertimeout, SCS_GROUP_CALLSIGN==pmod->callsignswitch ? "Group" : "User", pmod->txmsgswitch ? "true" : "false", pmod->reflector.c_str());
+		if (pmod->showlink)
+			printf("\n");
+		else
+			printf(" (Hidden)\n");
+
 		m_module.push_back(pmod);
 
 		if (pmod->listen_only && pmod->reflector.size()<8) {
@@ -308,7 +316,7 @@ void CSGSConfig::getIrcDDB(int irc, std::string& hostname, std::string& username
 }
 
 void CSGSConfig::getGroup(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info,
-	unsigned int &userTimeout, CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, bool &listen_only, std::string &reflector) const
+	unsigned int &userTimeout, CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, bool &listen_only, bool &showlink, std::string &reflector) const
 {
 	band           = m_module[mod]->band;
 	callsign       = m_module[mod]->callsign;
@@ -319,6 +327,7 @@ void CSGSConfig::getGroup(unsigned int mod, std::string &band, std::string &call
 	txMsgSwitch    = m_module[mod]->txmsgswitch;
 	listen_only    = m_module[mod]->listen_only;
 	reflector      = m_module[mod]->reflector;
+	showlink       = m_module[mod]->showlink;
 }
 
 void CSGSConfig::getRemote(bool &enabled, std::string &password, unsigned short &port, bool &is_ipv6) const

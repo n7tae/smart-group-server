@@ -100,7 +100,7 @@ public:
 
 class CGroupHandler {
 public:
-	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string & eflector);
+	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, bool showlink, const std::string & eflector);
 	static void setG2Handler(CG2ProtocolHandler *handler0, CG2ProtocolHandler *handler1);
 	static void setIRC(CIRCDDB *irc0, CIRCDDB *irc1);
 	static void setCache(CCacheManager *cache);
@@ -120,7 +120,7 @@ public:
     // these two process functions are for the G2Handler
 	void process(CHeaderData &header);
 	void process(CAMBEData &data);
-    
+
 	bool remoteLink(const std::string &reflector);
 	void updateReflectorInfo();
 	DSTAR_LINKTYPE getLinkType();
@@ -142,7 +142,7 @@ public:
 	bool singleHeader();
 
 protected:
-	CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector);
+	CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, bool showlink, const std::string &reflector);
 	~CGroupHandler();
 
 	bool linkInt();
@@ -177,6 +177,7 @@ private:
 	CALLSIGN_SWITCH  m_callsignSwitch;
 	bool           m_txMsgSwitch;
 	bool           m_listenOnly;
+	bool           m_showlink;
 	std::map<unsigned int, CSGSId *>      m_ids;
 	std::map<std::string, CSGSUser *>     m_users;
 	std::map<std::string, CSGSRepeater *> m_repeaters;

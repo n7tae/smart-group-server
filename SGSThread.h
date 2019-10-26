@@ -38,7 +38,7 @@ public:
 	virtual void setCallsign(const std::string& callsign);
 	//virtual void setAddress(const std::string& address);
 
-	virtual void addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listen_only, const std::string &reflector);
+	virtual void addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listen_only, bool showlink, const std::string &reflector);
 
 	virtual void setRemote(bool enabled, const std::string& password, unsigned short port, bool is_ipv6);
 	virtual void setIRC(const unsigned int i, CIRCDDB* irc);
@@ -73,4 +73,3 @@ private:
 	void processDExtra(CDExtraProtocolHandlerPool *dextraPool);
 	void processDCS(CDCSProtocolHandlerPool *dcsPool);
 };
-

@@ -156,9 +156,9 @@ CSGSUser* CSGSId::getUser() const
 	//return m_textCollector;
 //}
 
-void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector)
+void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, bool showlink, const std::string &reflector)
 {
-	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, listenOnly, reflector);
+	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, listenOnly, showlink, reflector);
 
 	if (group)
 		m_Groups.push_back(group);
@@ -269,7 +269,7 @@ void CGroupHandler::link()
 		(*it)->linkInt();
 }
 
-CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, const std::string &reflector) :
+CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, bool showlink, const std::string &reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
 m_shortCallsign("SMRT"),
@@ -287,6 +287,7 @@ m_userTimeout(userTimeout),
 m_callsignSwitch(callsignSwitch),
 m_txMsgSwitch(txMsgSwitch),
 m_listenOnly(listenOnly),
+m_showlink(showlink),
 m_ids(),
 m_users(),
 m_repeaters()
@@ -876,28 +877,33 @@ void CGroupHandler::updateReflectorInfo()
 	std::string callsign(m_groupCallsign);
 	ReplaceChar(callsign, ' ', '_');
 	parms.push_back(callsign);
-	std::string reflector(m_linkReflector);
-	if (reflector.size() < 8)
-		reflector.assign("________");
-	else
-		ReplaceChar(reflector, ' ', '_');
-	parms.push_back(reflector);
-	switch (m_linkStatus) {
-		case LS_LINKING_DCS:
-		case LS_LINKING_DEXTRA:
-		case LS_PENDING_IRCDDB:
-			parms.push_back(std::string("LINKING"));
-			break;
-		case LS_LINKED_DCS:
-		case LS_LINKED_DEXTRA:
-			parms.push_back(std::string("LINKED"));
-			break;
-		case LS_NONE:
-			parms.push_back(std::string("UNLINKED"));
-			break;
-		default:
-			parms.push_back(std::string("FAILED"));
-			break;
+	if (m_showlink) {
+		std::string reflector(m_linkReflector);
+		if (reflector.size() < 8)
+			reflector.assign("________");
+		else
+			ReplaceChar(reflector, ' ', '_');
+		parms.push_back(reflector);
+		switch (m_linkStatus) {
+			case LS_LINKING_DCS:
+			case LS_LINKING_DEXTRA:
+			case LS_PENDING_IRCDDB:
+				parms.push_back(std::string("LINKING"));
+				break;
+			case LS_LINKED_DCS:
+			case LS_LINKED_DEXTRA:
+				parms.push_back(std::string("LINKED"));
+				break;
+			case LS_NONE:
+				parms.push_back(std::string("UNLINKED"));
+				break;
+			default:
+				parms.push_back(std::string("FAILED"));
+				break;
+		}
+	} else {
+		parms.push_back(std::string("________"));
+		parms.push_back(std::string("UNLINKED"));
 	}
 	parms.push_back(std::to_string(m_userTimeout));
 	std::string info(m_infoText);

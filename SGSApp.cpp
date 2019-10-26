@@ -93,7 +93,7 @@ bool CSGSApp::createThread()
 	for (unsigned int i=0; i<config.getIRCCount(); i++) {
 		std::string hostname, username, password;
 		config.getIrcDDB(i, hostname, username, password);
-		
+
 		if (hostname.size() && username.size()) {
 			CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_SmartGroupServer") + std::string("-") + VERSION);
 			bool res = ircDDB->open();
@@ -112,19 +112,19 @@ bool CSGSApp::createThread()
 		std::string band, callsign, logoff, info, reflector;
 		unsigned int usertimeout;
 		CALLSIGN_SWITCH callsignswitch;
-		bool txmsgswitch, listen_only;
+		bool txmsgswitch, listen_only, showlink;
 
-		config.getGroup(i, band, callsign, logoff, info, usertimeout, callsignswitch, txmsgswitch, listen_only, reflector);
+		config.getGroup(i, band, callsign, logoff, info, usertimeout, callsignswitch, txmsgswitch, listen_only, showlink, reflector);
 
 		if (callsign.size() && isalnum(callsign[0])) {
 			std::string repeater(CallSign);
 			repeater.resize(7, ' ');
 			repeater.push_back(band[0]);
-			m_thread->addGroup(callsign, logoff, repeater, info, usertimeout, callsignswitch, txmsgswitch, listen_only, reflector);
-			printf("Group %d: %s/%s using %s, \"%s\", timeout: %u mins, c/s switch: %s, msg switch: %s, RxOnly: %s, Linked: %s\n",
-				i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), usertimeout,
-				SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false",
-				listen_only ? "true" : "false", reflector.c_str());
+			m_thread->addGroup(callsign, logoff, repeater, info, usertimeout, callsignswitch, txmsgswitch, listen_only, showlink, reflector);
+			printf("Group %d: %s/%s using %s, \"%s\", timeout: %u mins, c/s switch: %s, msg switch: %s, RxOnly: %s, Linked: %s", i, callsign.c_str(), logoff.c_str(), repeater.c_str(), info.c_str(), usertimeout, SCS_GROUP_CALLSIGN==callsignswitch ? "Group" : "User", txmsgswitch ? "true" : "false", listen_only ? "true" : "false", reflector.c_str());
+			if (! showlink)
+				printf(" (hidden)");
+			printf("\n");
 		}
 	}
 
@@ -140,4 +140,3 @@ bool CSGSApp::createThread()
 
 	return true;
 }
-
