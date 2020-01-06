@@ -807,7 +807,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 					delete user;
 					user = NULL;
 				} else {
-					printf("Cannot find %s in the cache", callsign.c_str());
+					printf("Cannot find %s in the cache\n", callsign.c_str());
 				}
 
 				delete tx;
