@@ -551,7 +551,7 @@ bool CGroupHandler::logoff(const std::string &callsign)
 	} else {
 		CSGSUser* user = m_users[callsign];
 		if (user == NULL) {
-			printf("Invalid callsign asked to logoff");
+			printf("Invalid callsign asked to logoff\n");
 			return false;
 		}
 		printf("Removing %s from Smart Group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
@@ -808,7 +808,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 					delete user;
 					user = NULL;
 				} else {
-					printf("Cannot find %s in the cache", callsign.c_str());
+					printf("Cannot find %s in the cache\n", callsign.c_str());
 				}
 
 				delete tx;
