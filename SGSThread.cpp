@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2013,2015 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017-2019 by Thomas Early N7TAE
+ *   Copyright (c) 2017-2020 by Thomas Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -142,8 +142,8 @@ void CSGSThread::run()
 		CGroupHandler::link();
 
 	if (m_remoteEnabled && m_remotePassword.size() && m_remotePort > 0U) {
-		m_remote = new CRemoteHandler(m_remotePassword, m_remotePort, m_remoteIPV6);
-		bool res = m_remote->open();
+		m_remote = new CRemoteHandler();
+		bool res = m_remote->open(m_remotePassword, m_remotePort, m_remoteIPV6);
 		if (!res) {
 			delete m_remote;
 			m_remote = NULL;
@@ -216,7 +216,6 @@ void CSGSThread::run()
 	}
 
 	if (m_remote != NULL) {
-		m_remote->close();
 		delete m_remote;
 	}
 }
@@ -478,6 +477,10 @@ void CSGSThread::processG2(const int i)
 		}
 	}
 }
+
+#ifndef CFG_DIR
+#define CFG_DIR "/usr/local/etc"
+#endif
 
 void CSGSThread::loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarProtocol)
 {

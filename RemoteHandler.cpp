@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011,2012,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017-2018 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017-2018,2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,165 +20,144 @@
 #include <cassert>
 #include <cstdlib>
 #include <list>
+#include <vector>
+#include <sstream>
+#include <iterator>
 
-#include "GroupHandler.h"
 #include "RemoteHandler.h"
 #include "DExtraHandler.h"
 #include "DStarDefines.h"
 #include "DCSHandler.h"
 #include "Utils.h"
 
-CRemoteHandler::CRemoteHandler(const std::string &password, unsigned short port, bool is_ipv6) :
-m_password(password),
-m_handler(is_ipv6, port),
-m_random(0U)
+bool CRemoteHandler::open(const std::string &password, const unsigned short port, const bool isIPV6)
 {
-	assert(port > 0U);
-	assert(password.size());
-}
-
-CRemoteHandler::~CRemoteHandler()
-{
-}
-
-bool CRemoteHandler::open()
-{
-	return m_handler.open();
+	return m_tlsserver.OpenSocket(password, isIPV6 ? "::" : "0.0.0.0", port);
 }
 
 void CRemoteHandler::process()
 {
-	RPH_TYPE type = m_handler.readType();
-	switch (type) {
-		case RPHT_LOGOUT:
-			m_handler.setLoggedIn(false);
-			printf("Remote control user has logged out\n");
-			break;
-		case RPHT_LOGIN:
-			m_random = (uint32_t)rand();
-			m_handler.sendRandom(m_random);
-			break;
-		case RPHT_HASH: {
-				bool valid = m_handler.readHash(m_password, m_random);
-				if (valid) {
-					printf("Remote control user has logged in\n");
-					m_handler.setLoggedIn(true);
-					m_handler.sendACK();
-				} else {
-					printf("Remote control user has failed login authentication\n");
-					m_handler.setLoggedIn(false);
-					m_handler.sendNAK("Invalid password");
-				}
-			}
-			break;
-		case RPHT_SMARTGROUP: {
-				std::string callsign = m_handler.readGroup();
-				sendGroup(callsign);
-			}
-			break;
-		case RPHT_LINK: {
-				std::string callsign, reflector;
-				m_handler.readLink(callsign, reflector);
-				printf("Remote control user has linked \"%s\" to \"%s\"\n", callsign.c_str(), reflector.c_str());
-				link(callsign, reflector);
-			}
-			break;
-		case RPHT_UNLINK: {
-				std::string callsign;
-				m_handler.readUnlink(callsign);
-				printf("Remote control user has unlinked \"%s\"\n", callsign.c_str());
-				unlink(callsign);
-			}
-			break;
-		case RPHT_LOGOFF: {
-				std::string callsign, user;
-				m_handler.readLogoff(callsign, user);
-				printf("Remote control user has logged off \"%s\" from \"%s\"\n", user.c_str(), callsign.c_str());
-				logoff(callsign, user);
-			}
-			break;
-		default:
-			break;
+	std::string command;
+	if (m_tlsserver.GetCommand(command))
+		return;	// nothing to do...
+	// parse the command into words
+	std::stringstream ss(command);
+	std::istream_iterator<std::string> begin(ss);
+	std::istream_iterator<std::string> end;
+	std::vector<std::string> cwords(begin, end);
+
+	CGroupHandler *group = CGroupHandler::findGroup(cwords[0]);
+	if (NULL == group) {
+		char emsg[128];
+		snprintf(emsg, 128, "Smart Group %s not found", cwords[0].c_str());
+		m_tlsserver.Write(emsg);
+	} else {
+		// we have a valid smart group in cwords[0]
+		if      (cwords.size() > 1 && 0 == cwords[1].compare("list")) {
+			sendGroup(group);
+		}
+		else if (cwords.size() > 2 && 0 == cwords[1].compare("link")) {
+			printf("Remote control user has linked \"%s\" to \"%s\"\n", cwords[0].c_str(), cwords[2].c_str());
+			link(group, cwords[2]);
+		}
+		else if (cwords.size() > 1 && 0 == cwords[1].compare("unlink")) {
+			printf("Remote control user has unlinked \"%s\"\n", cwords[0].c_str());
+			unlink(group);
+		}
+		else if (cwords.size() > 2 && 0 == cwords[1].compare("drop")) {
+			printf("Remote control user has logged off \"%s\" from \"%s\"\n", cwords[2].c_str(), cwords[0].c_str());
+			logoff(group, cwords[2]);
+		}
+		else {
+			printf("The command \"%s\" is bad\n", command.c_str());
+		}
+		m_tlsserver.CloseClient();
 	}
 }
 
-void CRemoteHandler::close()
-{
-	m_handler.close();
-}
 
-void CRemoteHandler::sendGroup(const std::string &callsign)
+void CRemoteHandler::sendGroup(CGroupHandler *group)
 {
-	CGroupHandler *group = CGroupHandler::findGroup(callsign);
-	if (group == NULL) {
-		m_handler.sendNAK("Invalid Smart Group callsign");
-		return;
-	}
-
 	CRemoteGroup *data = group->getInfo();
-	if (data != NULL)
-		m_handler.sendGroup(*data);
-
+	if (data != NULL) {
+		char msg[128];
+		snprintf(msg, 128, "Subscribe = %s", data->getCallsign().c_str());
+		m_tlsserver.Write(msg);
+		snprintf(msg, 128, "Unsubscribe = %s", data->getLogoff().c_str());
+		m_tlsserver.Write(msg);
+		snprintf(msg, 128, "Module = %s", data->getRepeater().c_str());
+		m_tlsserver.Write(msg);
+		snprintf(msg, 128, "Description = %s", data->getInfoText().c_str());
+		m_tlsserver.Write(msg);
+		snprintf(msg, 128, "Reflector = %s", data->getReflector().c_str());
+		m_tlsserver.Write(msg);
+		switch (data->getLinkStatus()) {
+			case LS_LINKING_DCS:
+			case LS_LINKING_DEXTRA:
+				m_tlsserver.Write("Link Status = Linking");
+				break;
+			case LS_LINKED_DCS:
+			case LS_LINKED_DEXTRA:
+				m_tlsserver.Write("Link Status = Linked");
+				break;
+			default:
+				m_tlsserver.Write("Linked Status = Unlinked");
+				break;
+		}
+		printf("User Timeout = %u min\n", data->getUserTimeout());
+		for (uint32_t i=0; i<data->getUserCount(); i++) {
+			CRemoteUser *user = data->getUser(i);
+			snprintf(msg, 128, "User = %s, timer = %u min, timeout = %u min\n", user->getCallsign().c_str(), user->getTimer()/60U, user->getTimeout()/60U);
+		}
+	}
 	delete data;
 }
 
-void CRemoteHandler::link(const std::string &callsign, const std::string &reflector)
+void CRemoteHandler::link(CGroupHandler *group, const std::string &reflector)
 {
-	CGroupHandler *smartGroup = CGroupHandler::findGroup(callsign);
-	if (NULL == smartGroup) {
-		m_handler.sendNAK(std::string("Invalid Smart Group subscribe call ") + callsign);
-		return;
-	}
-
-	if (smartGroup->remoteLink(reflector))
-		m_handler.sendACK();
+	char msg[128];
+	CRemoteGroup *data = group->getInfo();
+	if (group->remoteLink(reflector))
+		snprintf(msg, 128, "Smart Group %s linked to %s", data->getCallsign().c_str(), reflector.c_str());
 	else
-		m_handler.sendNAK("link failed");
+		snprintf(msg, 128, "Failed to link Smart Group %s to %s", data->getCallsign().c_str(), reflector.c_str());
+	m_tlsserver.Write(msg);
+	delete data;
 }
 
-void CRemoteHandler::unlink(const std::string &callsign)
+void CRemoteHandler::unlink(CGroupHandler *group)
 {
-	CGroupHandler *smartGroup = CGroupHandler::findGroup(callsign);
-	if (NULL == smartGroup) {
-		m_handler.sendNAK(std::string("Invalid Smart Group subscribe call ") + callsign);
-		return;
+	char msg[128];
+	CRemoteGroup *data = group->getInfo();
+	switch (group->getLinkType()) {
+		case LT_DEXTRA:
+			CDExtraHandler::unlink(group, data->getReflector(), false);
+			snprintf(msg, 128, "Smart Group %s unlinked from %s", data->getCallsign().c_str(), data->getReflector().c_str());
+			break;
+		case LT_DCS:
+			CDCSHandler::unlink(group, data->getReflector(), false);
+			snprintf(msg, 128, "Smart Group %s unlinked from %s", data->getCallsign().c_str(), data->getReflector().c_str());
+			break;
+		default:
+			snprintf(msg, 128, "Smart Group %s is already unlinked", data->getCallsign().c_str());
+			m_tlsserver.Write(msg);
+			delete data;
+			return;
 	}
-
-	CRemoteGroup *data = smartGroup->getInfo();
-	if (data) {
-		switch (smartGroup->getLinkType()) {
-			case LT_DEXTRA:
-				CDExtraHandler::unlink(smartGroup, data->getReflector(), false);
-				break;
-			case LT_DCS:
-				CDCSHandler::unlink(smartGroup, data->getReflector(), false);
-				break;
-			default:
-				delete data;
-				m_handler.sendNAK("already unlinked");
-				return;
-		}
-		delete data;
-	} else {
-		m_handler.sendNAK("could not get Smart Group info");
-		return;
-	}
-	smartGroup->setLinkType(LT_NONE);
-	smartGroup->clearReflector();
-    m_handler.sendACK();
+	delete data;
+	group->setLinkType(LT_NONE);
+	group->clearReflector();
+    m_tlsserver.Write(msg);
 }
 
-void CRemoteHandler::logoff(const std::string &callsign, const std::string &user)
+void CRemoteHandler::logoff(CGroupHandler *group, const std::string &user)
 {
-	CGroupHandler *pGroup = CGroupHandler::findGroup(callsign);
-	if (pGroup == NULL) {
-		m_handler.sendNAK("Invalid Smart Group callsign");
-		return;
-	}
-
-	bool res = pGroup->logoff(user);
-	if (!res)
-		m_handler.sendNAK("Invalid Smart Group user callsign");
+	char msg[128];
+	CRemoteGroup *data = group->getInfo();
+	if (group->logoff(user))
+		snprintf(msg, 128, "Logging off %s from Smart Group %s", user.c_str(), data->getCallsign().c_str());
 	else
-		m_handler.sendACK();
+		snprintf(msg, 128, "Could not logoff %s from Smart Group %s", user.c_str(), data->getCallsign().c_str());
+	m_tlsserver.Write(msg);
+	delete data;
 }

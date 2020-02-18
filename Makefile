@@ -19,10 +19,13 @@ OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 
 sgs :  $(OBJS)
-	g++ $(CPPFLAGS) -o sgs $(OBJS) -lconfig++ -pthread
+	g++ $(CPPFLAGS) -o sgs $(OBJS) -lconfig++ -lssl -lcrypto -pthread
 
 %.o : %.cpp
 	g++ $(CPPFLAGS) -MMD -MD -c $< -o $@
+
+sgs.crt sgs.key :
+	openssl req -new -newkey rsa:4096 -days 36500 -nodes -x509 -subj "/CN=Smart Group Server" -keyout sgs.key  -out sgs.crt
 
 .PHONY: clean
 
@@ -36,11 +39,12 @@ newhostfiles :
 	/usr/bin/wget http://www.pistar.uk/downloads/DExtra_Hosts.txt && sudo /bin/mv -f DExtra_Hosts.txt $(CFGDIR)
 	/usr/bin/wget http://www.pistar.uk/downloads/DCS_Hosts.txt && sudo /bin/mv -f DCS_Hosts.txt $(CFGDIR)
 
-install : sgs
+install : sgs sgs.key sgs.crt sgs.cfg
 	/bin/cp -f sgs $(BINDIR)
 # Fedora defaults to perm 700 for home directories, so we cannot symlink sgs.cfg
 	if [ $(REDHAT) = 1 ]; then /bin/cp -f $(shell pwd)/sgs.cfg $(CFGDIR); else /bin/ln -s $(shell pwd)/sgs.cfg $(CFGDIR); fi
 	/bin/cp -f sgs.service /lib/systemd/system
+	/bin/cp -f sgs.{crt,key} $(CFGDIR)
 	if [ $(SGSUSER) = 0 ]; then /usr/sbin/useradd -d /tmp -M -s /usr/sbin/nologin -r sgs; fi
 	systemctl enable sgs.service
 	systemctl daemon-reload
@@ -55,6 +59,7 @@ uninstall :
 # On Fedora, save current sgs.cfg in working directory before removing
 	if [ $(REDHAT) = 1 ]; then /bin/cp -f $(CFGDIR)/sgs.cfg $(shell pwd)/sgs.cfg; fi
 	/bin/rm -f $(CFGDIR)/sgs.cfg
+	/bin/rm -f $(CFGDIR)/sgs.{key,crt}
 	/usr/sbin/userdel sgs
 
 removehostfiles :

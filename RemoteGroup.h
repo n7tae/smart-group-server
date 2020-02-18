@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018,2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@
 
 class CRemoteGroup {
 public:
-	CRemoteGroup(const std::string& callsign, const std::string& logoff, const std::string &repeater, const std::string &infoText, const std::string &linkReflector,
-			LINK_STATUS linkStatus, unsigned int userTimeout);
+	CRemoteGroup(const std::string& callsign, const std::string& logoff, const std::string &repeater, const std::string &infoText, const std::string &linkReflector, LINK_STATUS linkStatus, unsigned int userTimeout);
 	~CRemoteGroup();
 
 	void addUser(const std::string& callsign, uint32_t timer, uint32_t timeout);

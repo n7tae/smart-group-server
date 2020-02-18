@@ -22,27 +22,24 @@
 #include <string>
 #include <cstdint>
 
-#include "RemoteProtocolHandler.h"
-#include "Timer.h"
+#include "GroupHandler.h"
+#include "TLSServer.h"
 
 class CRemoteHandler {
 public:
-	CRemoteHandler(const std::string &password, unsigned short port, bool is_ipv6);
-	~CRemoteHandler();
+	CRemoteHandler() {};
+	~CRemoteHandler() {};
 
-	bool open();
+	bool open(const std::string &password, const unsigned short port, const bool isIPV6);
 
 	void process();
 
-	void close();
-
 private:
-	std::string            m_password;
-	CRemoteProtocolHandler m_handler;
-	uint32_t               m_random;
+	std::string	m_password;
+	CTLSServer	m_tlsserver;
 
-	void sendGroup(const std::string &callsign);
-	void link(const std::string &callsign, const std::string &reflector);
-	void unlink(const std::string &callsign);
-	void logoff(const std::string &callsign, const std::string &user);
+	void sendGroup(CGroupHandler *group);
+	void link(CGroupHandler *group, const std::string &reflector);
+	void unlink(CGroupHandler *group);
+	void logoff(CGroupHandler *group, const std::string &user);
 };

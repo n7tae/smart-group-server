@@ -8,6 +8,8 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 
 Please note that not all minor bug fixes are listed.
 
+* **V# 200218** Remote control now uses a secure TLS/TCP port rather than original, problematic UDP port. Be sure to add a port forwarding rule on the firewall for you configured remote control TCP port so that an incoming client can connect. Certificates and keys are automatically generated using **openssl** by the *install* target of the Makefile.
+
 * **V# 190606** Outgoing DExtra and DCS linking ports are now auto-magically chosen from the ephemeral range. This will allow you to co-install a reflector and a smart-group-server on the same machine.
 
 * **V# 190527** The sgs is now IPv4/IPv6 dual-stack capabile. With a world routable 128-bit address space, IPv6 holds significant potential advanatages for routing methodologies, including *Group Routing*. Of course, to use IPv6, it must be available and enabled on the  machine on which the sgs server is installed. To enable *sgs* dual-stack operation, see the *Configuring* section.
@@ -69,9 +71,9 @@ These instructions are for a Debian-based OS. Begin by downloading this git repo
 ```
 git clone git://github.com/n7tae/smart-group-server.git
 ```
-Install the only needed development library:
+Install the needed needed development library and packages:
 ```
-sudo apt-get install libconfig++-dev
+sudo apt install libconfig++-dev openssl libssl-dev
 ```
 Change to the smart-group-server directory and type `make`. This should make the executable, `sgs` without errors or warnings. By default, you will have a group server that can link groups to X-Reflectors or DCS-Reflectors. Of course you can declare an unlinked channel by simply not defining a *reflector* parameter for that channel.
 
