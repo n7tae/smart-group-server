@@ -165,8 +165,10 @@ void CSGSThread::run()
 			}
 			processDExtra(&dextraPool);
 			processDCS(&dcsPool);
-			if (m_remote != NULL)
-				m_remote->process();
+			if (m_remote != NULL) {
+				if (m_remote->process())
+					m_killed = true;
+			}
 
 			time_t now;
 			time(&now);

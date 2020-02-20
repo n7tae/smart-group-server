@@ -32,7 +32,7 @@ public:
 
 	bool open(const std::string &password, const unsigned short port, const bool isIPV6);
 
-	void process();
+	bool process();
 
 private:
 	std::string	m_password;

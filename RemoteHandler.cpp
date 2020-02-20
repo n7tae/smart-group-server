@@ -35,16 +35,22 @@ bool CRemoteHandler::open(const std::string &password, const unsigned short port
 	return m_tlsserver.OpenSocket(password, isIPV6 ? "::" : "0.0.0.0", port);
 }
 
-void CRemoteHandler::process()
+bool CRemoteHandler::process()
 {
 	std::string command;
 	if (m_tlsserver.GetCommand(command))
-		return;	// nothing to do...
+		return false;	// nothing to do...
 	// parse the command into words
 	std::stringstream ss(command);
 	std::istream_iterator<std::string> begin(ss);
 	std::istream_iterator<std::string> end;
 	std::vector<std::string> cwords(begin, end);
+
+	if (0 == cwords.size())
+		return false;
+
+	if (0 == cwords[0].compare("halt"))
+		return true;
 
 	CGroupHandler *group = CGroupHandler::findGroup(cwords[0]);
 	if (NULL == group) {
@@ -73,6 +79,7 @@ void CRemoteHandler::process()
 		}
 		m_tlsserver.CloseClient();
 	}
+	return false;
 }
 
 
