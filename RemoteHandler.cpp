@@ -53,11 +53,13 @@ bool CRemoteHandler::process()
 		return true;
 
 	ReplaceChar(cwords[0], '_', ' ');
+	cwords[0].resize(8);
 	CGroupHandler *group = CGroupHandler::findGroup(cwords[0]);
 	if (NULL == group) {
 		char emsg[128];
-		snprintf(emsg, 128, "Smart Group %s not found", cwords[0].c_str());
+		snprintf(emsg, 128, "Smart Group [%s] not found", cwords[0].c_str());
 		m_tlsserver.Write(emsg);
+		m_tlsserver.CloseClient();
 	} else {
 		// we have a valid smart group in cwords[0]
 		if      (cwords.size() > 1 && 0 == cwords[1].compare("list")) {
