@@ -46,6 +46,7 @@ install : sgs sgs.key sgs.crt sgs.cfg
 	/bin/cp -f sgs.service /lib/systemd/system
 	/bin/cp -f sgs.crt sgs.key $(CFGDIR)
 	if [ $(SGSUSER) = 0 ]; then /usr/sbin/useradd -d /tmp -M -s /usr/sbin/nologin -r sgs; fi
+	chown sgs:sgs $(CFGDIR)/sgs.key
 	systemctl enable sgs.service
 	systemctl daemon-reload
 	systemctl start sgs.service
