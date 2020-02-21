@@ -549,11 +549,12 @@ bool CGroupHandler::LogoffUser(const std::string &callsign)
 
 		return true;
 	} else {
-		CSGSUser* user = m_users[callsign];
-		if (user == NULL) {
+		auto it = m_users.find(callsign);
+		if (it == m_users.end()) {
 			printf("Invalid callsign asked to logoff\n");
 			return false;
 		}
+		CSGSUser *user = it->second;
 		printf("Removing %s from Smart Group %s, logged off by remote control\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 		logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform Quadnet
 
