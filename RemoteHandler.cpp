@@ -67,6 +67,7 @@ bool CRemoteHandler::process()
 		}
 		else if (cwords.size() > 2 && 0 == cwords[1].compare("link")) {
 			ReplaceChar(cwords[2], '_', ' ');
+			cwords[2].resize(8, ' ');
 			printf("Remote control user has linked \"%s\" to \"%s\"\n", cwords[0].c_str(), cwords[2].c_str());
 			link(group, cwords[2]);
 		}
@@ -76,6 +77,7 @@ bool CRemoteHandler::process()
 		}
 		else if (cwords.size() > 2 && 0 == cwords[1].compare("drop")) {
 			ReplaceChar(cwords[2], '_', ' ');
+			cwords[2].resize(8, ' ');
 			printf("Remote control user has logged off \"%s\" from \"%s\"\n", cwords[2].c_str(), cwords[0].c_str());
 			logoff(group, cwords[2]);
 		}
