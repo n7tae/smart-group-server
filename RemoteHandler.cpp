@@ -52,6 +52,7 @@ bool CRemoteHandler::process()
 	if (0 == cwords[0].compare("halt"))
 		return true;
 
+	ReplaceChar(cwords[0], '_', ' ');
 	CGroupHandler *group = CGroupHandler::findGroup(cwords[0]);
 	if (NULL == group) {
 		char emsg[128];
@@ -63,6 +64,7 @@ bool CRemoteHandler::process()
 			sendGroup(group);
 		}
 		else if (cwords.size() > 2 && 0 == cwords[1].compare("link")) {
+			ReplaceChar(cwords[2], '_', ' ');
 			printf("Remote control user has linked \"%s\" to \"%s\"\n", cwords[0].c_str(), cwords[2].c_str());
 			link(group, cwords[2]);
 		}
@@ -71,6 +73,7 @@ bool CRemoteHandler::process()
 			unlink(group);
 		}
 		else if (cwords.size() > 2 && 0 == cwords[1].compare("drop")) {
+			ReplaceChar(cwords[2], '_', ' ');
 			printf("Remote control user has logged off \"%s\" from \"%s\"\n", cwords[2].c_str(), cwords[0].c_str());
 			logoff(group, cwords[2]);
 		}
@@ -88,33 +91,35 @@ void CRemoteHandler::sendGroup(CGroupHandler *group)
 	CRemoteGroup *data = group->getInfo();
 	if (data != NULL) {
 		char msg[128];
-		snprintf(msg, 128, "Subscribe = %s", data->getCallsign().c_str());
+		snprintf(msg, 128, "Subscribe    = %s", data->getCallsign().c_str());
 		m_tlsserver.Write(msg);
-		snprintf(msg, 128, "Unsubscribe = %s", data->getLogoff().c_str());
+		snprintf(msg, 128, "Unsubscribe  = %s", data->getLogoff().c_str());
 		m_tlsserver.Write(msg);
-		snprintf(msg, 128, "Module = %s", data->getRepeater().c_str());
+		snprintf(msg, 128, "Module       = %s", data->getRepeater().c_str());
 		m_tlsserver.Write(msg);
-		snprintf(msg, 128, "Description = %s", data->getInfoText().c_str());
+		snprintf(msg, 128, "Description  = %s", data->getInfoText().c_str());
 		m_tlsserver.Write(msg);
-		snprintf(msg, 128, "Reflector = %s", data->getReflector().c_str());
+		snprintf(msg, 128, "Reflector    = %s", data->getReflector().c_str());
 		m_tlsserver.Write(msg);
 		switch (data->getLinkStatus()) {
 			case LS_LINKING_DCS:
 			case LS_LINKING_DEXTRA:
-				m_tlsserver.Write("Link Status = Linking");
+				m_tlsserver.Write("Link Status  = Linking");
 				break;
 			case LS_LINKED_DCS:
 			case LS_LINKED_DEXTRA:
-				m_tlsserver.Write("Link Status = Linked");
+				m_tlsserver.Write("Link Status  = Linked");
 				break;
 			default:
-				m_tlsserver.Write("Linked Status = Unlinked");
+				m_tlsserver.Write("Link Status  = Unlinked");
 				break;
 		}
-		printf("User Timeout = %u min\n", data->getUserTimeout());
+		snprintf(msg, 128, "User Timeout = %u min", data->getUserTimeout());
+		m_tlsserver.Write(msg);
 		for (uint32_t i=0; i<data->getUserCount(); i++) {
 			CRemoteUser *user = data->getUser(i);
-			snprintf(msg, 128, "User = %s, timer = %u min, timeout = %u min\n", user->getCallsign().c_str(), user->getTimer()/60U, user->getTimeout()/60U);
+			snprintf(msg, 128, "    User = %s, timer = %u min, timeout = %u min", user->getCallsign().c_str(), user->getTimer()/60U, user->getTimeout()/60U);
+			m_tlsserver.Write(msg);
 		}
 	}
 	delete data;

@@ -143,8 +143,8 @@ void CSGSThread::run()
 
 	if (m_remoteEnabled && m_remotePassword.size() && m_remotePort > 0U) {
 		m_remote = new CRemoteHandler();
-		bool res = m_remote->open(m_remotePassword, m_remotePort, m_remoteIPV6);
-		if (!res) {
+		if (m_remote->open(m_remotePassword, m_remotePort, m_remoteIPV6)) {
+			fprintf(stderr, "Unable to create instance of CRemoteHandler\n");
 			delete m_remote;
 			m_remote = NULL;
 		}
