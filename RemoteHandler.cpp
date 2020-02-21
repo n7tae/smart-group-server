@@ -53,7 +53,7 @@ bool CRemoteHandler::process()
 		return true;
 
 	ReplaceChar(cwords[0], '_', ' ');
-	cwords[0].resize(8);
+	cwords[0].resize(8, ' ');
 	CGroupHandler *group = CGroupHandler::findGroup(cwords[0]);
 	if (NULL == group) {
 		char emsg[128];
