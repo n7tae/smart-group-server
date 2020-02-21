@@ -129,7 +129,7 @@ public:
 
 	CRemoteGroup *getInfo() const;
 
-	bool logoff(const std::string& callsign);
+	bool LogoffUser(const std::string& callsign);
 
     // these two process functions are for linked reflectors
 	bool process(CHeaderData &header, DIRECTION direction, AUDIO_SOURCE source);

@@ -170,7 +170,7 @@ void CRemoteHandler::logoff(CGroupHandler *group, const std::string &user)
 {
 	char msg[128];
 	CRemoteGroup *data = group->getInfo();
-	if (group->logoff(user))
+	if (group->LogoffUser(user))
 		snprintf(msg, 128, "Logging off %s from Smart Group %s", user.c_str(), data->getCallsign().c_str());
 	else
 		snprintf(msg, 128, "Could not logoff %s from Smart Group %s", user.c_str(), data->getCallsign().c_str());

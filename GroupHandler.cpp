@@ -523,7 +523,7 @@ void CGroupHandler::process(CAMBEData &data)
 	}
 }
 
-bool CGroupHandler::logoff(const std::string &callsign)
+bool CGroupHandler::LogoffUser(const std::string &callsign)
 {
 	if (0 == callsign.compare("ALL     ")) {
 		for (auto it = m_users.begin(); it != m_users.end(); ++it) {
