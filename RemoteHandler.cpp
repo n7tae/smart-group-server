@@ -46,39 +46,49 @@ bool CRemoteHandler::process()
 	std::istream_iterator<std::string> end;
 	std::vector<std::string> cwords(begin, end);
 
-	if (0 == cwords.size())
+
+	if (cwords.size() == 0) {
 		return false;
+	}
 
-	if (0 == cwords[0].compare("halt"))
+	if (0 == cwords[0].compare("halt")) {
+		printf("Received halt command from remote client, shutting down...\n");
 		return true;
+	}
 
-	ReplaceChar(cwords[0], '_', ' ');
-	cwords[0].resize(8, ' ');
-	CGroupHandler *group = CGroupHandler::findGroup(cwords[0]);
+	if (cwords.size() < 2) {
+		fprintf(stderr, "Not enough words in the command: [%s]\n", command.c_str());
+		return false;
+	}
+
+	ReplaceChar(cwords[1], '_', ' ');	// this is the subscribe callsign
+	cwords[1].resize(8, ' ');
+
+	CGroupHandler *group = CGroupHandler::findGroup(cwords[1]);
 	if (NULL == group) {
 		char emsg[128];
-		snprintf(emsg, 128, "Smart Group [%s] not found", cwords[0].c_str());
+		snprintf(emsg, 128, "Smart Group [%s] not found", cwords[1].c_str());
 		m_tlsserver.Write(emsg);
 		m_tlsserver.CloseClient();
 	} else {
-		// we have a valid smart group in cwords[0]
-		if      (cwords.size() > 1 && 0 == cwords[1].compare("list")) {
+		// we have a valid smart group in cwords[1]
+		if      (cwords.size() > 1 && 0 == cwords[0].compare("list")) {
 			sendGroup(group);
 		}
-		else if (cwords.size() > 2 && 0 == cwords[1].compare("link")) {
+		else if (cwords.size() > 2 && 0 == cwords[0].compare("link")) {
 			ReplaceChar(cwords[2], '_', ' ');
 			cwords[2].resize(8, ' ');
-			printf("Remote control user has linked \"%s\" to \"%s\"\n", cwords[0].c_str(), cwords[2].c_str());
+			printf("Remote control user has linked \"%s\" to \"%s\"\n", cwords[1].c_str(), cwords[2].c_str());
 			link(group, cwords[2]);
 		}
-		else if (cwords.size() > 1 && 0 == cwords[1].compare("unlink")) {
-			printf("Remote control user has unlinked \"%s\"\n", cwords[0].c_str());
+		else if (cwords.size() > 1 && 0 == cwords[0].compare("unlink")) {
+			printf("Remote control user has unlinked \"%s\"\n", cwords[1].c_str());
 			unlink(group);
 		}
-		else if (cwords.size() > 2 && 0 == cwords[1].compare("drop")) {
+		else if (cwords.size() > 2 && 0 == cwords[0].compare("drop")) {
 			ReplaceChar(cwords[2], '_', ' ');
 			cwords[2].resize(8, ' ');
-			printf("Remote control user has logged off \"%s\" from \"%s\"\n", cwords[2].c_str(), cwords[0].c_str());
+			printf("Remote control user has logged off \"%s\" from \"%s\"\n", cwords[2].c_str(), cwords[1].c_str());
 			logoff(group, cwords[2]);
 		}
 		else {
