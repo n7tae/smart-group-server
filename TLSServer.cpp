@@ -165,12 +165,12 @@ bool CTLSServer::GetCommand(std::string &command)
 			struct sockaddr_in6 *a = (struct sockaddr_in6 *)&addr;
 			char s[INET6_ADDRSTRLEN];
 			inet_ntop(AF_INET6, &(a->sin6_addr), s, INET6_ADDRSTRLEN);
-			printf("Remote client from %s\n", s);
+			printf("Remote IPV6 client from %s\n", s);
 		} else {
 			struct sockaddr_in *a = (struct sockaddr_in *)&addr;
 			char s[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET6, &(a->sin_addr), s, INET_ADDRSTRLEN);
-			printf("Remote client from %s\n", s);
+			inet_ntop(AF_INET, &(a->sin_addr), s, INET_ADDRSTRLEN);
+			printf("Remote IPV4 client from %s\n", s);
 		}
 
 		m_ssl = SSL_new(m_ctx);
