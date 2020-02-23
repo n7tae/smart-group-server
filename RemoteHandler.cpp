@@ -52,7 +52,12 @@ bool CRemoteHandler::process()
 	}
 
 	if (0 == cwords[0].compare("halt")) {
-		printf("Received halt command from remote client, shutting down...\n");
+		printf("Received halt command from remote client, logging off all users and shutting down...\n");
+		auto groups = CGroupHandler::listGroups();
+		for (auto it=groups.begin(); it!=groups.end(); it++) {
+			CGroupHandler *group = CGroupHandler::findGroup(*it);
+			logoff(group, "ALL     ");
+		}
 		return true;
 	}
 
