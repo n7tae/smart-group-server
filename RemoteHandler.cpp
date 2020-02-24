@@ -76,7 +76,6 @@ bool CRemoteHandler::process()
 		char emsg[128];
 		snprintf(emsg, 128, "Smart Group [%s] not found", cwords[1].c_str());
 		m_tlsserver.Write(emsg);
-		m_tlsserver.CloseClient();
 	} else {
 		if (cwords.size() > 2 && 0 == cwords[0].compare("link")) {
 			ReplaceChar(cwords[2], '_', ' ');
@@ -97,8 +96,8 @@ bool CRemoteHandler::process()
 		else {
 			printf("The command \"%s\" is bad\n", command.c_str());
 		}
-		m_tlsserver.CloseClient();
 	}
+	m_tlsserver.CloseClient();
 	return false;
 }
 
@@ -144,6 +143,7 @@ void CRemoteHandler::sendGroup(CGroupHandler *group)
 	} else {
 		// no group, so let's summarize all groups
 		auto groups = CGroupHandler::listGroups();
+		m_tlsserver.Write("Logon    Logoff   Channel  Description          Status   Reflector Timeout");
 		for (auto it=groups.begin(); it!=groups.end(); it++) {
 			CGroupHandler *group = CGroupHandler::findGroup(*it);
 			if (group) {
@@ -163,7 +163,7 @@ void CRemoteHandler::sendGroup(CGroupHandler *group)
 							linkstat.assign("Unlinked");
 							break;
 					}
-					snprintf(msg, 128, "%s/%s/%s/%s/%s/%s/%u", data->getCallsign().c_str(), data->getLogoff().c_str(), data->getRepeater().c_str(), data->getInfoText().c_str(), linkstat.c_str(), data->getReflector().c_str(), data->getUserTimeout());
+					snprintf(msg, 128, "%s %s %s %s %s %s   %4u", data->getCallsign().c_str(), data->getLogoff().c_str(), data->getRepeater().c_str(), data->getInfoText().c_str(), linkstat.c_str(), data->getReflector().c_str(), data->getUserTimeout());
 					m_tlsserver.Write(msg);
 					delete data;
 				}
