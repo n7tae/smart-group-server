@@ -163,7 +163,7 @@ void CRemoteHandler::sendGroup(CGroupHandler *group)
 							linkstat.assign("Unlinked");
 							break;
 					}
-					snprintf(msg, 128, "%s %s %s %s %s %s   %4u", data->getCallsign().c_str(), data->getLogoff().c_str(), data->getRepeater().c_str(), data->getInfoText().c_str(), linkstat.c_str(), data->getReflector().c_str(), data->getUserTimeout());
+					snprintf(msg, 128, "%s %s %s %s %s %8.8s   %4u", data->getCallsign().c_str(), data->getLogoff().c_str(), data->getRepeater().c_str(), data->getInfoText().c_str(), linkstat.c_str(), data->getReflector().c_str(), data->getUserTimeout());
 					m_tlsserver.Write(msg);
 					delete data;
 				}
