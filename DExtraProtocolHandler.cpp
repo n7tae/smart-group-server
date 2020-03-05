@@ -156,9 +156,9 @@ bool CDExtraProtocolHandler::readPackets()
 		}
 	} else {
 		// Header or data packet type?
-		if (56U==m_length && 0x80==m_buffer[14])
+		if (56U==m_length && 0x10U==m_buffer[4] && 0x80U==m_buffer[14])
 			m_type = DE_HEADER;
-		else if (27U==m_length)
+		else if (27U==m_length && 0x20U==m_buffer[4])
 			m_type = DE_AMBE;
 		else
 			return true;
