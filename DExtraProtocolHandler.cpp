@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2013 by Jonathan Naylor G4KLX
- *   Copyright (C) 2017 by Thomas A. Early N7TAE
+ *   Copyright (C) 2017,2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,8 +17,9 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "DExtraProtocolHandler.h"
+#include <cstring>
 
+#include "DExtraProtocolHandler.h"
 #include "Utils.h"
 
 // #define	DUMP_TX
@@ -134,14 +135,14 @@ bool CDExtraProtocolHandler::readPackets()
 	// No more data?
 	CSockAddress addr;
 	int length = m_socket.Read(m_buffer, BUFFER_LENGTH, addr);
-    m_yourAddress = addr.GetAddress();
-    m_yourPort = addr.GetPort();
 	if (length <= 0)
 		return false;
+    m_yourAddress = addr.GetAddress();
+    m_yourPort = addr.GetPort();
 
 	m_length = length;
 
-	if (m_buffer[0] != 'D' || m_buffer[1] != 'S' || m_buffer[2] != 'V' || m_buffer[3] != 'T') {
+	if (memcmp(m_buffer, "DSVT", 4)) {
 		switch (m_length) {
 			case 9U:
 				m_type = DE_POLL;
@@ -155,10 +156,12 @@ bool CDExtraProtocolHandler::readPackets()
 		}
 	} else {
 		// Header or data packet type?
-		if (m_buffer[14] == 0x80)
+		if (56U==m_length && 0x80==m_buffer[14])
 			m_type = DE_HEADER;
-		else
+		else if (27U==m_length)
 			m_type = DE_AMBE;
+		else
+			return true;
 
 		return false;
 	}
