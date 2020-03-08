@@ -463,11 +463,11 @@ void CGroupHandler::process(CHeaderData &header)
 	switch (m_callsignSwitch) {
 		case SCS_GROUP_CALLSIGN:
 			header.setMyCall1(m_groupCallsign);
-			header.setMyCall2("SMRT");
+			//header.setMyCall2("SMRT");
 			break;
 		case SCS_USER_CALLSIGN:
 			header.setMyCall1(my);
-			header.setMyCall2(m_shortCallsign);
+			//header.setMyCall2(m_shortCallsign);
 			break;
 		default:
 			break;
@@ -641,11 +641,11 @@ bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 	switch (m_callsignSwitch) {
 		case SCS_GROUP_CALLSIGN:
 			header.setMyCall1(m_groupCallsign);
-			header.setMyCall2("SMRT");
+			//header.setMyCall2("SMRT");
 			break;
 		case SCS_USER_CALLSIGN:
 			header.setMyCall1(my);
-			header.setMyCall2(m_shortCallsign);
+			//header.setMyCall2(m_shortCallsign);
 			break;
 		default:
 			break;
