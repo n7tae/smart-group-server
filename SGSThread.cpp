@@ -240,9 +240,9 @@ void CSGSThread::setCallsign(const std::string &callsign)
 // 	m_address = address;
 // }
 
-void CSGSThread::addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listen_only, bool showlink, const std::string &reflector)
+void CSGSThread::addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, bool listen_only, bool showlink, const std::string &reflector)
 {
-	CGroupHandler::add(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, listen_only, showlink, reflector);
+	CGroupHandler::add(callsign, logoff, repeater, infoText, userTimeout, listen_only, showlink, reflector);
 }
 
 void CSGSThread::setIRC(const unsigned int i, CIRCDDB* irc)

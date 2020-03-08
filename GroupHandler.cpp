@@ -156,9 +156,9 @@ CSGSUser* CSGSId::getUser() const
 	//return m_textCollector;
 //}
 
-void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, bool showlink, const std::string &reflector)
+void CGroupHandler::add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, bool listenOnly, bool showlink, const std::string &reflector)
 {
-	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, userTimeout, callsignSwitch, txMsgSwitch, listenOnly, showlink, reflector);
+	CGroupHandler *group = new CGroupHandler(callsign, logoff, repeater, infoText, userTimeout, listenOnly, showlink, reflector);
 
 	if (group)
 		m_Groups.push_back(group);
@@ -269,10 +269,9 @@ void CGroupHandler::link()
 		(*it)->linkInt();
 }
 
-CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, CALLSIGN_SWITCH callsignSwitch, bool txMsgSwitch, bool listenOnly, bool showlink, const std::string &reflector) :
+CGroupHandler::CGroupHandler(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, bool listenOnly, bool showlink, const std::string &reflector) :
 m_groupCallsign(callsign),
 m_offCallsign(logoff),
-m_shortCallsign("SMRT"),
 m_repeater(repeater),
 m_infoText(infoText),
 m_linkReflector(reflector),
@@ -284,8 +283,6 @@ m_id(0x00U),
 m_announceTimer(1000U, 2U * 60U),		// 2 minutes
 m_pingTimer(1000U, 10U),
 m_userTimeout(userTimeout),
-m_callsignSwitch(callsignSwitch),
-m_txMsgSwitch(txMsgSwitch),
 m_listenOnly(listenOnly),
 m_showlink(showlink),
 m_ids(),
@@ -300,14 +297,6 @@ m_repeaters()
 		m_linkType = (0 == m_linkReflector.compare(0, 3, "XRF")) ? LT_DEXTRA : LT_DCS;
 	else
 		m_linkType = LT_NONE;
-
-	// Create the short version of the Smart Group callsign
-	if (0 == m_groupCallsign.compare(0, 3, "SGS")) {
-		if (' ' == m_groupCallsign[7])
-			m_shortCallsign = std::string("S") + m_groupCallsign.substr(3, 3);
-		else
-			m_shortCallsign = m_groupCallsign.substr(3, 3) + m_groupCallsign[7];
-	}
 }
 
 CGroupHandler::~CGroupHandler()
@@ -460,23 +449,11 @@ void CGroupHandler::process(CHeaderData &header)
 		}
 	}
 
-	switch (m_callsignSwitch) {
-		case SCS_GROUP_CALLSIGN:
-			header.setMyCall1(m_groupCallsign);
-			//header.setMyCall2("SMRT");
-			break;
-		case SCS_USER_CALLSIGN:
-			header.setMyCall1(my);
-			//header.setMyCall2(m_shortCallsign);
-			break;
-		default:
-			break;
-	}
 	if (!islogin && !m_listenOnly)
 		sendToRepeaters(header);
 
-	if (m_txMsgSwitch && !islogin && !m_listenOnly)
-		sendFromText(my);
+	if (!islogin && !m_listenOnly)
+		sendFromText();
 }
 
 void CGroupHandler::process(CAMBEData &data)
@@ -600,7 +577,6 @@ bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 	if (m_id != 0x00U)
 		return false;
 
-	std::string my = header.getMyCall1();
 	m_id = header.getId();
 
 	m_linkTimer.start();
@@ -638,19 +614,6 @@ bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 		}
 	}
 
-	switch (m_callsignSwitch) {
-		case SCS_GROUP_CALLSIGN:
-			header.setMyCall1(m_groupCallsign);
-			//header.setMyCall2("SMRT");
-			break;
-		case SCS_USER_CALLSIGN:
-			header.setMyCall1(my);
-			//header.setMyCall2(m_shortCallsign);
-			break;
-		default:
-			break;
-	}
-
 	CSGSId *tx = m_ids[m_id];
 	if (tx) {
 		if (!tx->isLogin())
@@ -658,8 +621,7 @@ bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 	} else
 		sendToRepeaters(header);
 
-	if (m_txMsgSwitch)
-		sendFromText(my);
+	sendFromText();
 
 	return true;
 }
@@ -969,19 +931,10 @@ void CGroupHandler::sendToRepeaters(CAMBEData &data) const
 	}
 }
 
-void CGroupHandler::sendFromText(const std::string &my) const
+void CGroupHandler::sendFromText()
 {
-	std::string text;
-	switch (m_callsignSwitch) {
-		case SCS_GROUP_CALLSIGN:
-			text = std::string("FROM %") + my;
-			break;
-		case SCS_USER_CALLSIGN:
-			text = std::string("VIA SMARTGP ") + m_groupCallsign;
-			break;
-		default:
-			break;
-	}
+	std::string text("VIA SMARTGP ");
+	text.append(m_groupCallsign);
 
 	CSlowDataEncoder slowData;
 	slowData.setTextData(text);

@@ -186,14 +186,6 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		sprintf(key, "module.[%d].rxonly", i);
 		get_value(cfg, key, pmod->listen_only, false);
 
-		bool bvalue;
-		sprintf(key, "module.[%d].callsignswitch", i);
-		get_value(cfg, key, bvalue, false);
-		pmod->callsignswitch = bvalue ? SCS_GROUP_CALLSIGN : SCS_USER_CALLSIGN;
-
-		sprintf(key, "module.[%d].txmsgswitch", i);
-		get_value(cfg, key, pmod->txmsgswitch, true);
-
 		sprintf(key, "module.[%d].showlink", i);
 		get_value(cfg, key, pmod->showlink, true);
 
@@ -208,7 +200,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS")) && isdigit(basename[3]) && isdigit(basename[4]) && isdigit(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
 				pmod->reflector = basename;
 		}
-		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' usertimeout=%d callsignswitch=%s, txmsgswitch=%s reflector='%s'", i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->usertimeout, SCS_GROUP_CALLSIGN==pmod->callsignswitch ? "Group" : "User", pmod->txmsgswitch ? "true" : "false", pmod->reflector.c_str());
+		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' usertimeout=%d reflector='%s'", i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->usertimeout, pmod->reflector.c_str());
 		if (pmod->showlink)
 			printf("\n");
 		else
@@ -316,15 +308,13 @@ void CSGSConfig::getIrcDDB(int irc, std::string& hostname, std::string& username
 }
 
 void CSGSConfig::getGroup(unsigned int mod, std::string &band, std::string &callsign, std::string &logoff, std::string &info,
-	unsigned int &userTimeout, CALLSIGN_SWITCH &callsignSwitch, bool &txMsgSwitch, bool &listen_only, bool &showlink, std::string &reflector) const
+	unsigned int &userTimeout, bool &listen_only, bool &showlink, std::string &reflector) const
 {
 	band           = m_module[mod]->band;
 	callsign       = m_module[mod]->callsign;
 	logoff         = m_module[mod]->logoff;
 	info           = m_module[mod]->info;
 	userTimeout    = m_module[mod]->usertimeout;
-	callsignSwitch = m_module[mod]->callsignswitch;
-	txMsgSwitch    = m_module[mod]->txmsgswitch;
 	listen_only    = m_module[mod]->listen_only;
 	reflector      = m_module[mod]->reflector;
 	showlink       = m_module[mod]->showlink;
