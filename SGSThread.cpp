@@ -311,12 +311,12 @@ void CSGSThread::processIrcDDB(const int i)
 					if (!res)
 						break;
 
-					if (address.size()) {
+					if (user.size() && repeater.size() && gateway.size() && address.size() && timestamp.size()) {
                         if (0 == user.find("W1FJM"))
 						    printf("IRC[%d]: %s %s %s %s\n", i, user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateUser(user, repeater, gateway, address, timestamp);
-					//} else {
-					//	printf("USER: %s has no IP address!\n", user.c_str());
+					} else {
+						fprintf(stderr, "IDRT_USER msg error: u[%s] r[%s] g[%s] a[%s] t[%s]\n", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str(), timestamp.c_str());
 					}
 				}
 				break;
@@ -327,12 +327,12 @@ void CSGSThread::processIrcDDB(const int i)
 					if (!res)
 						break;
 
-					if (address.size()) {
+					if (repeater.size() && gateway.size() && address.size()) {
                         if (0 == repeater.find("AA1HD") || 0 == repeater.find("W1CDG"))
 						    printf("REPEATER[%d]: %s %s %s\n", i, repeater.c_str(), gateway.c_str(), address.c_str());
 						m_cache.updateRptr(repeater, gateway, address);
-					//} else {
-					//	printf("REPEATER: %s NOT FOUND\n", repeater.c_str());
+					} else {
+						fprintf(stderr, "IDRT_RPTR msg error: r[%s] g[%s] a[%s]\n", repeater.c_str(), gateway.c_str(), address.c_str());
 					}
 				}
 				break;
@@ -347,12 +347,12 @@ void CSGSThread::processIrcDDB(const int i)
 
 					CDCSHandler::gatewayUpdate(gateway, address);
 
-					if (address.size()) {
+					if (gateway.size() && address.size()) {
                         if (0 == gateway.find("AA1HD") || 0 == gateway.find("W1CDG"))
 						    printf("GATEWAY[%d]: %s %s\n", i, gateway.c_str(), address.c_str());
 						m_cache.updateGate(gateway, address);
-					//} else {
-					//	printf("GATEWAY: %s NOT FOUND\n", gateway.c_str());
+					} else {
+						fprintf(stderr, "IDRT_GATE msg error: g[%s] a[%s]\n", gateway.c_str(), address.c_str());
 					}
 				}
 				break;

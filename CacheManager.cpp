@@ -121,9 +121,9 @@ void CCacheManager::updateUser(const std::string &user, const std::string &rptr,
 {
 	mux.lock();
 	UserRptr[user] = rptr;
-	UserTime[user] = time;
 	RptrGate[rptr] = gate;
 	GateAddr[gate] = addr;
+	UserTime[user] = time;
 	mux.unlock();
 }
 

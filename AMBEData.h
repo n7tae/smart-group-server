@@ -21,8 +21,8 @@
 
 #include <string>
 
-#include <netinet/in.h>
 #include "HeaderData.h"
+#include "DStarDefines.h"
 
 class CAMBEData {
 public:
@@ -83,11 +83,11 @@ private:
 	unsigned char  m_band1;
 	unsigned char  m_band2;
 	unsigned char  m_band3;
-	unsigned char *m_data;
 	std::string    m_yourAddress;
 	unsigned short m_yourPort;
 	unsigned short m_myPort;
 	unsigned int   m_errors;
 	std::string    m_text;
 	CHeaderData    m_header;
+	unsigned char  m_data[DV_FRAME_LENGTH_BYTES];
 };

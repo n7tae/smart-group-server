@@ -21,7 +21,6 @@
 #include <string>
 #include <cstring>
 #include "AMBEData.h"
-#include "DStarDefines.h"
 #include "Utils.h"
 
 CAMBEData::CAMBEData() :
@@ -31,7 +30,6 @@ m_id(0U),
 m_band1(0x00U),
 m_band2(0x02U),
 m_band3(0x01U),
-m_data(NULL),
 m_yourAddress(),
 m_yourPort(0U),
 m_myPort(0U),
@@ -39,17 +37,15 @@ m_errors(0U),
 m_text(),
 m_header()
 {
-	m_data = new unsigned char[DV_FRAME_LENGTH_BYTES];
 }
 
-CAMBEData::CAMBEData(const CAMBEData& data) :
+CAMBEData::CAMBEData(const CAMBEData &data) :
 m_rptSeq(data.m_rptSeq),
 m_outSeq(data.m_outSeq),
 m_id(data.m_id),
 m_band1(data.m_band1),
 m_band2(data.m_band2),
 m_band3(data.m_band3),
-m_data(NULL),
 m_yourAddress(data.m_yourAddress),
 m_yourPort(data.m_yourPort),
 m_myPort(data.m_myPort),
@@ -57,13 +53,11 @@ m_errors(data.m_errors),
 m_text(data.m_text),
 m_header(data.m_header)
 {
-	m_data = new unsigned char[DV_FRAME_LENGTH_BYTES];
 	memcpy(m_data, data.m_data, DV_FRAME_LENGTH_BYTES);
 }
 
 CAMBEData::~CAMBEData()
 {
-	delete[] m_data;
 }
 
 bool CAMBEData::setG2Data(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort)
