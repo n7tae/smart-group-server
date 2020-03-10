@@ -32,20 +32,24 @@ public:
 	~CCacheManager() {}
 
 	bool findUserData(const std::string &user, SUSERDATA &userdata);
-	std::string findUserRptr(const std::string &user);
 	std::string findUserTime(const std::string &user);
-	std::string findRptrGate(const std::string &rptr);
-	std::string findGateAddr(const std::string &gate);
 	std::string findUserAddr(const std::string &user);
+	std::string findUserRepeater(const std::string &user);
+	std::string findGateAddress(const std::string &gate);
 
 	void updateUser(const std::string &user, const std::string &rptr, const std::string &gate, const std::string &addr, const std::string &time);
 	void updateRptr(const std::string &rptr, const std::string &gate, const std::string &addr);
 	void updateGate(const std::string &gate, const std::string &addr);
 
 private:
+	std::string findUserRptr(const std::string &user);
+	std::string findRptrGate(const std::string &rptr);
+	std::string findGateAddr(const std::string &gate);
+
 	std::unordered_map<std::string, std::string> UserTime;
 	std::unordered_map<std::string, std::string> UserRptr;
 	std::unordered_map<std::string, std::string> RptrGate;
-	std::unordered_map<std::string, std::string> GateAddr;
+	std::unordered_map<std::string, std::string> GateIPV4;
+	std::unordered_map<std::string, std::string> GateIPV6;
 	std::mutex mux;
 };

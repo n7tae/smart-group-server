@@ -324,7 +324,7 @@ void CGroupHandler::process(CHeaderData &header)
 	bool islogin = false;
 
 	// Ensure that this user is in the cache.
-	if (0 == m_cache->findUserRptr(my).size()) {
+	if (! m_cache->findUserRepeater(my).empty()) {
 		if (m_irc[1])
 			m_irc[1]->findUser(my);
 		m_irc[0]->findUser(my);
@@ -403,7 +403,7 @@ void CGroupHandler::process(CHeaderData &header)
 	}
 
 	// Get the home repeater of the user, because we don't want to route this incoming back to him
-	std::string exclude = m_cache->findUserRptr(my);
+	std::string exclude = m_cache->findUserRepeater(my);
 
 	// Update the repeater list, based on users that are currently logged in
 	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
@@ -663,8 +663,8 @@ bool CGroupHandler::linkInt()
 	// Find the repeater to link to
 	std::string gate(m_linkReflector);
 	gate[7] = 'G';
-	std::string addr(m_cache->findGateAddr(gate));
-	if (0 == addr.size()) {
+	std::string addr(m_cache->findGateAddress(gate));
+	if (! addr.empty()) {
 		printf("Cannot find the reflector in the cache, not linking\n");
 		return false;
 	}

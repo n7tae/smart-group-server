@@ -235,11 +235,6 @@ void CSGSThread::setCallsign(const std::string &callsign)
 	m_callsign = callsign;
 }
 
-// void CSGSThread::setAddress(const std::string &address)
-// {
-// 	m_address = address;
-// }
-
 void CSGSThread::addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, bool listen_only, bool showlink, const std::string &reflector)
 {
 	CGroupHandler::add(callsign, logoff, repeater, infoText, userTimeout, listen_only, showlink, reflector);
@@ -306,52 +301,51 @@ void CSGSThread::processIrcDDB(const int i)
 				return;
 
 			case IDRT_USER: {
-					std::string user, repeater, gateway, address, timestamp;
-					bool res = m_irc[i]->receiveUser(user, repeater, gateway, address, timestamp);
+					std::string user, rptr, gate, addr, timestamp;
+					bool res = m_irc[i]->receiveUser(user, rptr, gate, addr, timestamp);
 					if (!res)
 						break;
 
-					if (user.size() && repeater.size() && gateway.size() && address.size() && timestamp.size()) {
+					if (!user.empty() && !rptr.empty()) {
                         if (0 == user.find("W1FJM"))
-						    printf("IRC[%d]: %s %s %s %s\n", i, user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
-						m_cache.updateUser(user, repeater, gateway, address, timestamp);
+						    printf("IRC: %s %s %s %s\n", user.c_str(), rptr.c_str(), gate.c_str(), addr.c_str());
+						m_cache.updateUser(user, rptr, gate, addr, timestamp);
 					} else {
-						fprintf(stderr, "IDRT_USER msg error: u[%s] r[%s] g[%s] a[%s] t[%s]\n", user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str(), timestamp.c_str());
+						fprintf(stderr, "IDRT_USER msg error: u[%s] r[%s] g[%s] a[%s] t[%s]\n", user.c_str(), rptr.c_str(), gate.c_str(), addr.c_str(), timestamp.c_str());
 					}
 				}
 				break;
 
 			case IDRT_REPEATER: {
-					std::string repeater, gateway, address;
-					bool res = m_irc[i]->receiveRepeater(repeater, gateway, address);
+					std::string rptr, gate, addr;
+					bool res = m_irc[i]->receiveRepeater(rptr, gate, addr);
 					if (!res)
 						break;
 
-					if (repeater.size() && gateway.size() && address.size()) {
-                        if (0 == repeater.find("AA1HD") || 0 == repeater.find("W1CDG"))
-						    printf("REPEATER[%d]: %s %s %s\n", i, repeater.c_str(), gateway.c_str(), address.c_str());
-						m_cache.updateRptr(repeater, gateway, address);
+					if (rptr.size() && gate.size()) {
+                        if (0 == rptr.find("AA1HD") || 0 == rptr.find("W1CDG"))
+						    printf("REPEATER: %s %s %s\n", rptr.c_str(), gate.c_str(), addr.c_str());
+						m_cache.updateRptr(rptr, gate, addr);
 					} else {
-						fprintf(stderr, "IDRT_RPTR msg error: r[%s] g[%s] a[%s]\n", repeater.c_str(), gateway.c_str(), address.c_str());
+						fprintf(stderr, "IDRT_RPTR msg error: r[%s] g[%s] a[%s]\n", rptr.c_str(), gate.c_str(), addr.c_str());
 					}
 				}
 				break;
 
 			case IDRT_GATEWAY: {
-					std::string gateway, address;
-					bool res = m_irc[i]->receiveGateway(gateway, address);
+					std::string gate, addr;
+					bool res = m_irc[i]->receiveGateway(gate, addr);
 					if (!res)
 						break;
 
-
-					if (gateway.size() && address.size()) {
-                        if (0 == gateway.find("AA1HD") || 0 == gateway.find("W1CDG"))
-						    printf("GATEWAY[%d]: %s %s\n", i, gateway.c_str(), address.c_str());
-						CDExtraHandler::gatewayUpdate(gateway, address);
-						CDCSHandler::gatewayUpdate(gateway, address);
-						m_cache.updateGate(gateway, address);
+					if (gate.size() && addr.size()) {
+                        if (0 == gate.find("AA1HD") || 0 == gate.find("W1CDG"))
+						    printf("GATEWAY[%d]: %s %s\n", i, gate.c_str(), addr.c_str());
+						CDExtraHandler::gatewayUpdate(gate, addr);
+						CDCSHandler::gatewayUpdate(gate, addr);
+						m_cache.updateGate(gate, addr);
 					} else {
-						fprintf(stderr, "IDRT_GATE msg error: g[%s] a[%s]\n", gateway.c_str(), address.c_str());
+						fprintf(stderr, "IDRT_GATE msg error: g[%s] a[%s]\n", gate.c_str(), addr.c_str());
 					}
 				}
 				break;
