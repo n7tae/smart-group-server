@@ -20,6 +20,7 @@
 #pragma once
 
 #include <string>
+#include <atomic>
 
 #include "DExtraProtocolHandlerPool.h"		// DEXTRA_LINK
 #include "DCSProtocolHandlerPool.h"			// DCS_LINK
@@ -32,23 +33,27 @@
 class CSGSThread {
 public:
 	CSGSThread(unsigned int countDExtra, unsigned int countDCS);
-	virtual ~CSGSThread();
 
-	virtual void setCallsign(const std::string& callsign);
-	//virtual void setAddress(const std::string& address);
+	static std::atomic<bool> m_killed;
+	static void SignalCatch(const int signum);
+	bool init();
+	void run();
 
-	virtual void addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, bool listen_only, bool showlink, const std::string &reflector);
+	~CSGSThread();
 
-	virtual void setRemote(bool enabled, const std::string& password, unsigned short port, bool is_ipv6);
-	virtual void setIRC(const unsigned int i, CIRCDDB* irc);
+	void setCallsign(const std::string& callsign);
 
-	virtual void run();
-	virtual void kill();
+	void addGroup(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, bool listen_only, bool showlink, const std::string &reflector);
+
+	void setRemote(bool enabled, const std::string& password, unsigned short port, bool is_ipv6);
+	void setIRC(const unsigned int i, CIRCDDB* irc);
+
+//	void kill();
+
 
 private:
 	unsigned int m_countDExtra;
 	unsigned int m_countDCS;
-	bool		m_killed;
 	bool		m_stopped;
 	std::string	m_callsign;
 	std::string	m_address;

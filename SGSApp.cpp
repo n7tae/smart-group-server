@@ -72,7 +72,8 @@ bool CSGSApp::init()
 
 void CSGSApp::run()
 {
-	m_thread->run();
+	if (m_thread->init())
+		m_thread->run();
 
 	printf("exiting\n");
 }

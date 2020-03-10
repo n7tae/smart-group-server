@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <netdb.h>
 #include <pwd.h>
+#include <signal.h>
 #include <ctime>
 #include <fstream>
 #include <cstring>
@@ -38,11 +39,11 @@
 #include "Utils.h"
 
 const unsigned int REMOTE_DUMMY_PORT = 65015U;
+std::atomic<bool> CSGSThread::m_killed(false);
 
 CSGSThread::CSGSThread(unsigned int countDExtra, unsigned int countDCS) :
 m_countDExtra(countDExtra),
 m_countDCS(countDCS),
-m_killed(false),
 m_stopped(true),
 m_callsign(),
 m_address(),
@@ -71,8 +72,27 @@ CSGSThread::~CSGSThread()
 	printf("SGSThread destroyed\n");
 }
 
-void CSGSThread::run()
+bool CSGSThread::init()
 {
+	struct sigaction act;
+	act.sa_handler = &CSGSThread::SignalCatch;
+	sigemptyset(&act.sa_mask);
+	if (sigaction(SIGTERM, &act, 0) != 0) {
+		printf("sigaction-TERM failed, error=%d\n", errno);
+		return false;
+	}
+	if (sigaction(SIGHUP, &act, 0) != 0) {
+		printf("sigaction-HUP failed, error=%d\n", errno);
+		return false;
+	}
+	if (sigaction(SIGINT, &act, 0) != 0) {
+		printf("sigaction-INT failed, error=%d\n", errno);
+		return false;
+	}
+	return true;
+}
+
+void CSGSThread::run() {
 	int family[2] = { AF_UNSPEC, AF_UNSPEC };
 	for (int i=0; m_irc[i] && i<2; i++) {
 		while (AF_UNSPEC == family[i]) {
@@ -190,6 +210,14 @@ void CSGSThread::run()
 		printf("Unknown exception raised\n");
 	}
 
+	printf("Logging off all users\n");
+	auto groups = CGroupHandler::listGroups();
+	for (auto it=groups.begin(); it!=groups.end(); it++) {
+		CGroupHandler *group = CGroupHandler::findGroup(*it);
+		group->LogoffUser("ALL     ");
+	}
+
+
 	printf("Stopping the Smart Group Server thread\n");
 
 	// Unlink from all reflectors
@@ -222,10 +250,10 @@ void CSGSThread::run()
 	}
 }
 
-void CSGSThread::kill()
-{
-	m_killed = true;
-}
+//void CSGSThread::kill()
+//{
+//	m_killed = true;
+//}
 
 void CSGSThread::setCallsign(const std::string &callsign)
 {
@@ -521,4 +549,11 @@ void CSGSThread::loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarPro
 	}
 
 	printf("Loaded %u of %u %s reflectors\n", count, tries, DP_DEXTRA==dstarProtocol?"DExtra":"DCS");
+}
+
+void CSGSThread::SignalCatch(const int signum)
+{
+	if ((signum == SIGTERM) || (signum == SIGINT)  || (signum == SIGHUP))
+		m_killed = true;
+	exit(0);
 }
