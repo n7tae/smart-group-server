@@ -324,9 +324,7 @@ void CGroupHandler::process(CHeaderData &header)
 	bool islogin = false;
 
 	// Ensure that this user is in the cache.
-	CUserData *userData = m_cache->findUser(my);	// userData is a new record (or NULL), so we have to delete or save it
-													// to prevent a memory leak
-	if (NULL == userData) {
+	if (0 == m_cache->findUserRptr(my).size()) {
 		if (m_irc[1])
 			m_irc[1]->findUser(my);
 		m_irc[0]->findUser(my);
@@ -354,7 +352,6 @@ void CGroupHandler::process(CHeaderData &header)
 			CSGSId* tx = m_ids[id];
 			if (tx) {
 				//printf("Duplicate header from %s, deleting userData...\n", my.c_str());
-				delete userData;
 				return;
 			}
 			//printf("Updating %s on Smart Group %s\n", my.c_str(), your.c_str());
@@ -363,12 +360,6 @@ void CGroupHandler::process(CHeaderData &header)
 		}
 	} else {
 		// unsubscribe was sent by someone
-		if (userData) {
-			delete userData;
-			userData = NULL;
-		}
-
-		// This is a logoff message
 		if (NULL == group_user) {	// Not a known user, ignore
 			m_users.erase(my);	// we created it, now we don't need it
 			return;
@@ -387,7 +378,6 @@ void CGroupHandler::process(CHeaderData &header)
 	}
 
 	if (m_id != 0x00U) {
-		delete userData;
 		return;
 	}
 
@@ -413,38 +403,31 @@ void CGroupHandler::process(CHeaderData &header)
 	}
 
 	// Get the home repeater of the user, because we don't want to route this incoming back to him
-	std::string exclude;
-	if (userData) {
-		exclude = userData->getRepeater();
-		delete userData;	// it's gone now
-	}
+	std::string exclude = m_cache->findUserRptr(my);
 
-	// Build new repeater list, based on users that are currently logged in
+	// Update the repeater list, based on users that are currently logged in
 	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
 		CSGSUser *user = it->second;
 		if (user != NULL) {
 			// Find the user in the cache
-			userData = m_cache->findUser(user->getCallsign());
-
-			if (userData) {
+			SUSERDATA userdata;
+			if (m_cache->findUserData(my, userdata)) {
 				// Check for the excluded repeater
-				if (userData->getRepeater().compare(exclude)) {
+				if (userdata.rptr.compare(exclude)) {
 					// Find the users repeater in the repeater list, add it otherwise
-					CSGSRepeater *repeater = m_repeaters[userData->getRepeater()];
+					CSGSRepeater *repeater = m_repeaters[userdata.rptr];
 					if (repeater == NULL) {
 						// Add a new repeater entry
 						repeater = new CSGSRepeater;
 						// we zone route to all the repeaters, except for the sender who transmitted it
-						repeater->m_destination = std::string("/") + userData->getRepeater().substr(0, 6) + userData->getRepeater().back();
-						repeater->m_repeater    = userData->getRepeater();
-						repeater->m_gateway     = userData->getGateway();
-						repeater->m_address     = userData->getAddress();
-						m_repeaters[userData->getRepeater()] = repeater;
+						repeater->dest.assign("/");
+						repeater->dest.append(userdata.rptr.substr(0, 6) + userdata.rptr.back());
+						repeater->rptr.assign(userdata.rptr);
+						repeater->gate.assign(userdata.gate);
+						repeater->addr.assign(userdata.addr);
+						m_repeaters[userdata.rptr] = repeater;
 					}
 				}
-
-				delete userData;
-				userData = NULL;
 			}
 		}
 	}
@@ -460,9 +443,10 @@ void CGroupHandler::process(CAMBEData &data)
 {
 	unsigned int id = data.getId();
 
-	CSGSId* tx = m_ids[id];
-	if (tx == NULL)
+	if (m_ids.end() == m_ids.find(id))
 		return;
+
+	CSGSId* tx = m_ids[id];
 
 	tx->reset();
 
@@ -588,28 +572,25 @@ bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 	header.setFlag2(0x00);
 	header.setFlag3(0x00);
 
-	// Build new repeater list
+	// Update the repeater list
 	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
 		CSGSUser* user = it->second;
 		if (user) {
 			// Find the user in the cache
-			CUserData* userData = m_cache->findUser(user->getCallsign());
-
-			if (userData) {
+			SUSERDATA userdata;
+			if (m_cache->findUserData(user->getCallsign(), userdata)) {
 				// Find the users repeater in the repeater list, add it otherwise
-				CSGSRepeater* repeater = m_repeaters[userData->getRepeater()];
+				CSGSRepeater* repeater = m_repeaters[userdata.rptr];
 				if (repeater == NULL) {
 					// Add a new repeater entry
 					repeater = new CSGSRepeater;
-					repeater->m_destination = std::string("/") + userData->getRepeater().substr(0, 6) + userData->getRepeater().back();
-					repeater->m_repeater    = userData->getRepeater();
-					repeater->m_gateway     = userData->getGateway();
-					repeater->m_address     = userData->getAddress();
-					m_repeaters[userData->getRepeater()] = repeater;
+					repeater->dest.assign("/");
+					repeater->dest.append(userdata.rptr.substr(0, 6) + userdata.rptr.back());
+					repeater->rptr = userdata.rptr;
+					repeater->gate = userdata.gate;
+					repeater->addr = userdata.addr;
+					m_repeaters[userdata.rptr] = repeater;
 				}
-
-				delete userData;
-				userData = NULL;
 			}
 		}
 	}
@@ -680,29 +661,28 @@ bool CGroupHandler::linkInt()
 	printf("Linking %s to %s reflector %s\n", m_repeater.c_str(), (LT_DEXTRA==m_linkType)?"DExtra":"DCS", m_linkReflector.c_str());
 
 	// Find the repeater to link to
-	CRepeaterData* data = m_cache->findRepeater(m_linkReflector);
-	if (data == NULL) {
+	std::string gate(m_linkReflector);
+	gate[7] = 'G';
+	std::string addr(m_cache->findGateAddr(gate));
+	if (0 == addr.size()) {
 		printf("Cannot find the reflector in the cache, not linking\n");
 		return false;
 	}
 
-	m_linkGateway = data->getGateway();
-	bool rtv = true;
+	m_linkGateway.assign(gate);
 	switch (m_linkType) {
 		case LT_DEXTRA:
 			m_linkStatus  = LS_LINKING_DEXTRA;
-			CDExtraHandler::link(this, m_repeater, m_linkReflector, data->getAddress());
+			CDExtraHandler::link(this, m_repeater, m_linkReflector, addr);
 			break;
 		case LT_DCS:
 			m_linkStatus  = LS_LINKING_DCS;
-			CDCSHandler::link(this, m_repeater, m_linkReflector, data->getAddress());
+			CDCSHandler::link(this, m_repeater, m_linkReflector, addr);
 			break;
 		default:
-			rtv = false;
-			break;
+			return false;
 	}
-	delete data;
-	return rtv;
+	return true;
 }
 
 void CGroupHandler::clockInt(unsigned int ms)
@@ -712,8 +692,8 @@ void CGroupHandler::clockInt(unsigned int ms)
 		for (auto it = m_users.begin(); it != m_users.end(); it++) {
 			CSGSUser *user = it->second;
 			if (user != NULL) {
-				std::string addr;
-				if (m_cache->findUserAddress(user->getCallsign(), addr)) {
+				std::string addr(m_cache->findUserAddr(user->getCallsign()));
+				if (addr.size()) {
                     int i = 0;
                     if (std::string::npos==addr.find(':') && m_irc[1])
                         i = 1;
@@ -760,16 +740,15 @@ void CGroupHandler::clockInt(unsigned int ms)
 			std::string callsign = tx->getUser()->getCallsign();
 
 			if (tx->isEnd()) {
-				CUserData* user = m_cache->findUser(callsign);
-				if (user) {
-					if (tx->isLogin()) {
-						sendAck(*user, "Logged in");
-					} else if (tx->isLogoff()) {
-						sendAck(*user, "Logged off");
-					}
 
-					delete user;
-					user = NULL;
+				SUSERDATA userdata;
+				//CUserData* user = m_cache->findUser(callsign);
+				if (m_cache->findUserData(callsign, userdata)) {
+					if (tx->isLogin()) {
+						sendAck(callsign, userdata, "Logged in");
+					} else if (tx->isLogoff()) {
+						sendAck(callsign, userdata, "Logged off");
+					}
 				} else {
 					printf("Cannot find %s in the cache\n", callsign.c_str());
 				}
@@ -902,15 +881,13 @@ void CGroupHandler::sendToRepeaters(CHeaderData& header) const
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
 		CSGSRepeater *repeater = it->second;
 		if (repeater != NULL) {
-            if (0 == repeater->m_repeater.find("AA1HD") || 0 == repeater->m_repeater.find("W1CDG"))
-			    printf("sendToRepeater: rptr='%s' dest='%s' addr='%s' gate='%s'\n", repeater->m_repeater.c_str(), repeater->m_destination.c_str(), repeater->m_address.c_str(), repeater->m_gateway.c_str());
-			const bool is_ipv4 = (std::string::npos == repeater->m_address.find(':'));
+			const bool is_ipv4 = (std::string::npos == repeater->addr.find(':'));
 			int i = 0;
 			if (is_ipv4 && m_irc[1])
 				i = 1;
-			header.setYourCall(repeater->m_destination);
-			header.setDestination(repeater->m_address, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
-			header.setRepeaters(repeater->m_gateway, repeater->m_repeater);
+			header.setYourCall(repeater->dest);
+			header.setDestination(repeater->addr, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
+			header.setRepeaters(repeater->gate, it->first);
 			m_g2Handler[i]->writeHeader(header);
 		}
 	}
@@ -921,11 +898,11 @@ void CGroupHandler::sendToRepeaters(CAMBEData &data) const
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
 		CSGSRepeater *repeater = it->second;
 		if (repeater != NULL) {
-			const bool is_ipv4 = (std::string::npos == repeater->m_address.find(':'));
+			const bool is_ipv4 = (std::string::npos == repeater->addr.find(':'));
 			int i = 0;
 			if (is_ipv4 && m_irc[1])
 				i = 1;
-			data.setDestination(repeater->m_address, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
+			data.setDestination(repeater->addr, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
 			m_g2Handler[i]->writeAMBE(data);
 		}
 	}
@@ -964,13 +941,13 @@ void CGroupHandler::sendFromText()
 	}
 }
 
-void CGroupHandler::sendAck(const CUserData &user, const std::string &text) const
+void CGroupHandler::sendAck(const std::string &user, const SUSERDATA &userdata, const std::string &text) const
 {
 	unsigned int id = CHeaderData::createId();
 
-	CHeaderData header(m_groupCallsign, "    ", user.getUser(), user.getGateway(), user.getRepeater());
-	const bool is_ipv4 = (std::string::npos == user.getAddress().find(':'));
-	header.setDestination(user.getAddress(), is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
+	CHeaderData header(m_groupCallsign, "    ", user, userdata.gate, userdata.rptr);
+	const bool is_ipv4 = (std::string::npos == userdata.addr.find(':'));
+	header.setDestination(userdata.addr, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
 	const int index = (is_ipv4 && m_irc[1]) ? 1 : 0;
 	header.setId(id);
 	m_g2Handler[index]->writeHeader(header);
@@ -981,7 +958,7 @@ void CGroupHandler::sendAck(const CUserData &user, const std::string &text) cons
     //printf("Sending ack user=%s rptr=%s gate=%s addr=%s index=%d\n", user.getUser().c_str(), user.getRepeater().c_str(), user.getGateway().c_str(), user.getAddress().c_str(), index);
 	CAMBEData data;
 	data.setId(id);
-	data.setDestination(user.getAddress(), is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
+	data.setDestination(userdata.addr, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
 
 	unsigned char buffer[DV_FRAME_MAX_LENGTH_BYTES];
 	::memcpy(buffer + 0U, NULL_AMBE_DATA_BYTES, VOICE_FRAME_LENGTH_BYTES);

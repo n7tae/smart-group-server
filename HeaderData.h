@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2014 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,15 +20,14 @@
 #pragma once
 
 #include <string>
-
-#include <netinet/in.h>
+#include "DStarDefines.h"
 
 class CHeaderData {
 public:
 	CHeaderData();
 	CHeaderData(const CHeaderData &header);
 	CHeaderData(const std::string &myCall1,  const std::string &myCall2, const std::string &yourCall, const std::string &rptCall1, const std::string &rptCall2, unsigned char flag1 = 0x00, unsigned char flag2 = 0x00, unsigned char flag3 = 0x00);
-	~CHeaderData();
+	~CHeaderData() {}
 
 	bool setG2Data(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort);
 	bool setDExtraData(const unsigned char *data, unsigned int length, bool check, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort);
@@ -102,13 +101,13 @@ private:
 	unsigned char  m_flag1;
 	unsigned char  m_flag2;
 	unsigned char  m_flag3;
-	unsigned char *m_myCall1;
-	unsigned char *m_myCall2;
-	unsigned char *m_yourCall;
-	unsigned char *m_rptCall1;
-	unsigned char *m_rptCall2;
 	std::string    m_yourAddress;
 	unsigned short m_yourPort;
 	unsigned short m_myPort;
 	unsigned int   m_errors;
+	unsigned char  m_myCall1[LONG_CALLSIGN_LENGTH];
+	unsigned char  m_myCall2[SHORT_CALLSIGN_LENGTH];
+	unsigned char  m_yourCall[LONG_CALLSIGN_LENGTH];
+	unsigned char  m_rptCall1[LONG_CALLSIGN_LENGTH];
+	unsigned char  m_rptCall2[LONG_CALLSIGN_LENGTH];
 };

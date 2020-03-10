@@ -314,7 +314,7 @@ void CSGSThread::processIrcDDB(const int i)
 					if (address.size()) {
                         if (0 == user.find("W1FJM"))
 						    printf("IRC[%d]: %s %s %s %s\n", i, user.c_str(), repeater.c_str(), gateway.c_str(), address.c_str());
-						m_cache.updateUser(user, repeater, gateway, address, timestamp, DP_DEXTRA, false, false);
+						m_cache.updateUser(user, repeater, gateway, address, timestamp);
 					//} else {
 					//	printf("USER: %s has no IP address!\n", user.c_str());
 					}
@@ -330,7 +330,7 @@ void CSGSThread::processIrcDDB(const int i)
 					if (address.size()) {
                         if (0 == repeater.find("AA1HD") || 0 == repeater.find("W1CDG"))
 						    printf("REPEATER[%d]: %s %s %s\n", i, repeater.c_str(), gateway.c_str(), address.c_str());
-						m_cache.updateRepeater(repeater, gateway, address, DP_DEXTRA, false, false);
+						m_cache.updateRptr(repeater, gateway, address);
 					//} else {
 					//	printf("REPEATER: %s NOT FOUND\n", repeater.c_str());
 					}
@@ -350,7 +350,7 @@ void CSGSThread::processIrcDDB(const int i)
 					if (address.size()) {
                         if (0 == gateway.find("AA1HD") || 0 == gateway.find("W1CDG"))
 						    printf("GATEWAY[%d]: %s %s\n", i, gateway.c_str(), address.c_str());
-						m_cache.updateGateway(gateway, address, DP_DEXTRA, false, false);
+						m_cache.updateGate(gateway, address);
 					//} else {
 					//	printf("GATEWAY: %s NOT FOUND\n", gateway.c_str());
 					}
@@ -518,7 +518,7 @@ void CSGSThread::loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarPro
 					if (he) {
 						count++;
 						std::string address(inet_ntoa(*(struct in_addr*)(he->h_addr_list[0])));
-						m_cache.updateGateway(name, address, dstarProtocol, third?1:0, true);
+						m_cache.updateGate(name, address);
 //						printf("reflector:%s, address:%s lock:%s\n", name.c_str(), address.c_str(), third?"true":"false");
 					}
 				}

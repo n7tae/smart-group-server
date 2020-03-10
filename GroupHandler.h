@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011-2014 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -92,10 +92,10 @@ private:
 
 class CSGSRepeater {
 public:
-	std::string m_destination;
-	std::string m_repeater;
-	std::string m_gateway;
-	std::string	m_address;
+	std::string dest;
+	std::string rptr;
+	std::string gate;
+	std::string	addr;
 };
 
 class CGroupHandler {
@@ -182,6 +182,6 @@ private:
 	void sendFromText();
 	void sendToRepeaters(CHeaderData &header) const;
 	void sendToRepeaters(CAMBEData &data) const;
-	void sendAck(const CUserData &user, const std::string &text) const;
+	void sendAck(const std::string &user, const SUSERDATA &userdata, const std::string &text) const;
 	void logUser(LOGUSER lu, const std::string channel, const std::string user);
 };

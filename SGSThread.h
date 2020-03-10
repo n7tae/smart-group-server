@@ -25,7 +25,6 @@
 #include "DCSProtocolHandlerPool.h"			// DCS_LINK
 #include "G2ProtocolHandler.h"
 #include "RemoteHandler.h"
-#include "CacheManager.h"
 #include "IRCDDB.h"
 #include "Timer.h"
 #include "Defs.h"

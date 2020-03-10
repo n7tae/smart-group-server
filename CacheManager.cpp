@@ -1,6 +1,5 @@
 /*
- *   Copyright (C) 2010,2011,2012 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,152 +19,125 @@
 #include "CacheManager.h"
 #include "DStarDefines.h"
 
-CCacheManager::CCacheManager() :
-m_userCache(),
-m_gatewayCache(),
-m_repeaterCache()
-{
-}
-
-CCacheManager::~CCacheManager()
-{
-}
-
-// returns a new CUserData if there is a user and a and gateway
-CUserData *CCacheManager::findUser(const std::string& user)
+bool CCacheManager::findUserData(const std::string &user, SUSERDATA &userdata)
 {
 	mux.lock();
-	CUserRecord *ur = m_userCache.find(user);
-	if (ur == NULL) {
-		mux.unlock();
-		return NULL;
-	}
-
-	std::string gateway(ur->getRepeater()); // it's not a gateway yet
-	CRepeaterRecord *rr = m_repeaterCache.find(gateway);
-	if (rr == NULL) {   // NULL here means the gateway has the same base as the repeater module, i.e. WA0ABC_B and WA0ABC_G
-		gateway = ur->getRepeater();    // so we will build the gateway cs based on the repeater cs
-		gateway.resize(LONG_CALLSIGN_LENGTH - 1U, ' ');
-		gateway.push_back('G');	          // now it's a gateway
-	} else
-		gateway = rr->getGateway();
-
-	CGatewayRecord *gr = m_gatewayCache.find(gateway);  // finally, we need the IP address
-	if (gr == NULL) {
-		mux.unlock();
-		return NULL;
-	}
-
-	CUserData *userdata =  new CUserData(user, ur->getRepeater(), gr->getGateway(), gr->getAddress());
-	mux.unlock();
-	return userdata;
-}
-
-// sets the IP address of the user and returns true if found
-bool CCacheManager::findUserAddress(const std::string &user, std::string &addr)
-{
-	mux.lock();
-	CUserRecord *ur = m_userCache.find(user);
-	if (ur == NULL) {
+	auto itr = UserRptr.find(user);
+	if (itr == UserRptr.end()) {
 		mux.unlock();
 		return false;
 	}
 
-	std::string gateway(ur->getRepeater()); // it's not a gateway yet
-	CRepeaterRecord *rr = m_repeaterCache.find(gateway);
-	if (rr == NULL) {
-		gateway = ur->getRepeater();
-		gateway.resize(LONG_CALLSIGN_LENGTH - 1U, ' ');
-		gateway.push_back('G');	          // now it's a gateway
-	} else
-		gateway = rr->getGateway();
-
-	CGatewayRecord *gr = m_gatewayCache.find(gateway);
-	if (gr == NULL) {
+	auto itg = RptrGate.find(itr->second);
+	if (itg == RptrGate.end()) {
 		mux.unlock();
 		return false;
 	}
 
-	addr = gr->getAddress();
+	auto ita = GateAddr.find(itg->second);
+	if (ita == GateAddr.end()) {
+		mux.unlock();
+		return false;
+	}
+
+	userdata.rptr.assign(itr->second);
+	userdata.gate.assign(itg->second);
+	userdata.addr.assign(ita->second);
 	mux.unlock();
+
 	return true;
 }
 
-CGatewayData *CCacheManager::findGateway(const std::string& gateway)
+std::string CCacheManager::findUserAddr(const std::string &user)
 {
+	std::string rval;
 	mux.lock();
-	CGatewayRecord *gr = m_gatewayCache.find(gateway);
-	if (gr == NULL)
-		return NULL;
-
-	CGatewayData *gatewaydata = new CGatewayData(gateway, gr->getAddress(), gr->getProtocol());
-	mux.unlock();
-	return gatewaydata;
-}
-
-CRepeaterData* CCacheManager::findRepeater(const std::string& repeater)
-{
-	mux.lock();
-    CRepeaterRecord *rr = m_repeaterCache.find(repeater);
-	std::string gateway;
-	if (rr == NULL) {
-		gateway = repeater;
-		gateway.resize(LONG_CALLSIGN_LENGTH - 1U, ' ');
-		gateway.push_back('G');
-	} else {
-		gateway = rr->getGateway();
-	}
-
-	CGatewayRecord *gr = m_gatewayCache.find(gateway);
-	if (gr == NULL) {
+	auto itr = UserRptr.find(user);
+	if (itr == UserRptr.end()) {
 		mux.unlock();
-		return NULL;
+		return rval;
 	}
 
-	CRepeaterData *repeaterdata = new CRepeaterData(repeater, gr->getGateway(), gr->getAddress(), gr->getProtocol());
-	mux.unlock();
-	return repeaterdata;
-}
-
-void CCacheManager::updateUser(const std::string& user, const std::string& repeater, const std::string& gateway, const std::string& address, const std::string& timestamp, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
-{
-    if (0 == user.find("W1FJM")) {
-       printf("CCacheManager::updateUser user:%s rptr:%s IP:%s\n", user.c_str(), repeater.c_str(), address.c_str());
-    }
-	mux.lock();
-	std::string repeater7 = repeater.substr(0, LONG_CALLSIGN_LENGTH - 1U);
-	std::string gateway7  = gateway.substr(0, LONG_CALLSIGN_LENGTH - 1U);
-
-	m_userCache.update(user, repeater, timestamp);
-
-	// Only store non-standard repeater-gateway pairs
-	if (repeater7.compare(gateway7))
-		m_repeaterCache.update(repeater, gateway);
-
-	m_gatewayCache.update(gateway, address, protocol, addrLock, protoLock);
-	mux.unlock();
-}
-
-void CCacheManager::updateRepeater(const std::string& repeater, const std::string& gateway, const std::string& address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
-{
-	mux.lock();
-	std::string repeater7 = repeater.substr(0, LONG_CALLSIGN_LENGTH - 1U);
-	std::string gateway7  = gateway.substr(0, LONG_CALLSIGN_LENGTH - 1U);
-
-	// Only store non-standard repeater-gateway pairs
-	if (repeater7.compare(gateway7))
-		m_repeaterCache.update(repeater, gateway);
-
-	m_gatewayCache.update(gateway, address, protocol, addrLock, protoLock);
-	mux.unlock();
-}
-
-void CCacheManager::updateGateway(const std::string& gateway, const std::string& address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock)
-{
-	if (0 == gateway.find("AA1HD" || 0 == gateway.find("W1CDG"))) {
-		printf("CCacheManager::updateGateway gate:%s IP:%s\n", gateway.c_str(), address.c_str());
+	auto itg = RptrGate.find(itr->second);
+	if (itg == RptrGate.end()) {
+		mux.unlock();
+		return rval;
 	}
+
+	auto ita = GateAddr.find(itg->second);
+	if (ita == GateAddr.end()) {
+		mux.unlock();
+		return rval;
+	}
+
+	rval.assign(ita->second);
+	mux.unlock();
+	return rval;
+}
+
+std::string CCacheManager::findUserRptr(const std::string &user)
+{
+	std::string rval;
 	mux.lock();
-	m_gatewayCache.update(gateway, address, protocol, addrLock, protoLock);
+	auto it = UserRptr.find(user);
+	if (it == UserRptr.end()) {
+		mux.unlock();
+		return rval;
+	}
+	rval.assign(it->second);
+	mux.unlock();
+	return rval;
+}
+
+std::string CCacheManager::findRptrGate(const std::string &rptr)
+{
+	std::string rval;
+	mux.lock();
+	auto it = RptrGate.find(rptr);
+	if (it == RptrGate.end()) {
+		mux.unlock();
+		return rval;
+	}
+	rval.assign(it->second);
+	mux.unlock();
+	return rval;
+}
+
+std::string CCacheManager::findGateAddr(const std::string &gate)
+{
+	std::string rval;
+	mux.lock();
+	auto it = RptrGate.find(gate);
+	if (it == RptrGate.end()) {
+		mux.unlock();
+		return rval;
+	}
+	rval.assign(it->second);
+	mux.unlock();
+	return rval;
+}
+
+void CCacheManager::updateUser(const std::string &user, const std::string &rptr, const std::string &gate, const std::string &addr, const std::string &time)
+{
+	mux.lock();
+	UserRptr[user] = rptr;
+	UserTime[user] = time;
+	RptrGate[rptr] = gate;
+	GateAddr[gate] = addr;
+	mux.unlock();
+}
+
+void CCacheManager::updateRptr(const std::string &rptr, const std::string &gate, const std::string &addr)
+{
+	mux.lock();
+	RptrGate[rptr] = gate;
+	GateAddr[gate] = addr;
+	mux.unlock();
+}
+
+void CCacheManager::updateGate(const std::string &gate, const std::string &addr)
+{
+	mux.lock();
+	GateAddr[gate] = addr;
 	mux.unlock();
 }

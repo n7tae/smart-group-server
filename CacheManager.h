@@ -1,6 +1,5 @@
 /*
- *   Copyright (C) 2010,2011,2012 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -21,133 +20,32 @@
 
 #include <string>
 #include <mutex>
+#include <unordered_map>
 
-#include "RepeaterCache.h"
-#include "GatewayCache.h"
-#include "SockAddress.h"
-#include "UserCache.h"
-
-class CUserData {
-public:
-	CUserData(const std::string &user, const std::string &repeater, const std::string &gateway, const std::string &address) :
-	m_user(user),
-	m_repeater(repeater),
-	m_gateway(gateway),
-	m_address(address)
-	{
-	}
-
-	std::string getUser() const
-	{
-		return m_user;
-	}
-
-	std::string getRepeater() const
-	{
-		return m_repeater;
-	}
-
-	std::string getGateway() const
-	{
-		return m_gateway;
-	}
-
-	std::string getAddress() const
-	{
-		return m_address;
-	}
-
-private:
-	std::string m_user;
-	std::string m_repeater;
-	std::string m_gateway;
-	std::string m_address;
-};
-
-class CRepeaterData {
-public:
-	CRepeaterData(const std::string &repeater, const std::string &gateway, const std::string &address, DSTAR_PROTOCOL protocol) :
-	m_repeater(repeater),
-	m_gateway(gateway),
-	m_address(address),
-	m_protocol(protocol)
-	{
-	}
-
-	std::string getRepeater() const
-	{
-		return m_repeater;
-	}
-
-	std::string getGateway() const
-	{
-		return m_gateway;
-	}
-
-	std::string getAddress() const
-	{
-		return m_address;
-	}
-
-	DSTAR_PROTOCOL getProtocol() const
-	{
-		return m_protocol;
-	}
-
-private:
-	std::string    m_repeater;
-	std::string    m_gateway;
-	std::string    m_address;
-	DSTAR_PROTOCOL m_protocol;
-};
-
-class CGatewayData {
-public:
-	CGatewayData(const std::string &gateway, const std::string &address, DSTAR_PROTOCOL protocol) :
-	m_gateway(gateway),
-	m_address(address),
-	m_protocol(protocol)
-	{
-	}
-
-	std::string getGateway() const
-	{
-		return m_gateway;
-	}
-
-	std::string getAddress() const
-	{
-		return m_address;
-	}
-
-	DSTAR_PROTOCOL getProtocol() const
-	{
-		return m_protocol;
-	}
-
-private:
-	std::string    m_gateway;
-	std::string    m_address;
-	DSTAR_PROTOCOL m_protocol;
+using SUSERDATA = struct userdata_tag {
+	std::string rptr, gate, addr;
 };
 
 class CCacheManager {
 public:
-	CCacheManager();
-	~CCacheManager();
+	CCacheManager() {}
+	~CCacheManager() {}
 
-	CUserData     *findUser(const std::string& user);
-	CGatewayData  *findGateway(const std::string& gateway);
-	CRepeaterData *findRepeater(const std::string& repeater);
-	bool findUserAddress(const std::string &user, std::string &addr);
+	bool findUserData(const std::string &user, SUSERDATA &userdata);
+	std::string findUserRptr(const std::string &user);
+	std::string findUserTime(const std::string &user);
+	std::string findRptrGate(const std::string &rptr);
+	std::string findGateAddr(const std::string &gate);
+	std::string findUserAddr(const std::string &user);
 
-	void updateUser(const std::string &user, const std::string &repeater, const std::string &gateway, const std::string &address, const std::string &timeStamp, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock);
-	void updateRepeater(const std::string &repeater, const std::string &gateway, const std::string &address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock);
-	void updateGateway(const std::string &gateway, const std::string &address, DSTAR_PROTOCOL protocol, bool addrLock, bool protoLock);
+	void updateUser(const std::string &user, const std::string &rptr, const std::string &gate, const std::string &addr, const std::string &time);
+	void updateRptr(const std::string &rptr, const std::string &gate, const std::string &addr);
+	void updateGate(const std::string &gate, const std::string &addr);
 
 private:
-	CUserCache     m_userCache;
-	CGatewayCache  m_gatewayCache;
-	CRepeaterCache m_repeaterCache;
+	std::unordered_map<std::string, std::string> UserTime;
+	std::unordered_map<std::string, std::string> UserRptr;
+	std::unordered_map<std::string, std::string> RptrGate;
+	std::unordered_map<std::string, std::string> GateAddr;
 	std::mutex mux;
 };

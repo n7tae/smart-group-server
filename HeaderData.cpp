@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2014 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "HeaderData.h"
 
 #include "CCITTChecksum.h"
-#include "DStarDefines.h"
 #include "Utils.h"
 
 void CHeaderData::initialise()
@@ -54,22 +53,11 @@ m_band3(0x01U),
 m_flag1(0U),
 m_flag2(0U),
 m_flag3(0U),
-m_myCall1(NULL),
-m_myCall2(NULL),
-m_yourCall(NULL),
-m_rptCall1(NULL),
-m_rptCall2(NULL),
 m_yourAddress(),
 m_yourPort(0U),
 m_myPort(0U),
 m_errors(0U)
 {
-	m_myCall1  = new unsigned char[LONG_CALLSIGN_LENGTH];
-	m_myCall2  = new unsigned char[SHORT_CALLSIGN_LENGTH];
-	m_yourCall = new unsigned char[LONG_CALLSIGN_LENGTH];
-	m_rptCall1 = new unsigned char[LONG_CALLSIGN_LENGTH];
-	m_rptCall2 = new unsigned char[LONG_CALLSIGN_LENGTH];
-
 	::memset(m_rptCall1, ' ', LONG_CALLSIGN_LENGTH);
 	::memset(m_rptCall2, ' ', LONG_CALLSIGN_LENGTH);
 	::memset(m_yourCall, ' ', LONG_CALLSIGN_LENGTH);
@@ -86,22 +74,11 @@ m_band3(header.m_band3),
 m_flag1(header.m_flag1),
 m_flag2(header.m_flag2),
 m_flag3(header.m_flag3),
-m_myCall1(NULL),
-m_myCall2(NULL),
-m_yourCall(NULL),
-m_rptCall1(NULL),
-m_rptCall2(NULL),
 m_yourAddress(header.m_yourAddress),
 m_yourPort(header.m_yourPort),
 m_myPort(header.m_myPort),
 m_errors(header.m_errors)
 {
-	m_myCall1  = new unsigned char[LONG_CALLSIGN_LENGTH];
-	m_myCall2  = new unsigned char[SHORT_CALLSIGN_LENGTH];
-	m_yourCall = new unsigned char[LONG_CALLSIGN_LENGTH];
-	m_rptCall1 = new unsigned char[LONG_CALLSIGN_LENGTH];
-	m_rptCall2 = new unsigned char[LONG_CALLSIGN_LENGTH];
-
 	::memcpy(m_myCall1,  header.m_myCall1,  LONG_CALLSIGN_LENGTH);
 	::memcpy(m_myCall2,  header.m_myCall2,  SHORT_CALLSIGN_LENGTH);
 	::memcpy(m_yourCall, header.m_yourCall, LONG_CALLSIGN_LENGTH);
@@ -118,22 +95,11 @@ m_band3(0U),
 m_flag1(flag1),
 m_flag2(flag2),
 m_flag3(flag3),
-m_myCall1(NULL),
-m_myCall2(NULL),
-m_yourCall(NULL),
-m_rptCall1(NULL),
-m_rptCall2(NULL),
 m_yourAddress(),
 m_yourPort(0U),
 m_myPort(0U),
 m_errors(0U)
 {
-	m_myCall1  = new unsigned char[LONG_CALLSIGN_LENGTH];
-	m_myCall2  = new unsigned char[SHORT_CALLSIGN_LENGTH];
-	m_yourCall = new unsigned char[LONG_CALLSIGN_LENGTH];
-	m_rptCall1 = new unsigned char[LONG_CALLSIGN_LENGTH];
-	m_rptCall2 = new unsigned char[LONG_CALLSIGN_LENGTH];
-
 	::memset(m_myCall1,  ' ', LONG_CALLSIGN_LENGTH);
 	::memset(m_myCall2,  ' ', SHORT_CALLSIGN_LENGTH);
 	::memset(m_yourCall, ' ', LONG_CALLSIGN_LENGTH);
@@ -154,15 +120,6 @@ m_errors(0U)
 
 	for (unsigned int i = 0U; i < rptCall2.size() && i < LONG_CALLSIGN_LENGTH; i++)
 		m_rptCall2[i] = rptCall2[i];
-}
-
-CHeaderData::~CHeaderData()
-{
-	delete[] m_myCall1;
-	delete[] m_myCall2;
-	delete[] m_yourCall;
-	delete[] m_rptCall1;
-	delete[] m_rptCall2;
 }
 
 void CHeaderData::setDCSData(const unsigned char *data, unsigned int length, const std::string &yourAddress, unsigned short yourPort, unsigned short myPort)
