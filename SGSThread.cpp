@@ -343,13 +343,12 @@ void CSGSThread::processIrcDDB(const int i)
 					if (!res)
 						break;
 
-					CDExtraHandler::gatewayUpdate(gateway, address);
-
-					CDCSHandler::gatewayUpdate(gateway, address);
 
 					if (gateway.size() && address.size()) {
                         if (0 == gateway.find("AA1HD") || 0 == gateway.find("W1CDG"))
 						    printf("GATEWAY[%d]: %s %s\n", i, gateway.c_str(), address.c_str());
+						CDExtraHandler::gatewayUpdate(gateway, address);
+						CDCSHandler::gatewayUpdate(gateway, address);
 						m_cache.updateGate(gateway, address);
 					} else {
 						fprintf(stderr, "IDRT_GATE msg error: g[%s] a[%s]\n", gateway.c_str(), address.c_str());

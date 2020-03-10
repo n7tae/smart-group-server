@@ -325,23 +325,9 @@ void CDExtraHandler::gatewayUpdate(const std::string &dextraHandler, const std::
 	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
 		CDExtraHandler *dextraHandler = *it;
 		if (0==dextraHandler->m_reflector.compare(0, LONG_CALLSIGN_LENGTH-1, gateway)) {
-			if (address.size()) {
-				// A new address, change the value
-				printf("Changing IP address of DExtra gateway or dextraHandler %s to %s\n", dextraHandler->m_reflector.c_str(), address.c_str());
-				dextraHandler->m_yourAddress = address;
-			} else {
-				printf("IP address for DExtra gateway or dextraHandler %s has been removed\n", dextraHandler->m_reflector.c_str());
-
-				// No address, this probably shouldn't happen....
-				if (dextraHandler->m_direction == DIR_OUTGOING && dextraHandler->m_destination != NULL)
-					dextraHandler->m_destination->linkFailed(DP_DEXTRA, dextraHandler->m_reflector, false);
-
-				m_stateChange = true;
-
-				delete dextraHandler;
-				it = m_DExtraHandlers.erase(it);
-				it--;
-			}
+			// A new address, change the value
+			printf("Changing IP address of DExtra gateway or dextraHandler %s to %s\n", dextraHandler->m_reflector.c_str(), address.c_str());
+			dextraHandler->m_yourAddress = address;
 		}
 	}
 }

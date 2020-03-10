@@ -343,23 +343,9 @@ void CDCSHandler::gatewayUpdate(const std::string &dcsHandler, const std::string
 	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
 		CDCSHandler *dcsHandler = *it;
 		if (0 == dcsHandler->m_reflector.compare(0, LONG_CALLSIGN_LENGTH - 1U, gateway)) {
-			if (address.size()) {
-				// A new address, change the value
-				printf("Changing IP address of DCS gateway or dcsHandler %s to %s\n", dcsHandler->m_reflector.c_str(), address.c_str());
-				dcsHandler->m_yourAddress = address;
-			} else {
-				printf("IP address for DCS gateway or dcsHandler %s has been removed\n", dcsHandler->m_reflector.c_str());
-
-				// No address, this probably shouldn't happen....
-				if (dcsHandler->m_direction == DIR_OUTGOING && dcsHandler->m_destination != NULL)
-					dcsHandler->m_destination->linkFailed(DP_DCS, dcsHandler->m_reflector, false);
-
-				m_stateChange = true;
-
-				delete dcsHandler;
-				it = m_DCSHandlers.erase(it);
-				it--;
-			}
+			// A new address, change the value
+			printf("Changing IP address of DCS gateway or dcsHandler %s to %s\n", dcsHandler->m_reflector.c_str(), address.c_str());
+			dcsHandler->m_yourAddress = address;
 		}
 	}
 }
