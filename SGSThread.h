@@ -34,7 +34,6 @@ class CSGSThread {
 public:
 	CSGSThread(unsigned int countDExtra, unsigned int countDCS);
 
-	static std::atomic<bool> m_killed;
 	static void SignalCatch(const int signum);
 //	bool init();
 	void run();
@@ -51,6 +50,7 @@ public:
 private:
 	unsigned int m_countDExtra;
 	unsigned int m_countDCS;
+	static std::atomic<bool> m_killed;
 	bool		m_stopped;
 	std::string	m_callsign;
 	std::string	m_address;

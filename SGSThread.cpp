@@ -551,9 +551,7 @@ void CSGSThread::loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarPro
 	printf("Loaded %u of %u %s reflectors\n", count, tries, DP_DEXTRA==dstarProtocol?"DExtra":"DCS");
 }
 
-void CSGSThread::SignalCatch(const int signum)
+void CSGSThread::SignalCatch(const int)
 {
-	if ((signum == SIGTERM) || (signum == SIGINT)  || (signum == SIGHUP))
-		m_killed = true;
-	exit(0);
+	m_killed = true;
 }
