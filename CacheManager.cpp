@@ -66,6 +66,8 @@ std::string CCacheManager::findUserAddr(const std::string &user)
 std::string CCacheManager::findUserTime(const std::string &user)
 {
 	std::string utime;
+	if (user.empty())
+		return utime;
 	mux.lock();
 	auto itt = UserTime.find(user);
 	if (itt != UserTime.end())

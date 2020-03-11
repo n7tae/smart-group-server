@@ -8,6 +8,8 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 
 Please note that not all minor bug fixes are listed.
 
+* **V# 200311** The callsignswitch and txmsgswitch parameters have been removed and the smart-group-server no longer overwrites the short callsign with `SMRT`. The **Follow-Me** cache has been completly redesigned and is much simpler, eliminating nearly 2500 lines of overly complicated code. Three cache container classes have been eliminated. Passing cache data now no longer uses costly heap memory and the largest stack memory exchange is the size of three std::string variables containing 8-character callsigns each. This will have a noticable impact on performance. The main thread now catches common kill signals (SIGTERM, SIGHUP and SIGINT) and shuts down the smart-group-server gracefully, unsubscribing all users before shutting down.
+
 * **V# 200218** Remote control now uses a secure TLS/TCP port rather than original, problematic UDP port. Be sure to add a port forwarding rule on the firewall for you configured remote control TCP port so that an incoming client can connect. Certificates and keys are automatically generated using **openssl** by the *install* target of the Makefile.
 
 * **V# 190606** Outgoing DExtra and DCS linking ports are now auto-magically chosen from the ephemeral range. This will allow you to co-install a reflector and a smart-group-server on the same machine.
