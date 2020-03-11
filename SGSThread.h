@@ -36,7 +36,7 @@ public:
 
 	static std::atomic<bool> m_killed;
 	static void SignalCatch(const int signum);
-	bool init();
+//	bool init();
 	void run();
 
 	~CSGSThread();
@@ -47,9 +47,6 @@ public:
 
 	void setRemote(bool enabled, const std::string& password, unsigned short port, bool is_ipv6);
 	void setIRC(const unsigned int i, CIRCDDB* irc);
-
-//	void kill();
-
 
 private:
 	unsigned int m_countDExtra;

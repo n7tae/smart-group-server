@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <string>
 
 #include "SGSConfig.h"
@@ -72,8 +73,20 @@ bool CSGSApp::init()
 
 void CSGSApp::run()
 {
-	if (m_thread->init())
-		m_thread->run();
+	struct sigaction act;
+	act.sa_handler = &CSGSThread::SignalCatch;
+	sigemptyset(&act.sa_mask);
+	if (sigaction(SIGTERM, &act, 0) != 0) {
+		printf("sigaction-TERM failed, error=%d\n", errno);
+	}
+	if (sigaction(SIGHUP, &act, 0) != 0) {
+		printf("sigaction-HUP failed, error=%d\n", errno);
+	}
+	if (sigaction(SIGINT, &act, 0) != 0) {
+		printf("sigaction-INT failed, error=%d\n", errno);
+	}
+
+	m_thread->run();
 
 	printf("exiting\n");
 }

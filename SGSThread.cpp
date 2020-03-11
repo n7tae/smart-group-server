@@ -72,25 +72,25 @@ CSGSThread::~CSGSThread()
 	printf("SGSThread destroyed\n");
 }
 
-bool CSGSThread::init()
-{
-	struct sigaction act;
-	act.sa_handler = &CSGSThread::SignalCatch;
-	sigemptyset(&act.sa_mask);
-	if (sigaction(SIGTERM, &act, 0) != 0) {
-		printf("sigaction-TERM failed, error=%d\n", errno);
-		return false;
-	}
-	if (sigaction(SIGHUP, &act, 0) != 0) {
-		printf("sigaction-HUP failed, error=%d\n", errno);
-		return false;
-	}
-	if (sigaction(SIGINT, &act, 0) != 0) {
-		printf("sigaction-INT failed, error=%d\n", errno);
-		return false;
-	}
-	return true;
-}
+// bool CSGSThread::init()
+// {
+// 	struct sigaction act;
+// 	act.sa_handler = &CSGSThread::SignalCatch;
+// 	sigemptyset(&act.sa_mask);
+// 	if (sigaction(SIGTERM, &act, 0) != 0) {
+// 		printf("sigaction-TERM failed, error=%d\n", errno);
+// 		return false;
+// 	}
+// 	if (sigaction(SIGHUP, &act, 0) != 0) {
+// 		printf("sigaction-HUP failed, error=%d\n", errno);
+// 		return false;
+// 	}
+// 	if (sigaction(SIGINT, &act, 0) != 0) {
+// 		printf("sigaction-INT failed, error=%d\n", errno);
+// 		return false;
+// 	}
+// 	return true;
+// }
 
 void CSGSThread::run() {
 	int family[2] = { AF_UNSPEC, AF_UNSPEC };
