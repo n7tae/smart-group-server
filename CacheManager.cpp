@@ -178,10 +178,16 @@ void CCacheManager::updateRptr(const std::string &rptr, const std::string &gate,
 	mux.unlock();
 }
 
-void CCacheManager::updateGate(const std::string &gate, const std::string &addr)
+void CCacheManager::updateGate(const std::string &G, const std::string &addr)
 {
-	if (gate.empty() || addr.empty())
+	if (G.empty() || addr.empty())
 		return;
+	std::string gate(G);
+	auto p = gate.find('_');
+	while (gate.npos != p) {
+		gate[p] = ' ';
+		p = gate.find('_');
+	}
 	mux.lock();
 	if (addr.npos == addr.find(':'))
 		GateIPV4[gate] = addr;
