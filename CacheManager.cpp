@@ -172,9 +172,9 @@ void CCacheManager::updateRptr(const std::string &rptr, const std::string &gate,
 		return;
 	}
 	if (addr.npos == addr.find(':'))
-		GateIPV6[gate] = addr;
-	else
 		GateIPV4[gate] = addr;
+	else
+		GateIPV6[gate] = addr;
 	mux.unlock();
 }
 

@@ -664,7 +664,7 @@ bool CGroupHandler::linkInt()
 	std::string gate(m_linkReflector);
 	gate[7] = 'G';
 	std::string addr(m_cache->findGateAddress(gate));
-	if (! addr.empty()) {
+	if (addr.empty()) {
 		printf("Cannot find the reflector in the cache, not linking\n");
 		return false;
 	}
