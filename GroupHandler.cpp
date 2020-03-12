@@ -410,22 +410,23 @@ void CGroupHandler::process(CHeaderData &header)
 		CSGSUser *user = it->second;
 		if (user != NULL) {
 			// Find the user in the cache
-			SUSERDATA userdata;
-			if (m_cache->findUserData(my, userdata)) {
+			std::string rptr, gate, addr;
+			m_cache->findUserData(my, rptr, gate, addr);
+			if (! addr.empty()) {
 				// Check for the excluded repeater
-				if (userdata.rptr.compare(exclude)) {
+				if (rptr.compare(exclude)) {
 					// Find the users repeater in the repeater list, add it otherwise
-					CSGSRepeater *repeater = m_repeaters[userdata.rptr];
+					CSGSRepeater *repeater = m_repeaters[rptr];
 					if (repeater == NULL) {
 						// Add a new repeater entry
 						repeater = new CSGSRepeater;
 						// we zone route to all the repeaters, except for the sender who transmitted it
 						repeater->dest.assign("/");
-						repeater->dest.append(userdata.rptr.substr(0, 6) + userdata.rptr.back());
-						repeater->rptr.assign(userdata.rptr);
-						repeater->gate.assign(userdata.gate);
-						repeater->addr.assign(userdata.addr);
-						m_repeaters[userdata.rptr] = repeater;
+						repeater->dest.append(rptr.substr(0, 6) + rptr.back());
+						repeater->rptr.assign(rptr);
+						repeater->gate.assign(gate);
+						repeater->addr.assign(addr);
+						m_repeaters[rptr] = repeater;
 					}
 				}
 			}
@@ -577,19 +578,20 @@ bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 		CSGSUser* user = it->second;
 		if (user) {
 			// Find the user in the cache
-			SUSERDATA userdata;
-			if (m_cache->findUserData(user->getCallsign(), userdata)) {
-				// Find the users repeater in the repeater list, add it otherwise
-				CSGSRepeater* repeater = m_repeaters[userdata.rptr];
+			std::string rptr, gate, addr;
+			m_cache->findUserData(user->getCallsign(), rptr, gate, addr);
+			// Find the users repeater in the repeater list, add it otherwise
+			if (! addr.empty()) {
+				CSGSRepeater* repeater = m_repeaters[rptr];
 				if (repeater == NULL) {
 					// Add a new repeater entry
 					repeater = new CSGSRepeater;
 					repeater->dest.assign("/");
-					repeater->dest.append(userdata.rptr.substr(0, 6) + userdata.rptr.back());
-					repeater->rptr = userdata.rptr;
-					repeater->gate = userdata.gate;
-					repeater->addr = userdata.addr;
-					m_repeaters[userdata.rptr] = repeater;
+					repeater->dest.append(rptr.substr(0, 6) + rptr.back());
+					repeater->rptr = rptr;
+					repeater->gate = gate;
+					repeater->addr = addr;
+					m_repeaters[rptr] = repeater;
 				}
 			}
 		}
@@ -741,13 +743,11 @@ void CGroupHandler::clockInt(unsigned int ms)
 
 			if (tx->isEnd()) {
 
-				SUSERDATA userdata;
-				//CUserData* user = m_cache->findUser(callsign);
-				if (m_cache->findUserData(callsign, userdata)) {
+				if (! m_cache->findUserAddr(callsign).empty()) {
 					if (tx->isLogin()) {
-						sendAck(callsign, userdata, "Logged in");
+						sendAck(callsign, "Logged in");
 					} else if (tx->isLogoff()) {
-						sendAck(callsign, userdata, "Logged off");
+						sendAck(callsign, "Logged off");
 					}
 				} else {
 					printf("Cannot find %s in the cache\n", callsign.c_str());
@@ -941,13 +941,15 @@ void CGroupHandler::sendFromText()
 	}
 }
 
-void CGroupHandler::sendAck(const std::string &user, const SUSERDATA &userdata, const std::string &text) const
+void CGroupHandler::sendAck(const std::string &user, const std::string &text) const
 {
+	std::string rptr, gate, addr;
+	m_cache->findUserData(user, rptr, gate, addr);
 	unsigned int id = CHeaderData::createId();
 
-	CHeaderData header(m_groupCallsign, "    ", user, userdata.gate, userdata.rptr);
-	const bool is_ipv4 = (std::string::npos == userdata.addr.find(':'));
-	header.setDestination(userdata.addr, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
+	CHeaderData header(m_groupCallsign, "    ", user, gate, rptr);
+	const bool is_ipv4 = (std::string::npos == addr.find(':'));
+	header.setDestination(addr, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
 	const int index = (is_ipv4 && m_irc[1]) ? 1 : 0;
 	header.setId(id);
 	m_g2Handler[index]->writeHeader(header);
@@ -958,7 +960,7 @@ void CGroupHandler::sendAck(const std::string &user, const SUSERDATA &userdata, 
     //printf("Sending ack user=%s rptr=%s gate=%s addr=%s index=%d\n", user.getUser().c_str(), user.getRepeater().c_str(), user.getGateway().c_str(), user.getAddress().c_str(), index);
 	CAMBEData data;
 	data.setId(id);
-	data.setDestination(userdata.addr, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
+	data.setDestination(addr, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
 
 	unsigned char buffer[DV_FRAME_MAX_LENGTH_BYTES];
 	::memcpy(buffer + 0U, NULL_AMBE_DATA_BYTES, VOICE_FRAME_LENGTH_BYTES);

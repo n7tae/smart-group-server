@@ -19,45 +19,27 @@
 #include "CacheManager.h"
 #include "DStarDefines.h"
 
-bool CCacheManager::findUserData(const std::string &user, SUSERDATA &userdata)
+void CCacheManager::findUserData(const std::string &user, std::string &rptr, std::string &gate, std::string &addr)
 {
-	if (user.empty())
-		return false;
-
 	mux.lock();
-	std::string rptr = findUserRptr(user);
-	if (rptr.empty()) {
-		mux.unlock();
-		return false;
-	}
-
-	std::string gate = findRptrGate(rptr);
-	std::string addr = findGateAddr(gate);
+	rptr.assign(findUserRptr(user));
+	gate.assign(findRptrGate(rptr));
+	addr.assign(findGateAddr(gate));
 	mux.unlock();
+}
 
-	if (addr.empty())
-		return false;
-
-	userdata.rptr.assign(rptr);
-	userdata.gate.assign(gate);
-	userdata.addr.assign(addr);
-	return true;
+void CCacheManager::findRptrData(const std::string &rptr, std::string &gate, std::string &addr)
+{
+	mux.lock();
+	gate.assign(findRptrGate(rptr));
+	addr.assign(findGateAddr(gate));
+	mux.unlock();
 }
 
 std::string CCacheManager::findUserAddr(const std::string &user)
 {
-	std::string addr;
-	if (user.empty())
-		return addr;
-
 	mux.lock();
-	std::string rptr(findUserRptr(user));
-	if (rptr.empty()) {
-		mux.unlock();
-		return addr;
-	}
-	std::string gate(findRptrGate(rptr));
-	addr.assign(findGateAddr(gate));
+	std::string addr(findGateAddr(findRptrGate(findUserRptr(user))));
 	mux.unlock();
 
 	return addr;
@@ -76,15 +58,6 @@ std::string CCacheManager::findUserTime(const std::string &user)
 	return utime;
 }
 
-std::string CCacheManager::findUserRptr(const std::string &user)
-{
-	std::string rptr;
-	auto it = UserRptr.find(user);
-	if (it != UserRptr.end())
-		rptr.assign(it->second);
-	return rptr;
-}
-
 std::string CCacheManager::findUserRepeater(const std::string &user)
 {
 	mux.lock();
@@ -98,34 +71,6 @@ std::string CCacheManager::findGateAddress(const std::string &gate)
 	mux.lock();
 	std::string addr(findGateAddr(gate));
 	mux.unlock();
-	return addr;
-}
-
-std::string CCacheManager::findRptrGate(const std::string &rptr)
-{
-	std::string gate;
-	auto it = RptrGate.find(rptr);
-	if (it == RptrGate.end()) {
-		gate.assign(rptr);
-		gate[7] = 'G';
-	} else
-		gate.assign(it->second);
-	return gate;
-}
-
-std::string CCacheManager::findGateAddr(const std::string &gate)
-{
-	std::string addr;
-	auto it6 = GateIPV6.find(gate);
-	if (it6 == GateIPV6.end()) {
-		auto it4 = GateIPV4.find(gate);
-		if (it4 == GateIPV4.end()) {
-			return addr;
-		} else {
-			addr.assign(it4->second);
-		}
-	} else
-		addr.assign(it6->second);
 	return addr;
 }
 
@@ -194,4 +139,48 @@ void CCacheManager::updateGate(const std::string &G, const std::string &addr)
 	else
 		GateIPV6[gate] = addr;
 	mux.unlock();
+}
+
+// these last three functions are private and not mux locked.
+std::string CCacheManager::findUserRptr(const std::string &user)
+{
+	std::string rptr;
+	if (user.empty())
+		return rptr;
+	auto it = UserRptr.find(user);
+	if (it != UserRptr.end())
+		rptr.assign(it->second);
+	return rptr;
+}
+
+std::string CCacheManager::findRptrGate(const std::string &rptr)
+{
+	std::string gate;
+	if (rptr.empty())
+		return gate;
+	auto it = RptrGate.find(rptr);
+	if (it == RptrGate.end()) {
+		gate.assign(rptr);
+		gate[7] = 'G';
+	} else
+		gate.assign(it->second);
+	return gate;
+}
+
+std::string CCacheManager::findGateAddr(const std::string &gate)
+{
+	std::string addr;
+	if (gate.empty())
+		return addr;
+	auto it6 = GateIPV6.find(gate);
+	if (it6 == GateIPV6.end()) {
+		auto it4 = GateIPV4.find(gate);
+		if (it4 == GateIPV4.end()) {
+			return addr;
+		} else {
+			addr.assign(it4->second);
+		}
+	} else
+		addr.assign(it6->second);
+	return addr;
 }

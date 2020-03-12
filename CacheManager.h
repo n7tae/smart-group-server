@@ -22,16 +22,14 @@
 #include <mutex>
 #include <unordered_map>
 
-using SUSERDATA = struct userdata_tag {
-	std::string rptr, gate, addr;
-};
-
 class CCacheManager {
 public:
 	CCacheManager() {}
 	~CCacheManager() {}
 
-	bool findUserData(const std::string &user, SUSERDATA &userdata);
+	// the bodies of these public functions must be mux locked to access the maps
+	void findUserData(const std::string &user, std::string &rptr, std::string &gate, std::string &addr);
+	void findRptrData(const std::string &rptr, std::string &gate, std::string &addr);
 	std::string findUserTime(const std::string &user);
 	std::string findUserAddr(const std::string &user);
 	std::string findUserRepeater(const std::string &user);
@@ -42,6 +40,7 @@ public:
 	void updateGate(const std::string &gate, const std::string &addr);
 
 private:
+	// these three functions aren't mux locked, that's why they're private
 	std::string findUserRptr(const std::string &user);
 	std::string findRptrGate(const std::string &rptr);
 	std::string findGateAddr(const std::string &gate);

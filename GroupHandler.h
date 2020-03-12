@@ -182,6 +182,6 @@ private:
 	void sendFromText();
 	void sendToRepeaters(CHeaderData &header) const;
 	void sendToRepeaters(CAMBEData &data) const;
-	void sendAck(const std::string &user, const SUSERDATA &userdata, const std::string &text) const;
+	void sendAck(const std::string &user, const std::string &text) const;
 	void logUser(LOGUSER lu, const std::string channel, const std::string user);
 };
