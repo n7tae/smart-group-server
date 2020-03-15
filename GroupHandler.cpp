@@ -413,7 +413,7 @@ void CGroupHandler::process(CHeaderData &header)
 			std::string rptr, gate, addr;
 			m_cache->findUserData(user->getCallsign(), rptr, gate, addr);
 			if (addr.empty()) {
-				fprintf(stderr, "no address for user '%s' on SG '%s': rptr=%s, gate=%s, exclude=%s.\n", user->getCallsign().c_str(), m_groupCallsign.c_str(), rptr.c_str(), gate.c_str(), exclude.c_str);
+				fprintf(stderr, "no address for user '%s' on SG '%s': rptr=%s, gate=%s, exclude=%s.\n", user->getCallsign().c_str(), m_groupCallsign.c_str(), rptr.c_str(), gate.c_str(), exclude.c_str());
 			} else {
 				if (rptr.compare(exclude)) {
 					// Find the users repeater in the repeater list, add it otherwise
