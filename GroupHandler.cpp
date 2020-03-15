@@ -411,9 +411,10 @@ void CGroupHandler::process(CHeaderData &header)
 		if (user != NULL) {
 			// Find the user in the cache
 			std::string rptr, gate, addr;
-			m_cache->findUserData(my, rptr, gate, addr);
-			if (! addr.empty()) {
-				// Check for the excluded repeater
+			m_cache->findUserData(user->getCallsign(), rptr, gate, addr);
+			if (addr.empty()) {
+				fprintf(stderr, "no address for user '%s' on SG '%s': rptr=%s, gate=%s, exclude=%s.\n", user->getCallsign().c_str(), m_groupCallsign.c_str(), rptr.c_str(), gate.c_str(), exclude.c_str);
+			} else {
 				if (rptr.compare(exclude)) {
 					// Find the users repeater in the repeater list, add it otherwise
 					CSGSRepeater *repeater = m_repeaters[rptr];

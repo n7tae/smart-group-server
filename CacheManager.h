@@ -27,7 +27,8 @@ public:
 	CCacheManager() {}
 	~CCacheManager() {}
 
-	// the bodies of these public functions must be mux locked to access the maps
+	// the bodies of these public functions need to be mux locked to access the maps and the private functions.
+	// for these find functions, if a map value can't be found the returned string will be empty.
 	void findUserData(const std::string &user, std::string &rptr, std::string &gate, std::string &addr);
 	void findRptrData(const std::string &rptr, std::string &gate, std::string &addr);
 	std::string findUserTime(const std::string &user);

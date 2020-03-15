@@ -17,7 +17,6 @@
  */
 
 #include "CacheManager.h"
-#include "DStarDefines.h"
 
 void CCacheManager::findUserData(const std::string &user, std::string &rptr, std::string &gate, std::string &addr)
 {
