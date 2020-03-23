@@ -21,17 +21,12 @@ IRCClient::IRCClient(IRCDDBApp *app, const std::string &update_channel, const st
 
 	this->app = app;
 
-	proto = new IRCProtocol(app, this->callsign, password, update_channel, versionInfo);
+	proto.Init(app, this->callsign, password, update_channel, versionInfo);
 
 	recvQ = NULL;
 	sendQ = NULL;
 
 	recv = NULL;
-}
-
-IRCClient::~IRCClient()
-{
-	delete proto;
 }
 
 bool IRCClient::startWork()
@@ -85,7 +80,7 @@ void IRCClient::Entry()
                 recv = new IRCReceiver(&ircSock, recvQ);
                 recv->startWork();
 
-                proto->setNetworkReady(true);
+                proto.setNetworkReady(true);
                 state = 5;
                 timer = 0;
 	            break;
@@ -99,7 +94,7 @@ void IRCClient::Entry()
                     if (recvQ->isEOF()) {
                         timer = 0;
                         state = 6;
-                    } else if (proto->processQueues(recvQ, sendQ) == false) {
+                    } else if (proto.processQueues(recvQ, sendQ) == false) {
                         timer = 0;
                         state = 6;
                     }
@@ -140,7 +135,7 @@ void IRCClient::Entry()
                     app->userListReset();
                 }
 
-                proto->setNetworkReady(false);
+                proto.setNetworkReady(false);
                 recv->stopWork();
 
                 sleep(2);

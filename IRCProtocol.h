@@ -31,7 +31,8 @@ class IRCDDBApp;
 class IRCProtocol
 {
 public:
-	IRCProtocol (IRCDDBApp *app, const std::string& callsign, const std::string& password, const std::string& channel, const std::string& versionInfo);
+	IRCProtocol() {}
+	void Init(IRCDDBApp *app, const std::string& callsign, const std::string& password, const std::string& channel, const std::string& versionInfo);
 	~IRCProtocol();
 
 	void setNetworkReady(bool state);

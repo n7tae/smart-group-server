@@ -26,7 +26,7 @@
 #include "SGSConfig.h"
 #include "SGSApp.h"
 #include "Version.h"
-#include "IRCDDBClient.h"
+#include "IRCDDB.h"
 #include "Utils.h"
 
 int main(int argc, char *argv[])
@@ -100,7 +100,7 @@ bool CSGSApp::createThread()
 		config.getIrcDDB(i, hostname, username, password);
 
 		if (hostname.size() && username.size()) {
-			CIRCDDB *ircDDB = new CIRCDDBClient(hostname, 9007U, username, password, std::string("linux_SmartGroupServer") + std::string("-") + VERSION);
+			CIRCDDB *ircDDB = new CIRCDDB(hostname, 9007U, username, password, std::string("linux_SmartGroupServer") + std::string("-") + VERSION);
 			bool res = ircDDB->open();
 			if (!res) {
 				printf("Cannot initialise the ircDDB protocol handler\n");

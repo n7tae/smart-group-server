@@ -4,7 +4,7 @@ CIRCDDB - ircDDB client library in C++
 
 Copyright (C) 2010-2011   Michael Dirska, DL1BFF (dl1bff@mdx.de)
 Copyright (C) 2011,2012   Jonathan Naylor, G4KLX
-Copyright (c) 2017 by Thomas A Early N7TAE
+Copyright (C) 2020 Thomas A. Early, N7TAE
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,10 +21,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+
 #pragma once
 
 #include <string>
 #include <vector>
+
+#include "IRCDDB.h"
 
 enum IRCDDB_RESPONSE_TYPE {
 	IDRT_NONE,
@@ -33,18 +36,17 @@ enum IRCDDB_RESPONSE_TYPE {
 	IDRT_REPEATER
 };
 
+struct CIRCDDBPrivate;
 
-class CIRCDDB
-{
+class CIRCDDB {
 public:
-	CIRCDDB() {}
-	virtual ~CIRCDDB() {}
+	CIRCDDB(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo);
+	~CIRCDDB();
 
-	virtual int GetFamily() = 0;
+	int GetFamily();
 
 	// A false return implies a network error, or unable to log in
-	virtual bool open() = 0;
-
+	bool open();
 
 	// rptrQTH can be called multiple times if necessary
 	//   callsign     The callsign of the repeater
@@ -52,7 +54,7 @@ public:
 	//   longitude    WGS84 position of antenna in degrees, positive value -> EAST
 	//   desc1, desc2   20-character description of QTH
 	//   infoURL      URL of a web page with information about the repeater
-	virtual void rptrQTH(const std::string& callsign, double latitude, double longitude, const std::string& desc1, const std::string& desc2, const std::string& infoURL) = 0;
+	void rptrQTH( const std::string& callsign, double latitude, double longitude, const std::string& desc1, const std::string& desc2, const std::string& infoURL);
 
 	// rptrQRG can be called multiple times if necessary
 	//  callsign      callsign of the repeater
@@ -60,7 +62,7 @@ public:
 	//  duplexShift   duplex shift in MHz (positive or negative value):  RX_freq = txFrequency + duplexShift
 	//  range       range of the repeater in meters (meters = miles * 1609.344)
 	//  agl         height of the antenna above ground in meters (meters = feet * 0.3048)
-	virtual void rptrQRG(const std::string& callsign, double txFrequency, double duplexShift, double range, double agl) = 0;
+	void rptrQRG( const std::string& callsign, double txFrequency, double duplexShift, double range, double agl );
 
 	// If you call this method once, watchdog messages will be sent to the
 	// to the ircDDB network every 15 minutes. Invoke this method every 1-2 minutes to indicate
@@ -69,10 +71,10 @@ public:
 	// The string wdInfo should contain information about the source of the alive messages, e.g.,
 	// version of the RF decoding software. For example, the ircDDB java software sets this
 	// to "rpm_ircddbmhd-x.z-z".  The string wdInfo must contain at least one non-space character.
-	virtual void kickWatchdog(const std::string& callsign, const std::string& wdInfo) = 0;
+	void kickWatchdog(const std::string& callsign, const std::string& wdInfo);
 
 	// get internal network status
-	virtual int getConnectionState() = 0;
+	int getConnectionState();
 	// one of these values is returned:
 	//  0  = not (yet) connected to the IRC server
 	//  1-6  = a new connection was established, download of repeater info etc. is
@@ -81,47 +83,50 @@ public:
 	//  10 = some network error occured, next state is "0" (new connection attempt)
 
 	// Send heard data, a false return implies a network error
-	virtual bool sendHeard(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3) = 0;
+	bool sendHeard(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3);
 
 	// same as sendHeard with two new fields:
 	//   network_destination:  empty string or 8-char call sign of the repeater
 	//	    or reflector, where this transmission is relayed to.
 	//   tx_message:  20-char TX message or empty string, if the user did not
 	//       send a TX message
-	virtual bool sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message) = 0;
+	bool sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message);
 
 	// The following three functions don't block waiting for a reply, they just send the data
 
 	// Send query for a gateway/reflector, a false return implies a network error
-	virtual bool findGateway(const std::string& gatewayCallsign) = 0;
+	bool findGateway(const std::string& gatewayCallsign);
 
 	// Send query for a repeater module, a false return implies a network error
-	virtual bool findRepeater(const std::string& repeaterCallsign) = 0;
+	bool findRepeater(const std::string& repeaterCallsign);
 
 	// Send query for a user, a false return implies a network error
-	virtual bool findUser(const std::string& userCallsign) = 0;
+	bool findUser(const std::string& userCallsign);
 
 	// Support for the Smart Group Server
-	virtual void sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms) = 0;
+	void sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms);
 
 	// The following functions are for processing received messages
 
 	// Get the waiting message type
-	virtual IRCDDB_RESPONSE_TYPE getMessageType() = 0;
+	IRCDDB_RESPONSE_TYPE getMessageType();
 
 	// Get a gateway message, as a result of IDRT_REPEATER returned from getMessageType()
 	// A false return implies a network error
-	virtual bool receiveRepeater(std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address) = 0;
+	bool receiveRepeater(std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address);
 
 	// Get a gateway message, as a result of IDRT_GATEWAY returned from getMessageType()
 	// A false return implies a network error
-	virtual bool receiveGateway(std::string& gatewayCallsign, std::string& address) = 0;
+	bool receiveGateway(std::string& gatewayCallsign, std::string& address);
 
 	// Get a user message, as a result of IDRT_USER returned from getMessageType()
 	// A false return implies a network error
-	virtual bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address) = 0;
+	bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address);
 
-	virtual bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address, std::string& timeStamp) = 0;
+	bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address, std::string& timeStamp);
 
-	virtual void close() = 0;		// Implictely kills any threads in the IRC code
+	void close();		// Implictely kills any threads in the IRC code
+
+private:
+	struct CIRCDDBPrivate * const d;
 };

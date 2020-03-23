@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define CIRCDDB_VERSION	  "2.0.0"
 
-IRCProtocol::IRCProtocol(IRCDDBApp *app, const std::string& callsign, const std::string& password, const std::string& channel, const std::string& versionInfo)
+void IRCProtocol::Init(IRCDDBApp *app, const std::string& callsign, const std::string& password, const std::string& channel, const std::string& versionInfo)
 {
 	m_password = password;
 	m_channel = channel;

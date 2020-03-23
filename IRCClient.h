@@ -14,7 +14,7 @@ class IRCClient
 public:
 	IRCClient(IRCDDBApp *app, const std::string &update_channel, const std::string &hostName, unsigned int port, const std::string &callsign, const std::string &password, const std::string &versionInfo);
 
-	virtual ~IRCClient();
+	virtual ~IRCClient() {}
 	bool startWork();
 	void stopWork();
 	int GetFamily();
@@ -35,7 +35,7 @@ private:
 	IRCReceiver *recv;
 	IRCMessageQueue *recvQ;
 	IRCMessageQueue *sendQ;
-	IRCProtocol *proto;
+	IRCProtocol proto;
 	IRCDDBApp *app;
 	CTCPReaderWriterClient ircSock;
 };
