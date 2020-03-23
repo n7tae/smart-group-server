@@ -73,6 +73,33 @@ std::string CCacheManager::findGateAddress(const std::string &gate)
 	return addr;
 }
 
+std::string CCacheManager::findNameNick(const std::string &name)
+{
+	std::string nick;
+	if (name.empty())
+		return nick;
+	mux.lock();
+	auto itn = NameNick.find(name);
+	if (itn != NameNick.end())
+		nick.assign(itn->second);
+	mux.unlock();
+	return nick;
+}
+
+std::string CCacheManager::findServerUser()
+{
+	std::string suser;
+	mux.lock();
+	for (auto it=NameNick.begin(); it!=NameNick.end(); it++) {
+		if (0 == it->first.compare(0, 2, "s-")) {
+			suser.assign(it->first);
+			break;
+		}
+	}
+	mux.unlock();
+	return suser;
+}
+
 void CCacheManager::updateUser(const std::string &user, const std::string &rptr, const std::string &gate, const std::string &addr, const std::string &time)
 {
 	if (user.empty())
@@ -97,10 +124,7 @@ void CCacheManager::updateUser(const std::string &user, const std::string &rptr,
 	if (rptr.compare(0, 7, gate, 0, 7))
 		RptrGate[rptr] = gate;	// only do this if they differ
 
-	if (addr.npos == addr.find(':'))
-		GateIPV4[gate] = addr;
-	else
-		GateIPV6[gate] = addr;
+	GateAddr[gate] = addr;
 	mux.unlock();
 }
 
@@ -115,10 +139,7 @@ void CCacheManager::updateRptr(const std::string &rptr, const std::string &gate,
 		mux.unlock();
 		return;
 	}
-	if (addr.npos == addr.find(':'))
-		GateIPV4[gate] = addr;
-	else
-		GateIPV6[gate] = addr;
+	GateAddr[gate] = addr;
 	mux.unlock();
 }
 
@@ -133,10 +154,38 @@ void CCacheManager::updateGate(const std::string &G, const std::string &addr)
 		p = gate.find('_');
 	}
 	mux.lock();
-	if (addr.npos == addr.find(':'))
-		GateIPV4[gate] = addr;
-	else
-		GateIPV6[gate] = addr;
+	GateAddr[gate] = addr;
+	mux.unlock();
+}
+
+void CCacheManager::updateName(const std::string &name, const std::string &nick)
+{
+	if (name.empty() || nick.empty())
+		return;
+	mux.lock();
+	NameNick[name] = nick;
+	mux.unlock();
+}
+
+void CCacheManager::eraseGate(const std::string &gate)
+{
+	mux.lock();
+	GateAddr.erase(gate);
+	mux.unlock();
+}
+
+void CCacheManager::eraseName(const std::string &name)
+{
+	mux.lock();
+	NameNick.erase(name);
+	mux.unlock();
+}
+
+void CCacheManager::clearGate()
+{
+	mux.lock();
+	GateAddr.clear();
+	NameNick.clear();
 	mux.unlock();
 }
 
@@ -171,15 +220,8 @@ std::string CCacheManager::findGateAddr(const std::string &gate)
 	std::string addr;
 	if (gate.empty())
 		return addr;
-	auto it6 = GateIPV6.find(gate);
-	if (it6 == GateIPV6.end()) {
-		auto it4 = GateIPV4.find(gate);
-		if (it4 == GateIPV4.end()) {
-			return addr;
-		} else {
-			addr.assign(it4->second);
-		}
-	} else
-		addr.assign(it6->second);
+	auto ita = GateAddr.find(gate);
+	if (ita != GateAddr.end())
+		addr.assign(ita->second);
 	return addr;
 }

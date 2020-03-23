@@ -25,11 +25,54 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <future>
 #include <ctime>
 #include <vector>
+#include <regex>
+#include <map>
 
 #include "IRCDDB.h"
 #include "IRCMessageQueue.h"
 
-class IRCDDBAppPrivate;
+class IRCDDBAppUserObject
+{
+public:
+	std::string nick;
+	std::string name;
+	std::string host;
+	bool op;
+	unsigned int usn;
+
+	IRCDDBAppUserObject() {}
+
+	IRCDDBAppUserObject(const std::string &n, const std::string &nm, const std::string &h)
+	{
+		nick = n;
+		name = nm;
+		host = h;
+		op = false;
+		usn = 0;
+	}
+};
+
+class IRCDDBAppRptrObject
+{
+public:
+	std::string arearp_cs;
+	time_t lastChanged;
+	std::string zonerp_cs;
+
+	IRCDDBAppRptrObject ()
+	{
+	}
+
+	IRCDDBAppRptrObject (time_t &dt, std::string &repeaterCallsign, std::string &gatewayCallsign, time_t &maxTime)
+	{
+		arearp_cs = repeaterCallsign;
+		lastChanged = dt;
+		zonerp_cs = gatewayCallsign;
+
+		if (dt > maxTime)
+			maxTime = dt;
+	}
+};
 
 class IRCDDBApp
 {
@@ -89,7 +132,36 @@ private:
 	bool findServerUser();
 	unsigned int calculateUsn(const std::string &nick);
 	std::string getLastEntryTime(int tableID);
-	IRCDDBAppPrivate *d;
 	time_t m_maxTime;
 	std::future<void> m_future;
+	int state;
+	int timer;
+	int infoTimer;
+	int wdTimer;
+	time_t maxTime;
+
+	IRCMessageQueue *sendQ;
+	IRCMessageQueue replyQ;
+	std::string currentServer;
+	std::string myNick;
+	std::string updateChannel;
+	std::string channelTopic;
+	std::string bestServer;
+	std::regex tablePattern;
+	std::regex datePattern;
+	std::regex timePattern;
+	std::regex dbPattern;
+	bool initReady;
+	bool terminateThread;
+	std::map<std::string, IRCDDBAppUserObject> user;
+	std::mutex userMapMutex;
+	std::map<std::string, IRCDDBAppRptrObject> rptrMap;
+	std::mutex rptrMapMutex;
+	std::map<std::string, std::string> moduleQRG;
+	std::mutex moduleQRGMutex;
+	std::map<std::string, std::string> moduleQTH;
+	std::map<std::string, std::string> moduleURL;
+	std::mutex moduleQTHURLMutex;
+	std::map<std::string, std::string> moduleWD;
+	std::mutex moduleWDMutex;
 };
