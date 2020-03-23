@@ -27,6 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <vector>
 
+#include "IRCClient.h"
+#include "CacheManager.h"
 #include "IRCDDB.h"
 
 enum IRCDDB_RESPONSE_TYPE {
@@ -36,14 +38,14 @@ enum IRCDDB_RESPONSE_TYPE {
 	IDRT_REPEATER
 };
 
-struct CIRCDDBPrivate;
-
 class CIRCDDB {
 public:
 	CIRCDDB(const std::string& hostName, unsigned int port, const std::string& callsign, const std::string& password, const std::string& versionInfo);
 	~CIRCDDB();
 
 	int GetFamily();
+
+	bool findUser(const std::string &user);
 
 	// A false return implies a network error, or unable to log in
 	bool open();
@@ -92,41 +94,14 @@ public:
 	//       send a TX message
 	bool sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message);
 
-	// The following three functions don't block waiting for a reply, they just send the data
-
-	// Send query for a gateway/reflector, a false return implies a network error
-	bool findGateway(const std::string& gatewayCallsign);
-
-	// Send query for a repeater module, a false return implies a network error
-	bool findRepeater(const std::string& repeaterCallsign);
-
-	// Send query for a user, a false return implies a network error
-	bool findUser(const std::string& userCallsign);
-
 	// Support for the Smart Group Server
 	void sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms);
 
-	// The following functions are for processing received messages
-
-	// Get the waiting message type
-	IRCDDB_RESPONSE_TYPE getMessageType();
-
-	// Get a gateway message, as a result of IDRT_REPEATER returned from getMessageType()
-	// A false return implies a network error
-	bool receiveRepeater(std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address);
-
-	// Get a gateway message, as a result of IDRT_GATEWAY returned from getMessageType()
-	// A false return implies a network error
-	bool receiveGateway(std::string& gatewayCallsign, std::string& address);
-
-	// Get a user message, as a result of IDRT_USER returned from getMessageType()
-	// A false return implies a network error
-	bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address);
-
-	bool receiveUser(std::string& userCallsign, std::string& repeaterCallsign, std::string& gatewayCallsign, std::string& address, std::string& timeStamp);
-
 	void close();		// Implictely kills any threads in the IRC code
 
+	CCacheManager cache;
+
 private:
-	struct CIRCDDBPrivate * const d;
+	IRCClient *client;
+	IRCDDBApp *app;
 };

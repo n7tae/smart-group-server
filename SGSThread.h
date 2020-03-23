@@ -57,7 +57,6 @@ private:
 
 	CG2ProtocolHandler *m_g2Handler[2];
 	CIRCDDB            *m_irc[2];
-	CCacheManager 		m_cache;
 	bool				m_logEnabled;
 	CTimer				m_statusTimer;
 	IRCDDB_STATUS		m_lastStatus;

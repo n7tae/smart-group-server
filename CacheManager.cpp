@@ -184,7 +184,10 @@ void CCacheManager::eraseName(const std::string &name)
 void CCacheManager::clearGate()
 {
 	mux.lock();
-	GateAddr.clear();
+	for (auto it=GateAddr.begin(); it!=GateAddr.end(); it++) {
+		if (it->first.compare(0,3, "DCS") && it->first.compare(0, 3, "XRF"))	// don't erase the reflectors
+			GateAddr.erase(it);
+	}
 	NameNick.clear();
 	mux.unlock();
 }

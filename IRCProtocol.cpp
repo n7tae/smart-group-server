@@ -145,21 +145,6 @@ bool IRCProtocol::processQueues(IRCMessageQueue *recvQ, IRCMessageQueue *sendQ)
 		} else if (0 == m->command.compare("QUIT")) {
 			if (m_app)
 				m_app->userLeave(m->getPrefixNick());
-		} else if (0 == m->command.compare("MODE")) {
-			if (m->numParams>=3 && 0==m->params[0].compare(m_channel)) {
-				if (m_app) {
-					std::string mode = m->params[1];
-
-					for (size_t i=1; i<mode.size() && (size_t)m->numParams>=i+2; i++) {
-						if ('o' == mode[i]) {
-							if ('+' == mode[0])
-								m_app->userChanOp(m->params[i+1], true);
-							else if ('-' == mode[0])
-								m_app->userChanOp(m->params[i+1], false);
-						}
-					} // for
-				}
-			}
 		} else if (0 == m->command.compare("PRIVMSG")) {
 			if (m->numParams==2 && m_app) {
 				if (0 == m->params[0].compare(m_channel) && m_app)
@@ -171,7 +156,6 @@ bool IRCProtocol::processQueues(IRCMessageQueue *recvQ, IRCMessageQueue *sendQ)
 			if (m->numParams>=7 && 0==m->params[0].compare(m_currentNick) && 0==m->params[1].compare(m_channel)) {
 				if (m_app) {
 					m_app->userJoin(m->params[5], m->params[2], m->params[3]);
-					m_app->userChanOp(m->params[5], 0==m->params[6].compare("H@"));
 				}
 			}
 		} else if (0 == m->command.compare("433")) { // nick collision

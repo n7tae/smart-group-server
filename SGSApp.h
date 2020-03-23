@@ -20,18 +20,20 @@
 #pragma once
 
 #include "SGSThread.h"
+#include "CacheManager.h"
 
 class CSGSApp
 {
-private:
-	std::string m_configFile;
-	CSGSThread *m_thread;
-	bool createThread();
-
 public:
 	CSGSApp(const std::string &configFile);
 	~CSGSApp();
 
 	bool init();
 	void run();
+
+private:
+	std::string m_configFile;
+	CSGSThread *m_thread;
+
+	bool createThread();
 };

@@ -27,8 +27,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "IRCDDBApp.h"
 #include "Utils.h"
 
-IRCDDBApp::IRCDDBApp(const std::string &u_chan)
+IRCDDBApp::IRCDDBApp(const std::string &u_chan, CCacheManager *cache)
 {
+	this->cache = cache;
 	maxTime = ((time_t)950000000);	//februray 2000
 	tablePattern = std::regex("^[0-9]$");
 	datePattern = std::regex("^20[0-9][0-9]-((1[0-2])|(0[1-9]))-((3[01])|([12][0-9])|(0[1-9]))$");
@@ -142,33 +143,6 @@ int IRCDDBApp::getConnectionState()
 	return state;
 }
 
-IRCDDB_RESPONSE_TYPE IRCDDBApp::getReplyMessageType()
-{
-	IRCMessage *m = replyQ.peekFirst();
-	if (m == NULL)
-		return IDRT_NONE;
-
-	std::string msgType = m->getCommand();
-
-	if (0 == msgType.compare("IDRT_USER"))
-		return IDRT_USER;
-
-	if (0 == msgType.compare("IDRT_REPEATER"))
-		return IDRT_REPEATER;
-
-	if (0 == msgType.compare("IDRT_GATEWAY"))
-		return IDRT_GATEWAY;
-
-	printf("IRCDDBApp::getMessageType: unknown msg type: %s\n", msgType.c_str());
-
-	return IDRT_NONE;
-}
-
-IRCMessage *IRCDDBApp::getReplyMessage()
-{
-	return replyQ.getMessage();
-}
-
 void IRCDDBApp::startWork()
 {
 	terminateThread = false;
@@ -181,90 +155,43 @@ void IRCDDBApp::stopWork()
 	m_future.get();
 }
 
-unsigned int IRCDDBApp::calculateUsn(const std::string &nick)
+void IRCDDBApp::userJoin(const std::string &nick, const std::string &name, const std::string &addr)
 {
-	std::string::size_type pos = nick.find_last_of('-');
-	std::string lnick = std::string::npos==pos ? nick : nick.substr(0, pos);
-	lnick.push_back('-');
-	unsigned int maxUsn = 0;
-	for (int i = 1; i <= 4; i++) {
-		std::string ircUser = lnick + std::to_string(i);
-
-		if (user.count(ircUser) == 1) {
-			IRCDDBAppUserObject obj = user[ircUser];
-			if (obj.usn > maxUsn)
-				maxUsn = obj.usn;
-		}
+	if (0 == nick.compare(0, 2, "u-")) {
+		return;
 	}
-	return maxUsn + 1;
-}
-
-void IRCDDBApp::userJoin(const std::string &nick, const std::string &name, const std::string &host)
-{
-	userMapMutex.lock();
-
-	std::string lnick = nick;
-	ToLower(lnick);
-
-	IRCDDBAppUserObject u(lnick, name, host);
-	u.usn = calculateUsn(lnick);
-
-	user[lnick] = u;
-
-	if (initReady) {
-		std::string::size_type hyphenPos = nick.find('-');
-
-		if ((hyphenPos >= 4) && (hyphenPos <= 6)) {
-			std::string gatewayCallsign = nick.substr(0, hyphenPos);
-			ToUpper(gatewayCallsign);
-			gatewayCallsign.resize(7, ' ');
-			gatewayCallsign.push_back('G');
-
-			IRCMessage *m2 = new IRCMessage("IDRT_GATEWAY");
-			m2->addParam(gatewayCallsign);
-			m2->addParam(host);
-			replyQ.putMessage(m2);
-		}
-	}
-	userMapMutex.unlock();
+	std::string gate(name);
+	ToUpper(gate);
+	gate.resize(7, ' ');
+	gate.push_back('G');
+	cache->updateName(name, nick);
+	cache->updateGate(gate, addr);
 }
 
 void IRCDDBApp::userLeave(const std::string &nick)
 {
-	std::string lnick = nick;
-	ToLower(lnick);
-
-	userMapMutex.lock();
-	user.erase(lnick);
-
-	if (currentServer.size()) {
-		if (user.count(myNick) != 1) {
-			printf("IRCDDBApp::userLeave: could not find own nick\n");
-			userMapMutex.unlock();
-			return;
-		}
-
-		IRCDDBAppUserObject me = user[myNick];
-
-		if (me.op == false) {
-			// if I am not op, then look for new server
-
-			if (0 == currentServer.compare(lnick)) {
-				// currentServer = null;
-				state = 2;  // choose new server
-				timer = 200;
-				initReady = false;
-			}
-		}
+	if (0 == nick.compare(0, 2, "s-")) {
+		currentServer.clear();
+		state = 2;
+		timer = 200;
+		initReady = false;
+		return;
 	}
-	userMapMutex.unlock();
+	std::string name(nick);
+	name.pop_back();
+	if ('-' == name.back()) {
+		name.pop_back();
+		cache->eraseName(name);
+		ToUpper(name);
+		name.resize(7, ' ');
+		name.push_back('G');
+		cache->eraseGate(name);
+	}
 }
 
 void IRCDDBApp::userListReset()
 {
-  userMapMutex.lock();
-  user.clear();
-  userMapMutex.unlock();
+	cache->clearGate();
 }
 
 void IRCDDBApp::setCurrentNick(const std::string &nick)
@@ -286,134 +213,14 @@ void IRCDDBApp::setTopic(const std::string &topic)
 
 bool IRCDDBApp::findServerUser()
 {
-	bool found = false;
-	userMapMutex.lock();
-
-	std::map<std::string, IRCDDBAppUserObject>::iterator it;
-
-	for (it = user.begin(); it != user.end(); ++it) {
-		IRCDDBAppUserObject u = it->second;
-
-		if (0==u.nick.compare(0, 2, "s-") && u.op && myNick.compare(u.nick) && 0==u.nick.compare(bestServer)) {
-			currentServer = u.nick;
-			found = true;
-			break;
-		}
-	}
-
-	if (found) {
-		userMapMutex.unlock();
-		return true;
-	}
-
-	if (8 == bestServer.size()) {
-		for (it = user.begin(); it != user.end(); ++it) {
-			IRCDDBAppUserObject u = it->second;
-
-			if (0==u.nick.compare(bestServer.substr(0,7)) && u.op && myNick.compare(u.nick) ) {
-				currentServer = u.nick;
-				found = true;
-				break;
-			}
-		}
-	}
-
-	if (found) {
-		userMapMutex.unlock();
-		return true;
-	}
-
-	for (it = user.begin(); it != user.end(); ++it) {
-		IRCDDBAppUserObject u = it->second;
-		if (0==u.nick.compare(0, 2, "s-") && u.op && myNick.compare(u.nick)) {
-			currentServer = u.nick;
-			found = true;
-			break;
-		}
-	}
-	userMapMutex.unlock();
-	return found;
-}
-
-void IRCDDBApp::userChanOp(const std::string &nick, bool op)
-{
-	userMapMutex.lock();
-
-	std::string lnick = nick;
-	ToLower(lnick);
-
-	if (user.count(lnick) == 1)
-		user[lnick].op = op;
-	userMapMutex.unlock();
+	std::string suser(cache->findServerUser());
+	if (suser.empty())
+		return false;
+	currentServer.assign(suser);
+	return true;
 }
 
 static const int numberOfTables = 2;
-
-std::string IRCDDBApp::getIPAddress(std::string &zonerp_cs)
-{
-	unsigned int max_usn = 0;
-	std::string ipAddr;
-	std::string gw = zonerp_cs;
-	ReplaceChar(gw, '_', ' ');
-	ToLower(gw);
-	Trim(gw);
-
-	userMapMutex.lock();
-	for (int j=1; j <= 4; j++) {
-		std::string ircUser = gw + std::string("-") + std::to_string(j);
-
-		if (user.count(ircUser) == 1) {
-			IRCDDBAppUserObject o = user[ircUser];
-
-			if (o.usn >= max_usn) {
-				max_usn = o.usn;
-				ipAddr = o.host.c_str();
-			}
-		}
-	}
-	userMapMutex.unlock();
-	return ipAddr;
-}
-
-bool IRCDDBApp::findGateway(const std::string &gwCall)
-{
-	std::string s = gwCall.substr(0,6);
-
-	IRCMessage *m2 = new IRCMessage("IDRT_GATEWAY");
-	m2->addParam(gwCall);
-	m2->addParam(getIPAddress(s));
-	replyQ.putMessage(m2);
-
-	return true;
-}
-
-bool IRCDDBApp::findRepeater(const std::string &rptrCall)
-{
-	std::string arearp_cs(rptrCall);
-	ReplaceChar(arearp_cs, ' ',  '_');
-
-	std::string s("NONE");
-	std::string zonerp_cs;
-	rptrMapMutex.lock();
-
-
-	if (1 == rptrMap.count(arearp_cs)) {
-		IRCDDBAppRptrObject o = rptrMap[arearp_cs];
-		zonerp_cs = o.zonerp_cs;
-		ReplaceChar(zonerp_cs, '_', ' ');
-		zonerp_cs.resize(7, ' ');
-		zonerp_cs.push_back('G');
-		s = o.zonerp_cs;
-	}
-
-	IRCMessage * m2 = new IRCMessage("IDRT_REPEATER");
-	m2->addParam(rptrCall);
-	m2->addParam(zonerp_cs);
-	m2->addParam(getIPAddress(s));
-	replyQ.putMessage(m2);
-
-	return true;
-}
 
 void IRCDDBApp::sendSGSInfo(const std::string &subcommand, const std::vector<std::string> &pars)
 {
@@ -491,27 +298,25 @@ bool IRCDDBApp::sendHeard(const std::string &myCall, const std::string &myCallEx
 
 bool IRCDDBApp::findUser(const std::string &usrCall)
 {
-	std::string srv(currentServer);
+	std::string srv = currentServer;
 	IRCMessageQueue *q = getSendQ();
 
-	if (srv.size()>0 && state>=6 && q) {
-		std::string usr(usrCall);
+	if ((srv.length() > 0) && (state >= 6) && (q != NULL)) {
+		std::string usr = usrCall;
+
 		ReplaceChar(usr, ' ', '_');
-		IRCMessage *m = new IRCMessage(srv, std::string("FIND ") + usr);
+
+		IRCMessage *m = new IRCMessage(srv, std::string("FIND ") + usr );
+
 		q->putMessage(m);
-	} else {
-		IRCMessage *m = new IRCMessage("IDRT_USER");
-		m->addParam(usrCall);
-		for (int i=0; i<4; i++)
-			m->addParam(std::string(""));
-		replyQ.putMessage(m);
 	}
+
 	return true;
 }
 
 void IRCDDBApp::msgChannel(IRCMessage *m)
 {
-	if (0==m->getPrefixNick().compare(0, 2, "s-") && m->numParams>=2)  // server msg
+	if (0==m->getPrefixNick().compare(0, 2, "s-") && m->numParams >= 2)  // server msg
 		doUpdate(m->params[1]);
 }
 
@@ -551,21 +356,23 @@ void IRCDDBApp::doNotFound(std::string &msg, std::string &retval)
 void IRCDDBApp::doUpdate(std::string &msg)
 {
 	int tableID = 0;
+
 	std::vector<std::string> tkz = stringTokenizer(msg);
-	if (tkz.empty())
+
+	if (0u == tkz.size())
 		return;  // no text in message
 
 	std::string tk = tkz.front();
 	tkz.erase(tkz.begin());
 
 	if (std::regex_match(tk, tablePattern)) {
-		tableID = std::stoi(tk);
+		tableID = stol(tk);
 		if ((tableID < 0) || (tableID >= numberOfTables)) {
-			printf("invalid table ID %d\n", tableID);
+			printf("invalid table ID %d", tableID);
 			return;
 		}
 
-		if (tkz.empty())
+		if (0 == tkz.size())
 			return;  // received nothing but the tableID
 
 		tk = tkz.front();
@@ -573,18 +380,20 @@ void IRCDDBApp::doUpdate(std::string &msg)
 	}
 
 	if (std::regex_match(tk, datePattern)) {
-		if (tkz.empty())
+		if (0 == tkz.size())
 			return;  // nothing after date string
 
-		std::string timeToken = tkz.front();	// time token
+		std::string timeToken = tkz.front();
 		tkz.erase(tkz.begin());
+
 		if (! std::regex_match(timeToken, timePattern))
 			return; // no time string after date string
 
-		time_t dt = parseTime(tk + std::string(" ") + timeToken);
+		std::string tstr(std::string(tk + " " + timeToken));	// used to update user time
+		auto rtime = parseTime(tstr);							// used to update maxTime for sendlist
 
-		if (0==tableID || 1==tableID) {
-			if (tkz.empty())
+		if ((tableID == 0) || (tableID == 1)) {
+			if (0 == tkz.size())
 				return;  // nothing after time string
 
 			std::string key = tkz.front();
@@ -593,7 +402,7 @@ void IRCDDBApp::doUpdate(std::string &msg)
 			if (! std::regex_match(key, dbPattern))
 				return; // no valid key
 
-			if (tkz.empty())
+			if (0 == tkz.size())
 				return;  // nothing after time string
 
 			std::string value = tkz.front();
@@ -602,52 +411,30 @@ void IRCDDBApp::doUpdate(std::string &msg)
 			if (! std::regex_match(value, dbPattern))
 				return; // no valid key
 
+			//printf("TABLE %d %s %s\n", tableID, key.c_str(), value.c_str());
+
 			if (tableID == 1) {
-				rptrMapMutex.lock();
-				IRCDDBAppRptrObject newRptr(dt, key, value, m_maxTime);
-				rptrMap[key] = newRptr;
 
-				if (initReady) {
-					std::string arearp_cs(key);
-					std::string zonerp_cs(value);
-					ReplaceChar(arearp_cs, '_', ' ');
-					ReplaceChar(zonerp_cs, '_', ' ');
-					zonerp_cs.resize(7, ' ');
-					zonerp_cs.push_back('G');
+				if (initReady && key.compare(0,6, value, 0, 6)) {
+					std::string rptr(key);
+					std::string gate(value);
 
-					IRCMessage *m2 = new IRCMessage("IDRT_REPEATER");
-					m2->addParam(arearp_cs);
-					m2->addParam(zonerp_cs);
-					m2->addParam(getIPAddress(value));
-					replyQ.putMessage(m2);
+					ReplaceChar(rptr, '_', ' ');
+					ReplaceChar(gate, '_', ' ');
+					gate[7] = 'G';
+					cache->updateRptr(rptr, gate, "");
+					if (rtime > maxTime)
+						maxTime = rtime;
 				}
-				rptrMapMutex.unlock();
-			} else if (0==tableID && initReady) {
-				rptrMapMutex.lock();
-				std::string userCallsign(key);
-				std::string arearp_cs(value);
-				std::string zonerp_cs;
-				std::string ip_addr;
-			  ReplaceChar(userCallsign, '_', ' ');
-				ReplaceChar(arearp_cs, '_', ' ');
+			} else if ((tableID == 0) && initReady) {
+				std::string user(key);
+				std::string rptr(value);
 
-				if (1 == rptrMap.count(value)) {
-					IRCDDBAppRptrObject o = rptrMap[value];
-					zonerp_cs = o.zonerp_cs;
-					ReplaceChar(zonerp_cs, '_', ' ');
-					zonerp_cs.resize(7, ' ');
-					zonerp_cs.push_back('G');
-					ip_addr = getIPAddress(o.zonerp_cs);
-				}
+				ReplaceChar(user, '_', ' ');
+				ReplaceChar(rptr, '_', ' ');
 
-				IRCMessage *m2 = new IRCMessage("IDRT_USER");
-				m2->addParam(userCallsign);
-				m2->addParam(arearp_cs);
-				m2->addParam(zonerp_cs);
-				m2->addParam(ip_addr);
-				m2->addParam(tk + std::string(" ") + timeToken);
-				replyQ.putMessage(m2);
-				rptrMapMutex.unlock();
+				cache->updateUser(user, rptr, "", "", tstr);
+
 			}
 		}
 	}
@@ -707,11 +494,7 @@ void IRCDDBApp::msgQuery(IRCMessage *m)
 
 			if (callsign.size() > 0) {
 				ReplaceChar(callsign, '_', ' ');
-				IRCMessage *m2 = new IRCMessage("IDRT_USER");
-				m2->addParam(callsign);
-				for (int i=0; i<4; i++)
-					m2->addParam(std::string(""));
-				replyQ.putMessage(m2);
+				findUser(callsign);
 			}
 		}
 	}

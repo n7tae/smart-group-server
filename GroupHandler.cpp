@@ -33,7 +33,6 @@ const unsigned int MESSAGE_DELAY = 4U;
 // define static members
 CG2ProtocolHandler *CGroupHandler::m_g2Handler[2] = { NULL, NULL };
 CIRCDDB            *CGroupHandler::m_irc[2] = { NULL, NULL };
-CCacheManager      *CGroupHandler::m_cache = NULL;
 std::string         CGroupHandler::m_gateway;
 std::list<CGroupHandler *> CGroupHandler::m_Groups;
 
@@ -182,13 +181,6 @@ void CGroupHandler::setIRC(CIRCDDB *irc0, CIRCDDB *irc1)
 	m_irc[1] = irc1;
 }
 
-void CGroupHandler::setCache(CCacheManager *cache)
-{
-	assert(cache != NULL);
-
-	m_cache = cache;
-}
-
 void CGroupHandler::setGateway(const std::string &gateway)
 {
 	m_gateway = gateway;
@@ -324,7 +316,7 @@ void CGroupHandler::process(CHeaderData &header)
 	bool islogin = false;
 
 	// Ensure that this user is in the cache.
-	if (! m_cache->findUserRepeater(my).empty()) {
+	if (! m_irc[0]->cache.findUserRepeater(my).empty()) {
 		if (m_irc[1])
 			m_irc[1]->findUser(my);
 		m_irc[0]->findUser(my);
@@ -403,7 +395,9 @@ void CGroupHandler::process(CHeaderData &header)
 	}
 
 	// Get the home repeater of the user, because we don't want to route this incoming back to him
-	std::string exclude = m_cache->findUserRepeater(my);
+	std::string exclude(m_irc[0]->cache.findUserRepeater(my));
+	if (exclude.empty() && m_irc[1])
+		exclude.assign(m_irc[1]->cache.findUserRepeater(my));
 
 	// Update the repeater list, based on users that are currently logged in
 	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
@@ -411,7 +405,11 @@ void CGroupHandler::process(CHeaderData &header)
 		if (user != NULL) {
 			// Find the user in the cache
 			std::string rptr, gate, addr;
-			m_cache->findUserData(user->getCallsign(), rptr, gate, addr);
+			m_irc[0]->cache.findUserData(user->getCallsign(), rptr, gate, addr);
+			if (addr.empty()) {
+				if (m_irc[1])
+					m_irc[1]->cache.findUserData(user->getCallsign(), rptr, gate, addr);
+			}
 			if (addr.empty()) {
 				fprintf(stderr, "no address for user '%s' on SG '%s': rptr=%s, gate=%s, exclude=%s.\n", user->getCallsign().c_str(), m_groupCallsign.c_str(), rptr.c_str(), gate.c_str(), exclude.c_str());
 			} else {
@@ -580,7 +578,9 @@ bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 		if (user) {
 			// Find the user in the cache
 			std::string rptr, gate, addr;
-			m_cache->findUserData(user->getCallsign(), rptr, gate, addr);
+			m_irc[0]->cache.findUserData(user->getCallsign(), rptr, gate, addr);
+			if (addr.empty() && m_irc[1])
+				m_irc[1]->cache.findUserData(user->getCallsign(), rptr, gate, addr);
 			// Find the users repeater in the repeater list, add it otherwise
 			if (! addr.empty()) {
 				CSGSRepeater* repeater = m_repeaters[rptr];
@@ -666,7 +666,10 @@ bool CGroupHandler::linkInt()
 	// Find the repeater to link to
 	std::string gate(m_linkReflector);
 	gate[7] = 'G';
-	std::string addr(m_cache->findGateAddress(gate));
+	int i = 0;
+	if (m_irc[1])
+		i = 1;
+	std::string addr(m_irc[i]->cache.findGateAddress(gate));
 	if (addr.empty()) {
 		printf("Cannot find the reflector in the cache, not linking\n");
 		return false;
@@ -695,12 +698,12 @@ void CGroupHandler::clockInt(unsigned int ms)
 		for (auto it = m_users.begin(); it != m_users.end(); it++) {
 			CSGSUser *user = it->second;
 			if (user != NULL) {
-				std::string addr(m_cache->findUserAddr(user->getCallsign()));
-				if (addr.size()) {
-                    int i = 0;
-                    if (std::string::npos==addr.find(':') && m_irc[1])
-                        i = 1;
-					m_g2Handler[i]->writePing(addr);
+				std::string addr(m_irc[0]->cache.findUserAddr(user->getCallsign()));
+				if (addr.empty() && m_irc[1]) {
+					addr.assign(m_irc[1]->cache.findUserAddr(user->getCallsign()));
+					m_g2Handler[1]->writePing(addr);
+				} else {
+					m_g2Handler[0]->writePing(addr);
                 }
 			}
 		}
@@ -744,13 +747,18 @@ void CGroupHandler::clockInt(unsigned int ms)
 
 			if (tx->isEnd()) {
 
-				if (! m_cache->findUserAddr(callsign).empty()) {
-					if (tx->isLogin()) {
-						sendAck(callsign, "Logged in");
-					} else if (tx->isLogoff()) {
-						sendAck(callsign, "Logged off");
+				bool not_found = true;
+				for (int i=0; i<2 && m_irc[i]; i++) {
+					if (! m_irc[i]->cache.findUserAddr(callsign).empty()) {
+						if (tx->isLogin())
+							sendAck(i, callsign, "Logged in");
+						else if (tx->isLogoff())
+							sendAck(i, callsign, "Logged off");
+						not_found = false;
+						break;
 					}
-				} else {
+				}
+				if (not_found) {
 					printf("Cannot find %s in the cache\n", callsign.c_str());
 				}
 
@@ -942,10 +950,10 @@ void CGroupHandler::sendFromText()
 	}
 }
 
-void CGroupHandler::sendAck(const std::string &user, const std::string &text) const
+void CGroupHandler::sendAck(const int i, const std::string &user, const std::string &text) const
 {
 	std::string rptr, gate, addr;
-	m_cache->findUserData(user, rptr, gate, addr);
+	m_irc[i]->cache.findUserData(user, rptr, gate, addr);
 	unsigned int id = CHeaderData::createId();
 
 	CHeaderData header(m_groupCallsign, "    ", user, gate, rptr);

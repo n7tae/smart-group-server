@@ -103,7 +103,6 @@ public:
 	static void add(const std::string &callsign, const std::string &logoff, const std::string &repeater, const std::string &infoText, unsigned int userTimeout, bool listenOnly, bool showlink, const std::string & eflector);
 	static void setG2Handler(CG2ProtocolHandler *handler0, CG2ProtocolHandler *handler1);
 	static void setIRC(CIRCDDB *irc0, CIRCDDB *irc1);
-	static void setCache(CCacheManager *cache);
 	static void setGateway(const std::string &gateway);
 	static void link();
 
@@ -153,7 +152,6 @@ private:
 
 	static CG2ProtocolHandler *m_g2Handler[2];
 	static CIRCDDB            *m_irc[2];
-	static CCacheManager      *m_cache;
 	static std::string         m_gateway;
 
 	static std::string         m_name;
@@ -182,6 +180,6 @@ private:
 	void sendFromText();
 	void sendToRepeaters(CHeaderData &header) const;
 	void sendToRepeaters(CAMBEData &data) const;
-	void sendAck(const std::string &user, const std::string &text) const;
+	void sendAck(const int index, const std::string &user, const std::string &text) const;
 	void logUser(LOGUSER lu, const std::string channel, const std::string user);
 };

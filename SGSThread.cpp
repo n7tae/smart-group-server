@@ -31,8 +31,8 @@
 
 #include "SGSThread.h"
 #include "GroupHandler.h"
-#include "DExtraHandler.h"			// DEXTRA LINK
-#include "DCSHandler.h"				// DCS LINK
+#include "DExtraHandler.h"	// DEXTRA LINK
+#include "DCSHandler.h"		// DCS LINK
 #include "HeaderData.h"
 #include "G2Handler.h"
 #include "AMBEData.h"
@@ -47,7 +47,6 @@ m_countDCS(countDCS),
 m_stopped(true),
 m_callsign(),
 m_address(),
-m_cache(),
 m_logEnabled(false),
 m_statusTimer(1000U, 1U),		// 1 second
 m_lastStatus(IS_DISCONNECTED),
@@ -71,26 +70,6 @@ CSGSThread::~CSGSThread()
 
 	printf("SGSThread destroyed\n");
 }
-
-// bool CSGSThread::init()
-// {
-// 	struct sigaction act;
-// 	act.sa_handler = &CSGSThread::SignalCatch;
-// 	sigemptyset(&act.sa_mask);
-// 	if (sigaction(SIGTERM, &act, 0) != 0) {
-// 		printf("sigaction-TERM failed, error=%d\n", errno);
-// 		return false;
-// 	}
-// 	if (sigaction(SIGHUP, &act, 0) != 0) {
-// 		printf("sigaction-HUP failed, error=%d\n", errno);
-// 		return false;
-// 	}
-// 	if (sigaction(SIGINT, &act, 0) != 0) {
-// 		printf("sigaction-INT failed, error=%d\n", errno);
-// 		return false;
-// 	}
-// 	return true;
-// }
 
 void CSGSThread::run() {
 	int family[2] = { AF_UNSPEC, AF_UNSPEC };
@@ -154,7 +133,6 @@ void CSGSThread::run() {
 	CDCSHandler::setDCSProtocolHandlerPool(&dcsPool);
 	CDCSHandler::setGatewayType(GT_SMARTGROUP);
 
-	CGroupHandler::setCache(&m_cache);
 	CGroupHandler::setGateway(m_callsign);
 	CGroupHandler::setG2Handler(m_g2Handler[0], m_g2Handler[1]);
 	CGroupHandler::setIRC(m_irc[0], m_irc[1]);
@@ -319,66 +297,6 @@ void CSGSThread::processIrcDDB(const int i)
 
 		m_statusTimer.start();
 	}
-
-	// Process all incoming ircDDB messages, updating the caches
-	while (true) {
-		IRCDDB_RESPONSE_TYPE type = m_irc[i]->getMessageType();
-
-		switch (type) {
-			case IDRT_NONE:
-				return;
-
-			case IDRT_USER: {
-					std::string user, rptr, gate, addr, timestamp;
-					bool res = m_irc[i]->receiveUser(user, rptr, gate, addr, timestamp);
-					if (!res)
-						break;
-
-					if (!user.empty() && !rptr.empty()) {
-                        if (0 == user.find("W1FJM"))
-						    printf("IRC: %s %s %s %s\n", user.c_str(), rptr.c_str(), gate.c_str(), addr.c_str());
-						m_cache.updateUser(user, rptr, gate, addr, timestamp);
-					} else {
-						fprintf(stderr, "IDRT_USER msg error: u[%s] r[%s] g[%s] a[%s] t[%s]\n", user.c_str(), rptr.c_str(), gate.c_str(), addr.c_str(), timestamp.c_str());
-					}
-				}
-				break;
-
-			case IDRT_REPEATER: {
-					std::string rptr, gate, addr;
-					bool res = m_irc[i]->receiveRepeater(rptr, gate, addr);
-					if (!res)
-						break;
-
-					if (rptr.size() && gate.size()) {
-                        if (0 == rptr.find("AA1HD") || 0 == rptr.find("W1CDG"))
-						    printf("REPEATER: %s %s %s\n", rptr.c_str(), gate.c_str(), addr.c_str());
-						m_cache.updateRptr(rptr, gate, addr);
-					} else {
-						fprintf(stderr, "IDRT_RPTR msg error: r[%s] g[%s] a[%s]\n", rptr.c_str(), gate.c_str(), addr.c_str());
-					}
-				}
-				break;
-
-			case IDRT_GATEWAY: {
-					std::string gate, addr;
-					bool res = m_irc[i]->receiveGateway(gate, addr);
-					if (!res)
-						break;
-
-					if (gate.size() && addr.size()) {
-                        if (0 == gate.find("AA1HD") || 0 == gate.find("W1CDG"))
-						    printf("GATEWAY[%d]: %s %s\n", i, gate.c_str(), addr.c_str());
-						CDExtraHandler::gatewayUpdate(gate, addr);
-						CDCSHandler::gatewayUpdate(gate, addr);
-						m_cache.updateGate(gate, addr);
-					} else {
-						fprintf(stderr, "IDRT_GATE msg error: g[%s] a[%s]\n", gate.c_str(), addr.c_str());
-					}
-				}
-				break;
-		}
-	}
 }
 
 void CSGSThread::processDExtra(CDExtraProtocolHandlerPool *dextraPool)
@@ -520,7 +438,9 @@ void CSGSThread::loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarPro
 	hostfile.open(filepath, std::ifstream::in);
 	char line[256];
 	hostfile.getline(line, 256);
-	int count=0, tries=0;
+	int count=0, tries=0, index=0;
+	if (m_irc[1])
+		index = 1;
 	while (hostfile.good()) {
 		const char *space = " \t\r";
 		char *first = strtok(line, space);
@@ -539,7 +459,7 @@ void CSGSThread::loadReflectors(const std::string fname, DSTAR_PROTOCOL dstarPro
 					if (he) {
 						count++;
 						std::string address(inet_ntoa(*(struct in_addr*)(he->h_addr_list[0])));
-						m_cache.updateGate(name, address);
+						m_irc[index]->cache.updateGate(name, address);
 //						printf("reflector:%s, address:%s lock:%s\n", name.c_str(), address.c_str(), third?"true":"false");
 					}
 				}

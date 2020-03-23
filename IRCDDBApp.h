@@ -30,54 +30,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "IRCDDB.h"
 #include "IRCMessageQueue.h"
-
-class IRCDDBAppUserObject
-{
-public:
-	std::string nick;
-	std::string name;
-	std::string host;
-	bool op;
-	unsigned int usn;
-
-	IRCDDBAppUserObject() {}
-
-	IRCDDBAppUserObject(const std::string &n, const std::string &nm, const std::string &h)
-	{
-		nick = n;
-		name = nm;
-		host = h;
-		op = false;
-		usn = 0;
-	}
-};
-
-class IRCDDBAppRptrObject
-{
-public:
-	std::string arearp_cs;
-	time_t lastChanged;
-	std::string zonerp_cs;
-
-	IRCDDBAppRptrObject ()
-	{
-	}
-
-	IRCDDBAppRptrObject (time_t &dt, std::string &repeaterCallsign, std::string &gatewayCallsign, time_t &maxTime)
-	{
-		arearp_cs = repeaterCallsign;
-		lastChanged = dt;
-		zonerp_cs = gatewayCallsign;
-
-		if (dt > maxTime)
-			maxTime = dt;
-	}
-};
+#include "CacheManager.h"
 
 class IRCDDBApp
 {
 public:
-	IRCDDBApp(const std::string &update_channel);
+	IRCDDBApp(const std::string &update_channel, CCacheManager *cache);
 
 	~IRCDDBApp();
 
@@ -85,7 +43,6 @@ public:
 
 	void userLeave(const std::string &nick);
 
-	void userChanOp(const std::string &nick, bool op);
 	void userListReset();
 
 	void msgChannel(IRCMessage *m);
@@ -102,13 +59,7 @@ public:
 	void startWork();
 	void stopWork();
 
-	IRCDDB_RESPONSE_TYPE getReplyMessageType();
-
-	IRCMessage *getReplyMessage();
-
 	bool findUser(const std::string& s);
-	bool findRepeater(const std::string &s);
-	bool findGateway(const std::string &s);
 
 	bool sendHeard(const std::string &myCall, const std::string &myCallExt, const std::string &yourCall, const std::string &rpt1, const std::string &rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string &destination, const std::string &tx_msg, const std::string &tx_stats);
 
@@ -128,9 +79,7 @@ protected:
 private:
 	void doUpdate(std::string& msg);
 	void doNotFound(std::string &msg, std::string &retval);
-	std::string getIPAddress(std::string &zonerp_cs);
 	bool findServerUser();
-	unsigned int calculateUsn(const std::string &nick);
 	std::string getLastEntryTime(int tableID);
 	time_t m_maxTime;
 	std::future<void> m_future;
@@ -141,7 +90,7 @@ private:
 	time_t maxTime;
 
 	IRCMessageQueue *sendQ;
-	IRCMessageQueue replyQ;
+	CCacheManager *cache;
 	std::string currentServer;
 	std::string myNick;
 	std::string updateChannel;
@@ -153,10 +102,6 @@ private:
 	std::regex dbPattern;
 	bool initReady;
 	bool terminateThread;
-	std::map<std::string, IRCDDBAppUserObject> user;
-	std::mutex userMapMutex;
-	std::map<std::string, IRCDDBAppRptrObject> rptrMap;
-	std::mutex rptrMapMutex;
 	std::map<std::string, std::string> moduleQRG;
 	std::mutex moduleQRGMutex;
 	std::map<std::string, std::string> moduleQTH;
