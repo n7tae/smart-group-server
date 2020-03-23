@@ -134,15 +134,12 @@ void IRCReceiver::Entry()
 	return;
 }
 
-IRCReceiver::IRCReceiver(CTCPReaderWriterClient	*sock, IRCMessageQueue *q)
+void IRCReceiver::Init(CTCPReaderWriterClient *sock, IRCMessageQueue *q)
 {
 	ircSock = sock;
 	recvQ = q;
 }
 
-IRCReceiver::~IRCReceiver()
-{
-}
 
 bool IRCReceiver::startWork()
 {

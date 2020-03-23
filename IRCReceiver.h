@@ -6,8 +6,9 @@
 class IRCReceiver
 {
 public:
-	IRCReceiver(CTCPReaderWriterClient *ircSock, IRCMessageQueue *q);
-	virtual ~IRCReceiver();
+	IRCReceiver() {}
+	void Init(CTCPReaderWriterClient *ircSock, IRCMessageQueue *q);
+	~IRCReceiver() {}
 	bool startWork();
 	void stopWork();
 

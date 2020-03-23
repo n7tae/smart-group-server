@@ -32,7 +32,7 @@ private:
 
 	bool terminateThread;
 
-	IRCReceiver *recv;
+	IRCReceiver recv;
 	IRCMessageQueue *recvQ;
 	IRCMessageQueue *sendQ;
 	IRCProtocol proto;

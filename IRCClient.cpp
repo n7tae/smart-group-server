@@ -25,8 +25,6 @@ IRCClient::IRCClient(IRCDDBApp *app, const std::string &update_channel, const st
 
 	recvQ = NULL;
 	sendQ = NULL;
-
-	recv = NULL;
 }
 
 bool IRCClient::startWork()
@@ -77,8 +75,8 @@ void IRCClient::Entry()
                 recvQ = new IRCMessageQueue();
                 sendQ = new IRCMessageQueue();
 
-                recv = new IRCReceiver(&ircSock, recvQ);
-                recv->startWork();
+                recv.Init(&ircSock, recvQ);
+                recv.startWork();
 
                 proto.setNetworkReady(true);
                 state = 5;
@@ -136,11 +134,10 @@ void IRCClient::Entry()
                 }
 
                 proto.setNetworkReady(false);
-                recv->stopWork();
+                recv.stopWork();
 
                 sleep(2);
 
-                delete recv;
                 delete recvQ;
                 delete sendQ;
 
