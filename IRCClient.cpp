@@ -4,11 +4,12 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "IRCDDBApp.h"
 #include "IRCClient.h"
 #include "Utils.h"
 
 
-IRCClient::IRCClient(IRCApplication *app, const std::string &update_channel, const std::string &hostName, unsigned int port, const std::string &callsign, const std::string &password, const std::string &versionInfo)
+IRCClient::IRCClient(IRCDDBApp *app, const std::string &update_channel, const std::string &hostName, unsigned int port, const std::string &callsign, const std::string &password, const std::string &versionInfo)
 {
 	safeStringCopy(host_name, hostName.c_str(), sizeof host_name);
 

@@ -21,40 +21,40 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "IRCDDB.h"
-#include "IRCApplication.h"
-
 #include <string>
 #include <future>
 #include <ctime>
 #include <vector>
 
+#include "IRCDDB.h"
+#include "IRCMessageQueue.h"
+
 class IRCDDBAppPrivate;
 
-class IRCDDBApp : public IRCApplication
+class IRCDDBApp
 {
 public:
 	IRCDDBApp(const std::string &update_channel);
 
-	virtual ~IRCDDBApp();
+	~IRCDDBApp();
 
-	virtual void userJoin(const std::string &nick, const std::string &name, const std::string &host);
+	void userJoin(const std::string &nick, const std::string &name, const std::string &host);
 
-	virtual void userLeave(const std::string &nick);
+	void userLeave(const std::string &nick);
 
-	virtual void userChanOp(const std::string &nick, bool op);
-	virtual void userListReset();
+	void userChanOp(const std::string &nick, bool op);
+	void userListReset();
 
-	virtual void msgChannel(IRCMessage *m);
-	virtual void msgQuery(IRCMessage *m);
+	void msgChannel(IRCMessage *m);
+	void msgQuery(IRCMessage *m);
 
-	virtual void setCurrentNick(const std::string &nick);
-	virtual void setTopic(const std::string &topic);
+	void setCurrentNick(const std::string &nick);
+	void setTopic(const std::string &topic);
 
-	virtual void setBestServer(const std::string &ircUser);
+	void setBestServer(const std::string &ircUser);
 
-	virtual void setSendQ(IRCMessageQueue *s);
-	virtual IRCMessageQueue *getSendQ();
+	void setSendQ(IRCMessageQueue *s);
+	IRCMessageQueue *getSendQ();
 
 	void startWork();
 	void stopWork();

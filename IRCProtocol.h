@@ -2,7 +2,7 @@
 CIRCDDB - ircDDB client library in C++
 
 Copyright (C) 2010   Michael Dirska, DL1BFF (dl1bff@mdx.de)
-Copyright (c) 2017 by Thomas A. Early N7TAE
+Copyright (c) 2017,2020 by Thomas A. Early N7TAE
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,12 +25,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <array>
 
 #include "IRCMessageQueue.h"
-#include "IRCApplication.h"
+
+class IRCDDBApp;
 
 class IRCProtocol
 {
 public:
-	IRCProtocol (IRCApplication * app, const std::string& callsign, const std::string& password, const std::string& channel, const std::string& versionInfo);
+	IRCProtocol (IRCDDBApp *app, const std::string& callsign, const std::string& password, const std::string& channel, const std::string& versionInfo);
 	~IRCProtocol();
 
 	void setNetworkReady(bool state);
@@ -51,6 +52,5 @@ private:
 	int m_timer;
 	int m_pingTimer;
 
-	IRCApplication *m_app;
+	IRCDDBApp *m_app;
 };
-
