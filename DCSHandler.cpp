@@ -77,6 +77,7 @@ m_rptCall2()
 		m_linkState = DCS_LINKING;
 		m_tryTimer.start();
 	}
+	printf("New CDCSHandler ref=%s, rep=%s, yourAddr=%s, yourPort=%u, myPort=%u\n", m_reflector.c_str(), m_repeater.c_str(), m_yourAddress.c_str(), m_yourPort, m_myPort);
 }
 
 CDCSHandler::~CDCSHandler()
