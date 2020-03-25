@@ -46,7 +46,7 @@ m_linkState(DCS_LINKING),
 m_destination(handler),
 m_time(),
 m_pollTimer(1000U, 5U),
-m_pollInactivityTimer(1000U, 60U),
+m_pollInactivityTimer(1000U, 300U),
 m_tryTimer(1000U, 1U),
 m_tryCount(0U),
 m_dcsId(0x00U),
@@ -77,7 +77,7 @@ m_rptCall2()
 		m_linkState = DCS_LINKING;
 		m_tryTimer.start();
 	}
-	printf("New CDCSHandler ref=%s, rep=%s, yourAddr=%s, yourPort=%u, myPort=%u\n", m_reflector.c_str(), m_repeater.c_str(), m_yourAddress.c_str(), m_yourPort, m_myPort);
+	// printf("New CDCSHandler ref=%s, rep=%s, yourAddr=%s, yourPort=%u, myPort=%u\n", m_reflector.c_str(), m_repeater.c_str(), m_yourAddress.c_str(), m_yourPort, m_myPort);
 }
 
 CDCSHandler::~CDCSHandler()
@@ -188,14 +188,14 @@ void CDCSHandler::process(CPollData &poll)
 	}
 
 	printf("Unknown incoming DCS poll from %s\n", dcsHandler.c_str());
-	printf("m_data1       = '%s'\n", dcsHandler.c_str());
-	printf("m_data2       = '%s'\n", repeater.c_str());
-	printf("m_direction   = %s\n", poll.getDirection()==DIR_OUTGOING ? "DIR_OUTGOING" : "DIR_INCOMING");
-	printf("m_dongle      = %s\n", poll.isDongle() ? "TRUE" : "FALSE");
-	printf("m_yourAddress = %s\n", yourAddress.c_str());
-	printf("m_yourPort    = %u\n", yourPort);
-	printf("m_myPort      = %u\n", myPort);
-	printf("m_length      = %u\n", poll.getLength());
+	// printf("m_data1       = '%s'\n", dcsHandler.c_str());
+	// printf("m_data2       = '%s'\n", repeater.c_str());
+	// printf("m_direction   = %s\n", poll.getDirection()==DIR_OUTGOING ? "DIR_OUTGOING" : "DIR_INCOMING");
+	// printf("m_dongle      = %s\n", poll.isDongle() ? "TRUE" : "FALSE");
+	// printf("m_yourAddress = %s\n", yourAddress.c_str());
+	// printf("m_yourPort    = %u\n", yourPort);
+	// printf("m_myPort      = %u\n", myPort);
+	// printf("m_length      = %u\n", poll.getLength());
 }
 
 void CDCSHandler::process(CConnectData &connect)
