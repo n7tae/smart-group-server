@@ -187,6 +187,14 @@ void CDCSHandler::process(CPollData &poll)
 	}
 
 	printf("Unknown incoming DCS poll from %s\n", dcsHandler.c_str());
+	printf("m_data1       = '%s'\n", dcsHandler.c_str());
+	printf("m_data2       = '%s'\n", repeater.c_str());
+	printf("m_direction   = %s\n", poll.getDirection()==DIR_OUTGOING ? "DIR_OUTGOING" : "DIR_INCOMING");
+	printf("m_dongle      = %s\n", poll.isDongle() ? "TRUE" : "FALSE");
+	printf("m_yourAddress = %s\n", yourAddress.c_str());
+	printf("m_yourPort    = %u\n", yourPort);
+	printf("m_myPort      = %u\n", myPort);
+	printf("m_length      = %u\n", poll.getLength());
 }
 
 void CDCSHandler::process(CConnectData &connect)
