@@ -587,9 +587,9 @@ bool CGroupHandler::process(CHeaderData &header, DIRECTION, AUDIO_SOURCE)
 					repeater = new CSGSRepeater;
 					repeater->dest.assign("/");
 					repeater->dest.append(rptr.substr(0, 6) + rptr.back());
-					repeater->rptr = rptr;
-					repeater->gate = gate;
-					repeater->addr = addr;
+					repeater->rptr.assign(rptr);
+					repeater->gate.assign(gate);
+					repeater->addr.assign(addr);
 					m_repeaters[rptr] = repeater;
 				}
 			}
@@ -903,7 +903,7 @@ void CGroupHandler::sendToRepeaters(CHeaderData& header) const
 			header.setRepeaters(repeater->gate, it->first);
 			m_g2Handler[i]->writeHeader(header);
 			if (isct)
-				printf("sendToR dest=%s gate=%s addr=%s.\n", repeater->dest.c_str(), it->first.c_str(), repeater->addr.c_str());
+				printf("sendToR dest=%s gate=%s addr=%s.\n", repeater->dest.c_str(), repeater->gate.c_str(), repeater->addr.c_str());
 		}
 	}
 }

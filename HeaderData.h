@@ -108,6 +108,6 @@ private:
 	unsigned char  m_myCall1[LONG_CALLSIGN_LENGTH];
 	unsigned char  m_myCall2[SHORT_CALLSIGN_LENGTH];
 	unsigned char  m_yourCall[LONG_CALLSIGN_LENGTH];
-	unsigned char  m_rptCall1[LONG_CALLSIGN_LENGTH];
-	unsigned char  m_rptCall2[LONG_CALLSIGN_LENGTH];
+	unsigned char  m_rptCall1[LONG_CALLSIGN_LENGTH];	// this is the gateway
+	unsigned char  m_rptCall2[LONG_CALLSIGN_LENGTH];	// this is the repeater
 };

@@ -514,12 +514,8 @@ void CHeaderData::setRepeaters(const std::string& rpt1, const std::string& rpt2)
 {
 	::memset(m_rptCall1, ' ', LONG_CALLSIGN_LENGTH);
 	::memset(m_rptCall2, ' ', LONG_CALLSIGN_LENGTH);
-
-	for (unsigned int i = 0U; i < rpt1.size(); i++)
-		m_rptCall1[i] = rpt1[i];
-
-	for (unsigned int i = 0U; i < rpt2.size(); i++)
-		m_rptCall2[i] = rpt2[i];
+	::memcpy(m_rptCall1, rpt1.c_str(), LONG_CALLSIGN_LENGTH);
+	::memcpy(m_rptCall2, rpt2.c_str(), LONG_CALLSIGN_LENGTH);
 }
 
 void CHeaderData::setCQCQCQ()
