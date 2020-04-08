@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstring>
 #include <vector>
+#include <set>
 
 #include "SlowDataEncoder.h"
 #include "GroupHandler.h"
@@ -693,17 +694,30 @@ void CGroupHandler::clockInt(unsigned int ms)
 {
 	m_pingTimer.clock(ms);
 	if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
+
+		std::set<std::string> repeaters;	// First, build a repeater set
 		for (auto it = m_users.begin(); it != m_users.end(); it++) {
-			CSGSUser *user = it->second;
-			if (user != NULL) {
-				std::string addr(m_irc[0]->cache.findUserAddr(user->getCallsign()));
-				if (addr.empty() && m_irc[1]) {
-					addr.assign(m_irc[1]->cache.findUserAddr(user->getCallsign()));
-					m_g2Handler[1]->writePing(addr);
-				} else {
-					m_g2Handler[0]->writePing(addr);
-                }
+			auto user = it->second;
+			if (user) {
+				std::string rptr(m_irc[0]->cache.findUserRepeater(user->getCallsign()));
+				if (rptr.empty() && m_irc[1])
+					rptr.assign(m_irc[1]->cache.findUserRepeater(user->getCallsign()));
+				if (! rptr.empty())
+					repeaters.insert(rptr);
 			}
+		}
+
+		for (auto itr=repeaters.begin(); itr!=repeaters.end(); itr++) {	// Then, ping the unique repeaters
+			std::string gate, addr;
+			m_irc[0]->cache.findRptrData(*itr, gate, addr);
+			if (addr.empty()) {
+				if (m_irc[1]) {
+					m_irc[1]->cache.findRptrData(*itr, gate, addr);
+					if (! addr.empty())
+						m_g2Handler[1]->writePing(addr);
+				}
+			} else
+				m_g2Handler[0]->writePing(addr);
 		}
 		m_pingTimer.start();
 	}

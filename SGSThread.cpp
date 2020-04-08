@@ -148,11 +148,8 @@ void CSGSThread::run() {
 		}
 	}
 
-	time_t start;
-	time(&start);
-
 	m_statusTimer.start();
-
+	auto then = std::chrono::steady_clock::now();
 	try {
 		while (!m_killed) {
 			processIrcDDB(0);
@@ -168,10 +165,10 @@ void CSGSThread::run() {
 					m_killed = true;
 			}
 
-			time_t now;
-			time(&now);
-			unsigned long ms = (unsigned long)(1000.0 * difftime(now, start));
-			time(&start);
+			auto now = std::chrono::steady_clock::now();
+			auto time_span = std::chrono::duration<double>(now - then);
+			then = now;
+			auto ms = (unsigned int)(1000.0 * time_span.count() + 0.5);
 
 			m_statusTimer.clock(ms);
 			CGroupHandler::clock(ms);
