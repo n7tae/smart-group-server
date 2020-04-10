@@ -899,15 +899,9 @@ void CGroupHandler::logUser(LOGUSER lu, const std::string channel, const std::st
 
 void CGroupHandler::sendToRepeaters(CHeaderData& header) const
 {
-	bool isct = 0 == m_groupCallsign.compare(0, 2, "CT");
-	if (isct)
-		printf("sendTo header UR=%s R1=%s R2=%s My=%s sfx=%s.\n", header.getYourCall().c_str(), header.getRptCall1().c_str(), header.getRptCall2().c_str(), header.getMyCall1().c_str(), header.getMyCall2().c_str());
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
 		CSGSRepeater *repeater = it->second;
-		if (repeater == NULL) {
-			if (isct)
-				printf("repeater data for '%s' is NULL!\n", it->first.c_str());
-		} else {
+		if (repeater) {
 			const bool is_ipv4 = (std::string::npos == repeater->addr.find(':'));
 			int i = 0;
 			if (is_ipv4 && m_irc[1])
@@ -916,8 +910,6 @@ void CGroupHandler::sendToRepeaters(CHeaderData& header) const
 			header.setDestination(repeater->addr, is_ipv4 ? G2_DV_PORT : G2_IPV6_PORT);
 			header.setRepeaters(repeater->gate, it->first);
 			m_g2Handler[i]->writeHeader(header);
-			if (isct)
-				printf("sendToR dest=%s gate=%s addr=%s.\n", repeater->dest.c_str(), repeater->gate.c_str(), repeater->addr.c_str());
 		}
 	}
 }
