@@ -43,5 +43,4 @@ public:
 private:
 	std::map<unsigned short, CDExtraProtocolHandler *> m_pool;
 	std::map<unsigned short, CDExtraProtocolHandler *>::iterator m_index;
-	std::string m_address;
 };
