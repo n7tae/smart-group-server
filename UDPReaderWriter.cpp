@@ -95,7 +95,7 @@ bool CUDPReaderWriter::Write(const unsigned char* buffer, unsigned int length, C
 {
 	unsigned int count = 0;
 	while (count < length) {
-	 	ssize_t ret = sendto(m_fd, buffer+count, length-count, 0, addr.GetPointer(), sizeof(struct sockaddr_storage));
+	 	ssize_t ret = sendto(m_fd, buffer+count, length-count, 0, addr.GetCPointer(), addr.GetSize());
 		if (ret < 0) {
 			fprintf(stderr, "CUPDReaderWriter sendto error [%s]:%u: %s\n", m_addr.GetAddress(), m_addr.GetPort(), strerror(errno));
 			return false;
