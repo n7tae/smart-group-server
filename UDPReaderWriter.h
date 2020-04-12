@@ -47,8 +47,6 @@ public:
 	unsigned int getPort() const;
 
 private:
-	int m_family;
-	unsigned short m_port;
 	int m_fd;
 	CSockAddress m_addr;
 };

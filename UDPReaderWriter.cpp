@@ -22,10 +22,9 @@
 #include "UDPReaderWriter.h"
 
 CUDPReaderWriter::CUDPReaderWriter(int family, unsigned short port) :
-m_family(family),
-m_port(port),
 m_fd(-1)
 {
+	m_addr.Initialize(family, port);
 }
 
 CUDPReaderWriter::~CUDPReaderWriter()
@@ -34,14 +33,13 @@ CUDPReaderWriter::~CUDPReaderWriter()
 
 bool CUDPReaderWriter::Open()
 {
-	m_fd = socket(m_family, SOCK_DGRAM, 0);
+	m_fd = socket(m_addr.GetPort(), SOCK_DGRAM, 0);
 	if (m_fd < 0) {
 		fprintf(stderr, "Cannot create the UDP socket, err: %s\n", strerror(errno));
 		return false;
 	}
 
-	if (m_family==AF_INET || m_family==AF_INET6) {
-		m_addr.Initialize(m_family, m_port, "ANY_ADDRESS");
+	if (m_addr.GetFamily()==AF_INET || m_addr.GetFamily()==AF_INET6) {
 
 		// int reuse = 1;
 		// if (::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == -1) {
@@ -49,22 +47,10 @@ bool CUDPReaderWriter::Open()
 		//  	return false;
 		// }
 
-		if (bind(m_fd, m_addr.GetPointer(), sizeof(struct sockaddr_storage)) == -1) {
-			fprintf(stderr, "Cannot bind the UDP address (port: %u), err: %s\n", m_port, strerror(errno));
+		if (bind(m_fd, m_addr.GetCPointer(), m_addr.GetSize())) {
+			fprintf(stderr, "CUPDReaderWriter bind error [%s]:%u %s\n", m_addr.GetAddress(), m_addr.GetPort(), strerror(errno));
 			return false;
 		}
-
-        if (0 == m_port) {  // we're trying to set up an ephemeral port! Get the assigned port number!
-            CSockAddress addr;
-            addr.Initialize(m_family, 0, "ANY_PORT");
-            socklen_t size = addr.GetSize();
-            if (-1 == getsockname(m_fd, addr.GetPointer(), &size)) {
-                fprintf(stderr, "CUDPReaderWriter::Open error: Can't getsockname()\n");
-                Close();
-                return false;
-            }
-            m_port = addr.GetPort();
-        }
 	} else
 		return false;
 
@@ -86,7 +72,7 @@ int CUDPReaderWriter::Read(unsigned char *buffer, unsigned int length, CSockAddr
 
 	int ret = select(m_fd + 1, &readFds, NULL, NULL, &tv);
 	if (ret < 0) {
-		fprintf(stderr, "Error returned from UDP select (port: %u), err: %s\n", m_port, strerror(errno));
+		fprintf(stderr, "CUPDReaderWriter select error [%s]:%u: %s\n", m_addr.GetAddress(), m_addr.GetPort(), strerror(errno));
 		return -1;
 	}
 
@@ -97,7 +83,7 @@ int CUDPReaderWriter::Read(unsigned char *buffer, unsigned int length, CSockAddr
 
 	ssize_t len = recvfrom(m_fd, buffer, length, 0, addr.GetPointer(), &size);
 	if (len <= 0) {
-		fprintf(stderr, "Error returned from recvfrom (port: %u), err: %s\n", m_port, strerror(errno));
+		fprintf(stderr, "CUPDReaderWriter recvfrom error [%s]:%u %s\n", m_addr.GetAddress(), m_addr.GetPort(), strerror(errno));
 		return -1;
 	}
 
@@ -108,10 +94,9 @@ bool CUDPReaderWriter::Write(const unsigned char* buffer, unsigned int length, C
 {
 	unsigned int count = 0;
 	while (count < length) {
-	 	ssize_t ret = ::sendto(m_fd, buffer+count, length-count, 0, addr.GetPointer(), sizeof(struct sockaddr_storage));
+	 	ssize_t ret = sendto(m_fd, buffer+count, length-count, 0, addr.GetPointer(), sizeof(struct sockaddr_storage));
 		if (ret < 0) {
-			fprintf(stderr, "sendto ERROR: This is an %s socket, trying to write to [%s]:%u\n", (AF_INET==m_family) ? "IPv4" : (AF_INET6==m_family) ? "IPv6" : "UNKNOWN", addr.GetAddress(), addr.GetPort());
-			//fprintf(stderr, "Error returned from sendto (port: %u), err: %s\n", m_port, strerror(errno));
+			fprintf(stderr, "CUPDReaderWriter sendto error [%s]:%u: %s\n", m_addr.GetAddress(), m_addr.GetPort(), strerror(errno));
 			return false;
 		}
 
@@ -131,5 +116,5 @@ void CUDPReaderWriter::Close()
 
 unsigned int CUDPReaderWriter::getPort() const
 {
-	return m_port;
+	return m_addr.GetPort();
 }
