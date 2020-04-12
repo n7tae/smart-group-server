@@ -33,7 +33,7 @@ CUDPReaderWriter::~CUDPReaderWriter()
 
 bool CUDPReaderWriter::Open()
 {
-	m_fd = socket(m_addr.GetPort(), SOCK_DGRAM, 0);
+	m_fd = socket(m_addr.GetFamily(), SOCK_DGRAM, 0);
 	if (m_fd < 0) {
 		fprintf(stderr, "Cannot create the UDP socket, err: %s\n", strerror(errno));
 		return false;
