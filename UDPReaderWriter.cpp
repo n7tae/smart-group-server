@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2006-2014 by Jonathan Naylor G4KLX
- *   Copyright (c) 2020 by Thomas A. Early.
+ *   Copyright (c) 2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -51,6 +51,19 @@ bool CUDPReaderWriter::Open()
 		if (bind(m_fd, m_addr.GetCPointer(), m_addr.GetSize())) {
 			fprintf(stderr, "CUPDReaderWriter bind error [%s]:%u %s\n", m_addr.GetAddress(), m_addr.GetPort(), strerror(errno));
 			return false;
+		}
+
+		if (0 == m_addr.GetPort()) {	// get the assigned port for an ephemeral port request
+			CSockAddress a;
+			socklen_t len = sizeof(struct sockaddr_storage);
+			if (getsockname(m_fd, a.GetPointer(), &len)) {
+				fprintf(stderr, "CUPDReaderWriter getsockname error [%s]:%u %s\n", m_addr.GetAddress(), m_addr.GetPort(), strerror(errno));
+				return false;
+			}
+			if (a != m_addr)
+				printf("CUPDReaderWriter getsockname didn't return the same address as set: returned %s, should have been %s\n", a.GetAddress(), m_addr.GetAddress());
+
+			m_addr.SetPort(a.GetPort());
 		}
 	} else
 		return false;
