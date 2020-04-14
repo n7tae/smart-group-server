@@ -50,6 +50,7 @@ bool CUDPReaderWriter::Open()
 
 		if (bind(m_fd, m_addr.GetCPointer(), m_addr.GetSize())) {
 			fprintf(stderr, "CUPDReaderWriter bind error [%s]:%u %s\n", m_addr.GetAddress(), m_addr.GetPort(), strerror(errno));
+			Close();
 			return false;
 		}
 
@@ -58,6 +59,7 @@ bool CUDPReaderWriter::Open()
 			socklen_t len = sizeof(struct sockaddr_storage);
 			if (getsockname(m_fd, a.GetPointer(), &len)) {
 				fprintf(stderr, "CUPDReaderWriter getsockname error [%s]:%u %s\n", m_addr.GetAddress(), m_addr.GetPort(), strerror(errno));
+				Close();
 				return false;
 			}
 			if (a != m_addr)
