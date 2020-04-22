@@ -702,7 +702,12 @@ void CGroupHandler::clockInt(unsigned int ms)
 				std::string rptr(m_irc[0]->cache.findUserRepeater(user->getCallsign()));
 				if (rptr.empty() && m_irc[1])
 					rptr.assign(m_irc[1]->cache.findUserRepeater(user->getCallsign()));
-				if (! rptr.empty())
+				if (rptr.empty()) {
+					printf("Can't find user '%s' on smartgroup '%s'\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
+					m_irc[0]->findUser(user->getCallsign());
+					if (m_irc[1])
+						m_irc[1]->findUser(user->getCallsign());
+				} else
 					repeaters.insert(rptr);
 			}
 		}
