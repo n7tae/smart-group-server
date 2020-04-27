@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010,2011,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017-2018 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017-2020 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ bool CG2ProtocolHandler::writeHeader(const CHeaderData& header)
 			saddr.Initialize(AF_INET6, G2_IPV6_PORT, addr.c_str());
 		else
 			saddr.Initialize(AF_INET6, it->second, addr.c_str());
-	} 
+	}
 
 	for (unsigned int i = 0U; i < 5U; i++) {
 		bool res = m_socket.Write(buffer, length, saddr);
@@ -102,7 +102,7 @@ bool CG2ProtocolHandler::writeAMBE(const CAMBEData& data)
 			saddr.Initialize(AF_INET6, G2_IPV6_PORT, addr.c_str());
 		else
 			saddr.Initialize(AF_INET6, it->second, addr.c_str());
-	} 
+	}
 
 	return m_socket.Write(buffer, length, saddr);
 }
@@ -123,7 +123,7 @@ bool CG2ProtocolHandler::writePing(const std::string &addr)
 			saddr.Initialize(AF_INET6, G2_IPV6_PORT, addr.c_str());
 		else
 			saddr.Initialize(AF_INET6, it->second, addr.c_str());
-	} 
+	}
 
 	return m_socket.Write(test, 4, saddr);
 }
@@ -144,32 +144,30 @@ bool CG2ProtocolHandler::readPackets()
 	m_type = GT_NONE;
 
 	// No more data?
-	CSockAddress addr;
-	int length = m_socket.Read(m_buffer, BUFFER_LENGTH, addr);
+	int length = m_socket.Read(m_buffer, BUFFER_LENGTH, m_addr);
 	if (length <= 0)
 		return false;
 
 	m_length = length;
-	bool isdsvt = ((27==length || 56==length) && 0==memcmp(m_buffer, "DSVT", 4)) ? true : false;
+	bool isdsvt = (27==length || 56==length) && 0==memcmp(m_buffer, "DSVT", 4);
 	if (isdsvt) {
 		m_type = (m_buffer[14] & 0x80U) ? GT_HEADER : GT_AMBE;
 	}
 
 	// save the incoming port (this is to enable mobile hotspots)
-	// We will only save it if it's different from the "standard" port
-	m_port = addr.GetPort();
-	if ((AF_INET==m_family && G2_DV_PORT!=m_port) || (AF_INET6==m_family && G2_IPV6_PORT!=m_port)) {
-		m_address.assign(addr.GetAddress());
-		if (portmap.end() == portmap.find(m_address)) {
-			if (GT_HEADER == m_type)
-				printf("%.6s at %s is on port %u\n", m_buffer+42, m_address.c_str(), m_port);
-			portmap[m_address] = m_port;
-		} else {
-			if (portmap[m_address] != m_port) {
-				if (GT_HEADER == m_type)
-					printf("%.6s at %s is now on port %u, was %u\n", m_buffer+42, m_address.c_str(), m_port, portmap[m_address]);
-				portmap[m_address] = m_port;
+	// We will only save it if it's been saved before or if it's different from the "standard" port
+	const unsigned short port = m_addr.GetPort();
+	const char *addr = m_addr.GetAddress();
+	const bool found = (portmap.end() != portmap.find(addr));
+	if (found || (AF_INET==m_family && G2_DV_PORT!=port) || (AF_INET6==m_family && G2_IPV6_PORT!=port)) {
+		if (found) {
+			if (portmap[addr] != port) {
+				printf("%.6s at [%s]:%u, was port %u%s\n", m_buffer+42, addr, port, portmap[addr], (GT_HEADER==m_type) ? "" : " on a voice packet!");
+				portmap[addr] = port;
 			}
+		} else {
+			printf("%.6s at [%s]:%u%s\n", m_buffer+42, addr, port, (GT_HEADER==m_type) ? "" : "on a voice packet!");
+			portmap[addr] = port;
 		}
 	}
 	return isdsvt ? false : true;
@@ -183,7 +181,7 @@ CHeaderData* CG2ProtocolHandler::readHeader()
 	CHeaderData* header = new CHeaderData;
 
 	CSockAddress addr;
-	bool res = header->setG2Data(m_buffer, m_length, false, m_address, m_port);
+	bool res = header->setG2Data(m_buffer, m_length, false, m_addr.GetAddress(), m_addr.GetPort());
 	if (!res) {
 		delete header;
 		return NULL;
@@ -199,7 +197,7 @@ CAMBEData* CG2ProtocolHandler::readAMBE()
 
 	CAMBEData* data = new CAMBEData;
 
-	bool res = data->setG2Data(m_buffer, m_length, m_address, m_port);
+	bool res = data->setG2Data(m_buffer, m_length, m_addr.GetAddress(), m_addr.GetPort());
 	if (!res) {
 		delete data;
 		return NULL;
