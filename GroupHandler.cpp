@@ -22,6 +22,7 @@
 #include <cstring>
 #include <vector>
 #include <set>
+#include <queue>
 
 #include "SlowDataEncoder.h"
 #include "GroupHandler.h"
@@ -43,6 +44,7 @@ m_callsign(callsign),
 m_timer(1000U, timeout)
 {
 	m_timer.start();
+	time(&m_found);
 }
 
 CSGSUser::~CSGSUser()
@@ -74,6 +76,16 @@ std::string CSGSUser::getCallsign() const
 CTimer CSGSUser::getTimer() const
 {
 	return m_timer;
+}
+
+time_t CSGSUser::getLastFound() const
+{
+	return m_found;
+}
+
+void CSGSUser::setLastFound(time_t t)
+{
+	m_found = t;
 }
 
 CSGSId::CSGSId(unsigned int id, unsigned int timeout, CSGSUser *user) :
@@ -692,24 +704,33 @@ bool CGroupHandler::linkInt()
 
 void CGroupHandler::clockInt(unsigned int ms)
 {
+	time_t tnow = time(NULL);
 	m_pingTimer.clock(ms);
 	if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
-
 		std::set<std::string> addresses;	// First, build an address set
-		for (auto it = m_users.begin(); it != m_users.end(); it++) {
-			if (it->second) {
-				const std::string user(it->second->getCallsign());
+		for (auto it = m_users.begin(); it != m_users.end(); ) {
+			auto sgsuser = it->second;
+			if (sgsuser) {
+				const std::string user(sgsuser->getCallsign());
 				std::string rptr, gate, addr;
 				m_irc[0]->cache.findUserData(user, rptr, gate, addr);
 				if (addr.empty() && m_irc[1])
 					m_irc[1]->cache.findUserData(user, rptr, gate, addr);
 				if (addr.empty()) {
-					printf("Can't find IP address for user '%s' on smartgroup '%s'\n", user.c_str(), m_groupCallsign.c_str());
-					m_irc[0]->findUser(user);
-					if (m_irc[1])
-						m_irc[1]->findUser(user);
+					if (600 <= (tnow - sgsuser->getLastFound())) {
+						printf("User '%s' on '%s' not found for 10 minutes, logging off!\n", user.c_str(), m_groupCallsign.c_str());
+						it = m_users.erase(it);	// make sure this iterator is incremented on every other path!
+					} else {
+						m_irc[0]->findUser(user);
+						if (m_irc[1]) {
+							m_irc[1]->findUser(user);
+						}
+						it++;
+					}
 				} else {
+					sgsuser->setLastFound(tnow);
 					addresses.insert(addr);
+					it++;
 				}
 			}
 		}

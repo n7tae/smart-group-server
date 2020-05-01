@@ -52,10 +52,13 @@ public:
 
 	std::string getCallsign() const;
 	CTimer getTimer() const;
+	time_t getLastFound() const;
+	void setLastFound(time_t t);
 
 private:
 	std::string m_callsign;
 	CTimer m_timer;
+	time_t m_found;
 };
 
 class CSGSId {
