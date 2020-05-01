@@ -162,11 +162,11 @@ bool CG2ProtocolHandler::readPackets()
 	if (found || (AF_INET==m_family && G2_DV_PORT!=port) || (AF_INET6==m_family && G2_IPV6_PORT!=port)) {
 		if (found) {
 			if (portmap[addr] != port) {
-				printf("%.6s at [%s]:%u, was port %u%s\n", m_buffer+42, addr, port, portmap[addr], (GT_HEADER==m_type) ? "" : " on a voice packet!");
+				printf("%.6s at [%s]:%u, was port %u%s\n", m_buffer+42, addr, port, portmap[addr], (GT_HEADER==m_type) ? "." : " on a voice packet!");
 				portmap[addr] = port;
 			}
 		} else {
-			printf("%.6s at [%s]:%u%s\n", m_buffer+42, addr, port, (GT_HEADER==m_type) ? "" : "on a voice packet!");
+			printf("%.6s at [%s]:%u%s\n", m_buffer+42, addr, port, (GT_HEADER==m_type) ? "." : " on a voice packet!");
 			portmap[addr] = port;
 		}
 	}

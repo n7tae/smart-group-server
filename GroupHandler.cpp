@@ -695,34 +695,34 @@ void CGroupHandler::clockInt(unsigned int ms)
 	m_pingTimer.clock(ms);
 	if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
 
-		std::set<std::string> repeaters;	// First, build a repeater set
+		std::set<std::string> addresses;	// First, build an address set
 		for (auto it = m_users.begin(); it != m_users.end(); it++) {
-			auto user = it->second;
-			if (user) {
-				std::string rptr(m_irc[0]->cache.findUserRepeater(user->getCallsign()));
-				if (rptr.empty() && m_irc[1])
-					rptr.assign(m_irc[1]->cache.findUserRepeater(user->getCallsign()));
-				if (rptr.empty()) {
-					printf("Can't find user '%s' on smartgroup '%s'\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
-					m_irc[0]->findUser(user->getCallsign());
+			if (it->second) {
+				const std::string user(it->second->getCallsign());
+				std::string rptr, gate, addr;
+				m_irc[0]->cache.findUserData(user, rptr, gate, addr);
+				if (addr.empty() && m_irc[1])
+					m_irc[1]->cache.findUserData(user, rptr, gate, addr);
+				if (addr.empty()) {
+					printf("Can't find IP address for user '%s' on smartgroup '%s'\n", user.c_str(), m_groupCallsign.c_str());
+					m_irc[0]->findUser(user);
 					if (m_irc[1])
-						m_irc[1]->findUser(user->getCallsign());
-				} else
-					repeaters.insert(rptr);
+						m_irc[1]->findUser(user);
+				} else {
+					addresses.insert(addr);
+				}
 			}
 		}
 
-		for (auto itr=repeaters.begin(); itr!=repeaters.end(); itr++) {	// Then, ping the unique repeaters
-			std::string gate, addr;
-			m_irc[0]->cache.findRptrData(*itr, gate, addr);
-			if (addr.empty()) {
-				if (m_irc[1]) {
-					m_irc[1]->cache.findRptrData(*itr, gate, addr);
-					if (! addr.empty())
-						m_g2Handler[1]->writePing(addr);
+		for (auto ita=addresses.begin(); ita!=addresses.end(); ita++) {	// Then, ping the unique address
+			if ((*ita).npos != (*ita).find('.')) {
+				// it's an IPv4 address
+				if (m_irc[1]) {							// is this is a dual stack server?
+					m_g2Handler[1]->writePing(*ita);	// then write the ping on second server
+					continue;							// and get the next address
 				}
-			} else
-				m_g2Handler[0]->writePing(addr);
+			}
+			m_g2Handler[0]->writePing(*ita);	// it's either an IPv6 address, or we are single stack
 		}
 		m_pingTimer.start();
 	}
