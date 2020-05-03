@@ -719,6 +719,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 				if (addr.empty()) {
 					if (600 <= (tnow - sgsuser->getLastFound())) {
 						printf("User '%s' on '%s' not found for 10 minutes, logging off!\n", user.c_str(), m_groupCallsign.c_str());
+						logUser(LU_OFF, m_groupCallsign, user);
 						it = m_users.erase(it);	// make sure this iterator is incremented on every other path!
 					} else {
 						m_irc[0]->findUser(user);
@@ -848,7 +849,6 @@ void CGroupHandler::clockInt(unsigned int ms)
 		CSGSUser* user = it->second;
 		if (user && user->hasExpired()) {
 			printf("Removing %s from Smart Group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
-
 			logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform QuadNet
 			delete user;
 			m_users.erase(it);
