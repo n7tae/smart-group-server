@@ -829,9 +829,6 @@ void CGroupHandler::clockInt(unsigned int ms)
 				} else {
 					delete tx;
 					it = m_ids.erase(it);
-					// The iterator is now invalid, so we'll find the next expiry on the next clock tick with a
-					// new iterator
-					break;
 				}
 			}
 		} else {
