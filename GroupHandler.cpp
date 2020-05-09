@@ -65,6 +65,7 @@ bool CSGSUser::hasExpired()
 
 void CSGSUser::reset()
 {
+	time(&m_found);
 	m_timer.start();
 }
 
@@ -325,22 +326,26 @@ void CGroupHandler::process(CHeaderData &header)
 	std::string your = header.getYourCall();
 	unsigned int id  = header.getId();
 
-	CSGSUser *group_user = m_users[my];	// if not found, m_user[my] will be created and its value will be set to NULL
+	//CSGSUser *group_user = m_users[my];	// if not found, m_user[my] will be created and its value will be set to NULL
 	bool islogin = false;
 
 	// Ensure that this user is in the cache.
-	if (! m_irc[0]->cache.findUserRepeater(my).empty()) {
+	auto address = m_irc[0]->cache.findUserAddr(my);
+	if (address.empty() && m_irc[1])
+		address = m_irc[1]->cache.findUserAddr(my);
+	if (address.empty()) {
+		m_irc[0]->findUser(my);
 		if (m_irc[1])
 			m_irc[1]->findUser(my);
-		m_irc[0]->findUser(my);
 	}
 
+	auto it = m_users.find(my);
 	if (0 == your.compare(m_groupCallsign)) {
 		// This is a normal message for logging in/relaying
-		if (group_user == NULL) {
+		if (m_users.end() == it) {
 			printf("Adding %s to Smart Group %s\n", my.c_str(), your.c_str());
 			// This is a new user, add him to the list
-			group_user = new CSGSUser(my, m_userTimeout * 60U);
+			auto group_user = new CSGSUser(my, m_userTimeout * 60U);
 			m_users[my] = group_user;
 
 			logUser(LU_ON, your, my);	// inform Quadnet
@@ -351,7 +356,7 @@ void CGroupHandler::process(CHeaderData &header)
 			m_ids[id] = tx;
 			islogin = true;
 		} else {
-			group_user->reset();
+			it->second->reset();
 
 			// Check that it isn't a duplicate header
 			CSGSId* tx = m_ids[id];
@@ -361,21 +366,20 @@ void CGroupHandler::process(CHeaderData &header)
 			}
 			//printf("Updating %s on Smart Group %s\n", my.c_str(), your.c_str());
 			logUser(LU_ON, your, my);	// this will be an update
-			m_ids[id] = new CSGSId(id, MESSAGE_DELAY, group_user);
+			m_ids[id] = new CSGSId(id, MESSAGE_DELAY, it->second);
 		}
 	} else {
 		// unsubscribe was sent by someone
-		if (NULL == group_user) {	// Not a known user, ignore
-			m_users.erase(my);	// we created it, now we don't need it
+		if (m_users.end() == it) {	// Not a known user, ignore
 			return;
 		}
 
-		printf("Removing %s from Smart Group %s\n", group_user->getCallsign().c_str(), m_groupCallsign.c_str());
+		printf("Removing %s from Smart Group %s\n", my.c_str(), m_groupCallsign.c_str());
 		logUser(LU_OFF, m_groupCallsign, my);	// inform Quadnet
 		// Remove the user from the user list
 		m_users.erase(my);
 
-		CSGSId* tx = new CSGSId(id, MESSAGE_DELAY, group_user);
+		CSGSId* tx = new CSGSId(id, MESSAGE_DELAY, it->second);
 		tx->setLogoff();
 		m_ids[id] = tx;
 
@@ -712,10 +716,9 @@ void CGroupHandler::clockInt(unsigned int ms)
 			auto sgsuser = it->second;
 			if (sgsuser) {
 				const std::string user(sgsuser->getCallsign());
-				std::string rptr, gate, addr;
-				m_irc[0]->cache.findUserData(user, rptr, gate, addr);
+				auto addr = m_irc[0]->cache.findUserAddr(user);
 				if (addr.empty() && m_irc[1])
-					m_irc[1]->cache.findUserData(user, rptr, gate, addr);
+					addr = m_irc[1]->cache.findUserAddr(user);
 				if (addr.empty()) {
 					if (600 <= (tnow - sgsuser->getLastFound())) {
 						printf("User '%s' on '%s' not found for 10 minutes, logging off!\n", user.c_str(), m_groupCallsign.c_str());
@@ -778,7 +781,7 @@ void CGroupHandler::clockInt(unsigned int ms)
 	}
 
 	// For each incoming id
-	for (auto it = m_ids.begin(); it != m_ids.end(); ++it) {
+	for (auto it = m_ids.begin(); it != m_ids.end(); ) {	// iterate must be incremented on all paths!
 		CSGSId* tx = it->second;
 
 		if (tx != NULL && tx->clock(ms)) {
@@ -802,16 +805,12 @@ void CGroupHandler::clockInt(unsigned int ms)
 				}
 
 				delete tx;
-				m_ids.erase(it);
-
-				// The iterator is now invalid, so we'll find the next expiry on the next clock tick with a
-				// new iterator
-				break;
+				it = m_ids.erase(it);
 			} else {
 				if (tx->getId() == m_id) {
 					// Clear the repeater list if we're the relayed id
-					for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
-						delete it->second;
+					for (auto itr = m_repeaters.begin(); itr != m_repeaters.end(); ++itr)
+						delete itr->second;
 					m_repeaters.clear();
 					m_id = 0x00U;
 				}
@@ -819,18 +818,22 @@ void CGroupHandler::clockInt(unsigned int ms)
 				if (tx->isLogin()) {
 					tx->reset();
 					tx->setEnd();
+					it++;
 				} else if (tx->isLogoff()) {
 					m_users.erase(callsign);
 					tx->reset();
 					tx->setEnd();
+					it++;
 				} else {
 					delete tx;
-					m_ids.erase(it);
+					it = m_ids.erase(it);
 					// The iterator is now invalid, so we'll find the next expiry on the next clock tick with a
 					// new iterator
 					break;
 				}
 			}
+		} else {
+			it++;
 		}
 	}
 
@@ -845,16 +848,15 @@ void CGroupHandler::clockInt(unsigned int ms)
 		return;
 
 	// Individual user expiry
-	for (auto it = m_users.begin(); it != m_users.end(); ++it) {
+	for (auto it = m_users.begin(); it != m_users.end();) {	// iterator must be incremented on on paths!
 		CSGSUser* user = it->second;
 		if (user && user->hasExpired()) {
 			printf("Removing %s from Smart Group %s, user timeout\n", user->getCallsign().c_str(), m_groupCallsign.c_str());
 			logUser(LU_OFF, m_groupCallsign, user->getCallsign());	// inform QuadNet
 			delete user;
-			m_users.erase(it);
-			// The iterator is now invalid, so we'll find the next expiry on the next clock tick with a
-			// new iterator
-			break;
+			it = m_users.erase(it);
+		} else {
+			it++;
 		}
 	}
 }
