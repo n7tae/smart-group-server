@@ -736,6 +736,8 @@ void CGroupHandler::clockInt(unsigned int ms)
 					addresses.insert(addr);
 					it++;
 				}
+			} else {
+				it++;
 			}
 		}
 
