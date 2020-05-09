@@ -86,13 +86,16 @@ void IRCClient::Entry()
 
             case 5:
                 if (terminateThread) {
+					printf("IRCClient::Entry: terminateThread is true, restarting\n");
                     state = 6;
                 } else {
 
                     if (recvQ->isEOF()) {
+						printf("IRCClient::Entry: recvQ EOF, restarting\n");
                         timer = 0;
                         state = 6;
                     } else if (proto.processQueues(recvQ, sendQ) == false) {
+						printf("IRCClient::Entry IRCProtocol::processQueues failed, restarting\n");
                         timer = 0;
                         state = 6;
                     }
@@ -110,14 +113,12 @@ void IRCClient::Entry()
 
                         if (buf[len - 1] == 10) { // is there a NL char at the end?
                             if (ircSock.Write((unsigned char *)buf, len)) {
-                                printf("IRCClient::Entry: short write\n");
-
+                                printf("IRCClient::Entry: short write, restarting\n");
                                 timer = 0;
                                 state = 6;
                             }
                         } else {
-                            printf("IRCClient::Entry: no NL at end, len=%d\n", len);
-
+                            printf("IRCClient::Entry: no NL at end, len=%d, restarting\n", len);
                             timer = 0;
                             state = 6;
                         }
@@ -129,9 +130,10 @@ void IRCClient::Entry()
 
             case 6: {
                 if (app != NULL) {
-                    app->setSendQ(NULL);
-                    app->userListReset();
-                }
+					printf("IRCClient::Entry state == 6, clearing Gate->Address table.\n");
+					app->setSendQ(NULL);
+					app->userListReset();
+				}
 
                 proto.setNetworkReady(false);
                 recv.stopWork();
