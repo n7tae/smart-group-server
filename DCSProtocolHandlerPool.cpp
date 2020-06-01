@@ -61,6 +61,8 @@ void CDCSProtocolHandlerPool::release(CDCSProtocolHandler *handler)
 			it->second->close();
 			delete it->second;
 			printf("Releasing CDCSProtocolHandler on port %u.\n", it->first);
+			if (m_index == it)
+				m_index++;
 			m_pool.erase(it);
 			return;
 		}
