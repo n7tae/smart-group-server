@@ -10,9 +10,9 @@ REDHAT=$(shell [ -f /etc/redhat-release ] && echo 1 || echo 0)
 SGSUSER=$(shell id -u sgs >/dev/null 2>&1 && echo 1 || echo 0 )
 
 # choose this if you want debugging help
-#CPPFLAGS=-g -ggdb -W -Wall -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
+#CPPFLAGS=-ggdb -W -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 # or, you can choose this for a much smaller executable without debugging help
-CPPFLAGS=-W -Wall -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
+CPPFLAGS=-W -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)

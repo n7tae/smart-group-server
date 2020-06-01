@@ -27,8 +27,6 @@ std::list<CDExtraHandler *> CDExtraHandler::m_DExtraHandlers;
 std::string                 CDExtraHandler::m_callsign;
 CDExtraProtocolHandlerPool *CDExtraHandler::m_pool = NULL;
 
-bool                        CDExtraHandler::m_stateChange = false;
-
 CCallsignList              *CDExtraHandler::m_whiteList = NULL;
 CCallsignList              *CDExtraHandler::m_blackList = NULL;
 
@@ -62,7 +60,6 @@ m_header(NULL)
 
 	if (direction == DIR_INCOMING) {
 		m_pollTimer.start();
-		m_stateChange = true;
 		m_linkState = DEXTRA_LINKED;
 	} else {
 		m_linkState = DEXTRA_LINKING;
@@ -269,8 +266,6 @@ void CDExtraHandler::unlink(CGroupHandler *handler, const std::string &callsign,
 
 				dextraHandler->m_destination->process(data, dextraHandler->m_direction, AS_DEXTRA);
 			}
-
-			m_stateChange = true;
 
 			delete dextraHandler;
 			it = m_DExtraHandlers.erase(it);
@@ -487,7 +482,6 @@ bool CDExtraHandler::processInt(CConnectData &connect, CD_TYPE type)
 
 				m_tryTimer.stop();
 				m_pollTimer.start();
-				m_stateChange = true;
 				m_linkState   = DEXTRA_LINKED;
 			}
 
@@ -517,8 +511,6 @@ bool CDExtraHandler::processInt(CConnectData &connect, CD_TYPE type)
 
 				if (m_direction == DIR_OUTGOING && m_destination != NULL)
 					m_destination->linkFailed(DP_DEXTRA, m_reflector, false);
-
-				m_stateChange = true;
 			}
 
 			return true;
@@ -541,7 +533,6 @@ bool CDExtraHandler::clockInt(unsigned int ms)
 		delete m_header;
 		m_header = NULL;
 
-		m_stateChange = true;
 		m_dExtraId    = 0x00U;
 		m_dExtraSeq   = 0x00U;
 
@@ -670,46 +661,6 @@ void CDExtraHandler::writeAMBEInt(CGroupHandler *handler, CAMBEData &data, DIREC
 				m_handler->writeAMBE(data);
 			}
 			break;
-	}
-}
-
-bool CDExtraHandler::stateChange()
-{
-	bool stateChange = m_stateChange;
-
-	m_stateChange = false;
-
-	return stateChange;
-}
-
-void CDExtraHandler::writeStatus(FILE *file)
-{
-	for (auto it=m_DExtraHandlers.begin(); it!=m_DExtraHandlers.end(); it++) {
-		CDExtraHandler *dextraHandler = *it;
-		struct tm *tm = ::gmtime(&dextraHandler->m_time);
-
-		switch (dextraHandler->m_direction) {
-			case DIR_OUTGOING:
-				if (dextraHandler->m_linkState == DEXTRA_LINKED) {
-					fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DExtra link - Type: Repeater Rptr: %s Refl: %s Dir: Outgoing\n",
-						tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-						dextraHandler->m_repeater.c_str(), dextraHandler->m_reflector.c_str());
-				}
-				break;
-
-			case DIR_INCOMING:
-				if (dextraHandler->m_linkState == DEXTRA_LINKED) {
-					if (0==dextraHandler->m_repeater.size())
-						fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DExtra link - Type: Dongle User: %s Dir: Incoming\n",
-							tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-							dextraHandler->m_reflector.c_str());
-					else
-						fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DExtra link - Type: Repeater Rptr: %s Refl: %s Dir: Incoming\n",
-							tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-							dextraHandler->m_repeater.c_str(), dextraHandler->m_reflector.c_str());
-				}
-				break;
-		}
 	}
 }
 

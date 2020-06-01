@@ -61,9 +61,6 @@ public:
 	static void gatewayUpdate(const std::string &reflector, const std::string &address);
 	static void clock(unsigned int ms);
 
-	static bool stateChange();
-	static void writeStatus(FILE *file);
-
 	static void setWhiteList(CCallsignList *list);
 	static void setBlackList(CCallsignList *list);
 
@@ -88,8 +85,6 @@ private:
 
 	static CDCSProtocolHandlerPool *m_pool;
 	static CDCSProtocolHandler     *m_incoming;
-
-	static bool                     m_stateChange;
 
 	static GATEWAY_TYPE             m_gatewayType;
 

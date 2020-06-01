@@ -25,8 +25,6 @@
 CDCSProtocolHandlerPool *CDCSHandler::m_pool = NULL;
 CDCSProtocolHandler     *CDCSHandler::m_incoming = NULL;
 
-bool                     CDCSHandler::m_stateChange = false;
-
 GATEWAY_TYPE             CDCSHandler::m_gatewayType  = GT_REPEATER;
 
 CCallsignList           *CDCSHandler::m_whiteList = NULL;
@@ -71,7 +69,6 @@ m_rptCall2()
 
 	if (direction == DIR_INCOMING) {
 		m_pollTimer.start();
-		m_stateChange = true;
 		m_linkState = DCS_LINKED;
 	} else {
 		m_linkState = DCS_LINKING;
@@ -296,8 +293,6 @@ void CDCSHandler::unlink(CGroupHandler *handler, const std::string &callsign, bo
 
 					dcsHandler->m_destination->process(data, dcsHandler->m_direction, AS_DCS);
 				}
-
-				m_stateChange = true;
 			}
 		}
 	}
@@ -523,7 +518,6 @@ bool CDCSHandler::processInt(CConnectData &connect, CD_TYPE type)
 					m_destination->linkUp(DP_DCS, m_reflector);
 
 				m_tryTimer.stop();
-				m_stateChange = true;
 				m_linkState   = DCS_LINKED;
 			}
 
@@ -562,8 +556,6 @@ bool CDCSHandler::processInt(CConnectData &connect, CD_TYPE type)
 
 				if (m_direction == DIR_OUTGOING && m_destination != NULL)
 					m_destination->linkFailed(DP_DCS, m_reflector, false);
-
-				m_stateChange = true;
 			}
 
 			return true;
@@ -583,7 +575,6 @@ bool CDCSHandler::clockInt(unsigned int ms)
 	if (m_pollInactivityTimer.isRunning() && m_pollInactivityTimer.hasExpired()) {
 		m_pollInactivityTimer.start();
 
-		m_stateChange = true;
 		m_dcsId       = 0x00U;
 		m_dcsSeq      = 0x00U;
 
@@ -703,41 +694,6 @@ void CDCSHandler::writeAMBEInt(CGroupHandler *handler, CAMBEData &data, DIRECTIO
 	data.setRptSeq(m_seqNo++);
 	data.setDestination(m_yourAddress, m_yourPort);
 	m_handler->writeData(data);
-}
-
-bool CDCSHandler::stateChange()
-{
-	bool stateChange = m_stateChange;
-
-	m_stateChange = false;
-
-	return stateChange;
-}
-
-void CDCSHandler::writeStatus(FILE *file)
-{
-	for (auto it=m_DCSHandlers.begin(); it!=m_DCSHandlers.end(); it++) {
-		CDCSHandler *dcsHandler = *it;
-		struct tm *tm = ::gmtime(&dcsHandler->m_time);
-
-		switch (dcsHandler->m_direction) {
-			case DIR_OUTGOING:
-				if (dcsHandler->m_linkState == DCS_LINKED) {
-					fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DCS link - Type: Repeater Rptr: %s Refl: %s Dir: Outgoing\n",
-						tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-						dcsHandler->m_repeater.c_str(), dcsHandler->m_reflector.c_str());
-				}
-				break;
-
-			case DIR_INCOMING:
-				if (dcsHandler->m_linkState == DCS_LINKED) {
-					fprintf(file, "%04d-%02d-%02d %02d:%02d:%02d: DCS link - Type: Repeater Rptr: %s Refl: %s Dir: Incoming\n",
-						tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,
-						dcsHandler->m_repeater.c_str(), dcsHandler->m_reflector.c_str());
-				}
-				break;
-		}
-	}
 }
 
 unsigned int CDCSHandler::calcBackoff()
