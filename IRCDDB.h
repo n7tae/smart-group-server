@@ -4,7 +4,7 @@ CIRCDDB - ircDDB client library in C++
 
 Copyright (C) 2010-2011   Michael Dirska, DL1BFF (dl1bff@mdx.de)
 Copyright (C) 2011,2012   Jonathan Naylor, G4KLX
-Copyright (C) 2020 Thomas A. Early, N7TAE
+Copyright (C) 2020-2021 Thomas A. Early, N7TAE
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -93,9 +93,6 @@ public:
 	//   tx_message:  20-char TX message or empty string, if the user did not
 	//       send a TX message
 	bool sendHeardWithTXMsg(const std::string& myCall, const std::string& myCallExt, const std::string& yourCall, const std::string& rpt1, const std::string& rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string& network_destination, const std::string& tx_message);
-
-	// Support for the Smart Group Server
-	void sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms);
 
 	void close();		// Implictely kills any threads in the IRC code
 

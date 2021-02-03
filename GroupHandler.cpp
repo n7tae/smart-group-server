@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2011-2014 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017,2018 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2018,2021 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -860,68 +860,70 @@ void CGroupHandler::clockInt(unsigned int ms)
 	}
 }
 
+// QuadNet no longer supports any irc SGS messages
 void CGroupHandler::updateReflectorInfo()
 {
-	std::string subcommand("REFLECTOR");
-	std::vector<std::string> parms;
-	std::string callsign(m_groupCallsign);
-	ReplaceChar(callsign, ' ', '_');
-	parms.push_back(callsign);
-	if (m_showlink) {
-		std::string reflector(m_linkReflector);
-		if (reflector.size() < 8)
-			reflector.assign("________");
-		else
-			ReplaceChar(reflector, ' ', '_');
-		parms.push_back(reflector);
-		switch (m_linkStatus) {
-			case LS_LINKING_DCS:
-			case LS_LINKING_DEXTRA:
-			case LS_PENDING_IRCDDB:
-				parms.push_back(std::string("LINKING"));
-				break;
-			case LS_LINKED_DCS:
-			case LS_LINKED_DEXTRA:
-				parms.push_back(std::string("LINKED"));
-				break;
-			case LS_NONE:
-				parms.push_back(std::string("UNLINKED"));
-				break;
-			default:
-				parms.push_back(std::string("FAILED"));
-				break;
-		}
-	} else {
-		parms.push_back(std::string("________"));
-		parms.push_back(std::string("UNLINKED"));
-	}
-	parms.push_back(std::to_string(m_userTimeout));
-	std::string info(m_infoText);
-	info.resize(20, '_');
-	ReplaceChar(info, ' ', '_');
-	parms.push_back(info);
-	parms.push_back(std::string(m_listenOnly ? "1" : "0"));
+	// std::string subcommand("REFLECTOR");
+	// std::vector<std::string> parms;
+	// std::string callsign(m_groupCallsign);
+	// ReplaceChar(callsign, ' ', '_');
+	// parms.push_back(callsign);
+	// if (m_showlink) {
+	// 	std::string reflector(m_linkReflector);
+	// 	if (reflector.size() < 8)
+	// 		reflector.assign("________");
+	// 	else
+	// 		ReplaceChar(reflector, ' ', '_');
+	// 	parms.push_back(reflector);
+	// 	switch (m_linkStatus) {
+	// 		case LS_LINKING_DCS:
+	// 		case LS_LINKING_DEXTRA:
+	// 		case LS_PENDING_IRCDDB:
+	// 			parms.push_back(std::string("LINKING"));
+	// 			break;
+	// 		case LS_LINKED_DCS:
+	// 		case LS_LINKED_DEXTRA:
+	// 			parms.push_back(std::string("LINKED"));
+	// 			break;
+	// 		case LS_NONE:
+	// 			parms.push_back(std::string("UNLINKED"));
+	// 			break;
+	// 		default:
+	// 			parms.push_back(std::string("FAILED"));
+	// 			break;
+	// 	}
+	// } else {
+	// 	parms.push_back(std::string("________"));
+	// 	parms.push_back(std::string("UNLINKED"));
+	// }
+	// parms.push_back(std::to_string(m_userTimeout));
+	// std::string info(m_infoText);
+	// info.resize(20, '_');
+	// ReplaceChar(info, ' ', '_');
+	// parms.push_back(info);
+	// parms.push_back(std::string(m_listenOnly ? "1" : "0"));
 
-	for (int i=0; i<2; i++) {
-		if (m_irc[i])
-			m_irc[i]->sendSGSInfo(subcommand, parms);
-}	}
+	// for (int i=0; i<2; i++) {
+	// 	if (m_irc[i])
+	// 		m_irc[i]->sendSGSInfo(subcommand, parms);
+	// }
+}
 
-
+// QuadNet no longer supports any irc SGS messages
 void CGroupHandler::logUser(LOGUSER lu, const std::string channel, const std::string user)
 {
-	std::string cmd(LU_OFF==lu ? "LOGOFF" : "LOGON");
-	std::string chn(channel);
-	std::string usr(user);
-	ReplaceChar(chn, ' ', '_');
-	ReplaceChar(usr, ' ', '_');
-	std::vector<std::string> parms;
-	parms.push_back(chn);
-	parms.push_back(usr);
-	for (int i=0; i<2; i++) {
-		if (m_irc[i])
-			m_irc[i]->sendSGSInfo(cmd, parms);
-	}
+	// std::string cmd(LU_OFF==lu ? "LOGOFF" : "LOGON");
+	// std::string chn(channel);
+	// std::string usr(user);
+	// ReplaceChar(chn, ' ', '_');
+	// ReplaceChar(usr, ' ', '_');
+	// std::vector<std::string> parms;
+	// parms.push_back(chn);
+	// parms.push_back(usr);
+	// for (int i=0; i<2; i++) {
+	// 	if (m_irc[i])
+	// 		m_irc[i]->sendSGSInfo(cmd, parms);
+	// }
 }
 
 void CGroupHandler::sendToRepeaters(CHeaderData& header) const

@@ -222,22 +222,6 @@ bool IRCDDBApp::findServerUser()
 
 static const int numberOfTables = 2;
 
-void IRCDDBApp::sendSGSInfo(const std::string &subcommand, const std::vector<std::string> &pars)
-{
-	IRCMessageQueue *q = getSendQ();
-	std::string srv(currentServer);
-	if (srv.size() && state>=6 && q) {
-		std::string command("SGS ");
-		command.append(subcommand);
-		for (auto it=pars.begin(); it!=pars.end(); it++) {
-			command.push_back(' ');
-			command.append(*it);
-		}
-		IRCMessage *m = new IRCMessage(srv, command);
-		q->putMessage(m);
-	}
-}
-
 bool IRCDDBApp::sendHeard(const std::string &myCall, const std::string &myCallExt, const std::string &yourCall, const std::string &rpt1, const std::string &rpt2, unsigned char flag1, unsigned char flag2, unsigned char flag3, const std::string &destination, const std::string &tx_msg, const std::string &tx_stats)
 {
 	std::string my(myCall);

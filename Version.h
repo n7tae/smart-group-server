@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2010-2015 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017-2020 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017-2022 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,4 +22,4 @@
 #include <string>
 
 const std::string VENDOR_NAME("Thomas A. Early, N7TAE");
-const std::string VERSION("200531");
+const std::string VERSION("210202");

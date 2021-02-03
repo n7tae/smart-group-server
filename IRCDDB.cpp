@@ -3,7 +3,7 @@ CIRCDDB - ircDDB client library in C++
 
 Copyright (C) 2010-2011   Michael Dirska, DL1BFF (dl1bff@mdx.de)
 Copyright (C) 2011,2012   Jonathan Naylor, G4KLX
-Copyright (c) 2017,2019,2020 by Thomas A. Early
+Copyright (c) 2017,2019-2021 by Thomas A. Early
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -110,11 +110,6 @@ bool CIRCDDB::sendHeard( const std::string& myCall, const std::string& myCallExt
 	}
 
 	return app->sendHeard(myCall, myCallExt, yourCall, rpt1, rpt2, flag1, flag2, flag3, std::string("        "), std::string(""), std::string(""));
-}
-
-void CIRCDDB::sendSGSInfo(const std::string subcommand, const std::vector<std::string> parms)
-{
-	app->sendSGSInfo(subcommand, parms);
 }
 
 // Send heard data, a false return implies a network error
