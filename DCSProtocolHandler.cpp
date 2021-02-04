@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2012,2013 by Jonathan Naylor G4KLX
- *   Copyright (c) 2017 by Thomas A. Early N7TAE
+ *   Copyright (c) 2017,2021 by Thomas A. Early N7TAE
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -108,8 +108,10 @@ bool CDCSProtocolHandler::readPackets()
 	// No more data?
 	CSockAddress addr;
 	int length = m_socket.Read(m_buffer, BUFFER_LENGTH, addr);
-    m_yourAddress = addr.GetAddress();
-    m_yourPort = addr.GetPort();
+	if (length <= 0)
+		return false;
+	m_yourAddress = addr.GetAddress();
+	m_yourPort = addr.GetPort();
 	if (length <= 0)
 		return false;
 
