@@ -56,14 +56,14 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		switch (cfg.lookup("ircddb").getLength()) {
 			case 0:
 				pirc = new Sircddb;
-				pirc->Hostname = "rr.openquad.net";
+				pirc->Hostname = "ircv4.openquad.net";
 				pirc->Username = m_callsign;
                 pirc->Password.empty();
 				m_ircddb.push_back(pirc);
 				break;
 			case 1:
 				pirc = new Sircddb;
-				get_value(cfg, "ircddb.[0].hostname", pirc->Hostname, 5, 64, "rr.openquad.net");
+				get_value(cfg, "ircddb.[0].hostname", pirc->Hostname, 5, 64, "ircv4.openquad.net");
 				get_value(cfg, "ircddb.[0].username", pirc->Username, 0, 8, "");
 				if (0 == pirc->Username.size())
 					pirc->Username = m_callsign;
@@ -77,7 +77,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 					char key[32];
 					pirc = new Sircddb;
 					snprintf(key, 32, "ircddb.[%d].hostname", i);
-					get_value(cfg, key, pirc->Hostname, 5, 64, "rr.openquad.net");
+					get_value(cfg, key, pirc->Hostname, 5, 64, "ircv4.openquad.net");
 					snprintf(key, 32, "ircddb.[%d].username", i);
 					get_value(cfg, key, pirc->Username, 0, 8, "");
 					if (0 == pirc->Username.size())
@@ -92,7 +92,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		}
 	} else {
 		pirc = new Sircddb;
-		pirc->Hostname = "rr.openquad.net";
+		pirc->Hostname = "ircv4.openquad.net";
 		pirc->Username = m_callsign;
 		m_ircddb.push_back(pirc);
 	}

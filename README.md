@@ -1,5 +1,7 @@
-smart-group-server
+# smart-group-server
+
 ==================
+
 ## Introduction
 
 This smart-group-server is based on an original idea by John Hays K7VE for a routing group server he called **STARnet Digital**. This idea was first coded by Jonathan G4KLX and he called the resulting program **StarNetServer**. The smart-group-server is derrived from Jonathan's code and still contains his original copyrights and GPLV#2 license. This new implementation of a group routing server has many improvements and new features compared to its predecessor. The main features for the end-user is that Smart Groups allow a user to "listen first" before transmitting and also be able to see the status of the Smart Groups and users. The smart-group-server can now also handle connections from mobile clients (hotspots that get their internet connection from a cellphone). The most useful feature for provider is that a single smart-group-server can serve both DCS- **and** DExtra-linked groups and only the required UDP ports are created. In addtion, by using the remote control application, Smart Groups can be unlinked and linked dynamically, freeing and reallocating resources as required.  It was designed expressly for QuadNet. The smart-group-server interact with QuadNet using new IRC messages to provide additional information that will typically be display on the ROUTING GROUPS web page at openquad.net. The smart-group-server may not function proplerly on other IRCDDB networks.
@@ -7,6 +9,8 @@ This smart-group-server is based on an original idea by John Hays K7VE for a rou
 ### What's New
 
 Please note that not all minor bug fixes are listed.
+
+* **V# 210221** QuadNet has moved the IRC servers to ircv4.openquad.net for IPv4 and ircv6.openquad.net for IPv6. If you have `ircddb` entries in you configure file, **change them**. The default has been updated in this version.
 
 * **V# 210202** QuadNet no longer supports the SGS message for communication group status to the www.openquad.net Routing Group webpage. If you want to do this yourself, on your own website, you will have to write new CGroupHandler::updateReflectorInfo and CGroupHandler::logUser subroutines to send status info to your website. Alternatively you can also design a small application based on the code in the sgs-remote program to extract status information for a Smart Group and use that for your website.
 
@@ -31,7 +35,7 @@ Please note that not all minor bug fixes are listed.
 
 * **V# 180609** A general clean up of the *find* functions in the IRCDDB cache objects. Now they do a find instead of automatically creating an empty map entry.
 
-* **V# 180530** Smart Group Routing has been further improved for mobile users. Modern cell-phone networks are constantly remapping the G2 Routing port from your gateway. Since V# 180322, the smart-group-server will follow each user's port, whatever it may be. However, the phone carrier will relatively quickly close that port if there is inactivity. The user would still be subscribed to a Smart Group, but the cell-phone port would be closed and the user wouldn't hear any new traffic. Before this release, a mobile user would have to key up to re-establish a connection to the smart-group-server. With this release, the smart-group-server will ping each user every 10 seconds in order to keep the user's port open. The ping itself is only four bytes long, but with internet overhead, it becomes 46 bytes in length. Thus, if a client were to remain tethered to a smart-phone 24 hours/day for a 31-day month the ping would add 46 * 6 * 60 * 24 * 31 = 12,320,640 bytes to the cell-phone data usage. Obviously typical use-case scenarios will result in a much smaller data usage overhead.
+* **V# 180530** Smart Group Routing has been further improved for mobile users. Modern cell-phone networks are constantly remapping the G2 Routing port from your gateway. Since V# 180322, the smart-group-server will follow each user's port, whatever it may be. However, the phone carrier will relatively quickly close that port if there is inactivity. The user would still be subscribed to a Smart Group, but the cell-phone port would be closed and the user wouldn't hear any new traffic. Before this release, a mobile user would have to key up to re-establish a connection to the smart-group-server. With this release, the smart-group-server will ping each user every 10 seconds in order to keep the user's port open. The ping itself is only four bytes long, but with internet overhead, it becomes 46 bytes in length. Thus, if a client were to remain tethered to a smart-phone 24 hours/day for a 31-day month the ping would add `46 * 6 * 60 * 24 * 31 = 12,320,640` bytes to the cell-phone data usage. Obviously typical use-case scenarios will result in a much smaller data usage overhead.
 
 * **V# 180512** Using your radio's text message to LOGOFF and get INFO is now no longer supported. This method of unsubscribing is messy because it transmits into the group. The INFO technique is unneeded with the Routing Groups web-page.
 
@@ -58,9 +62,11 @@ Please note that not all minor bug fixes are listed.
 ## Server OS Requirements
 
 The smart-group-server requires a modern OS to compile and run. At least Debian 8 or Ubuntu 16.10, or equivilent. The command
-```
+
+```bash
 g++ --version
 ```
+
 must return at least Version 4.9. The latest Debian and Ubuntu will be far above this. Unlike the StarNetServer, smart-group-server does not use wxWidgits. Modern C++ calls to the standard library (c++11 standard) are used instead of wxWidgets: std::string replaces wxString, std::future replaces wxThreads and standard std::map, std::list, std::queue and std::vector replace the older wx containers. The only external library used is libconfig++. The smart-group-server is significantly improved regarding resource utiliztion compared to the ancestral StarNetServer. The smart-group-server only creates resources for the channel you define in your configuration file. Also, there is no theoretical limit to the number of channels you can create. Of course there is a practical limit based on the underlying hardware.
 
 The smart-group-server is installed as a systemd service. If you want to run this on a system without systemd, you are on your own. I am done dealing with init.d scripts in SysVInit!
@@ -76,13 +82,17 @@ Also the Smart Group Server needs to have a **unique callsign in QuadNet**, one 
 ## Building
 
 These instructions are for a Debian-based OS. Begin by downloading this git repository:
-```
+
+```bash
 git clone git://github.com/n7tae/smart-group-server.git
 ```
+
 Install the needed needed development library and packages:
-```
+
+```bash
 sudo apt install libconfig++-dev openssl libssl-dev
 ```
+
 Change to the smart-group-server directory and type `make`. This should make the executable, `sgs` without errors or warnings. By default, you will have a group server that can link groups to X-Reflectors or DCS-Reflectors. Of course you can declare an unlinked channel by simply not defining a *reflector* parameter for that channel.
 
 ## Configuring
@@ -91,24 +101,28 @@ Before you install the group server, you need to create a configuration file cal
 
 Your callsign parameter in the ircddb section of your configuration file is the callsign that will be used for logging into QuadNet. THIS NEEDS TO BE A UNIQUE CALLSIGN on QuadNet. Don't use your callsign if you are already using it for a repeater or a hot-spot. Ideally, you should use a Club callsign. Check with your club to see if you can use your club's callsign. Of course, don't do this if your club hosts a D-Star repeater with this callsign. If your club callsign is not available, either apply to be a trustee for a new callsign from you club, or get together with three of your friends and start a club. All the information you need is at arrl.org or w5yi.org. It's not difficult to do, and once you file your application, you'll get your new Club Callsign very quickly.
 
-By default, not specifing an **ircddb** section in your configuration file, the sgs server will only connect to rr.openquad.net for an IPv4 connection. If the machine on which your *smart-group-server* is installed has IPv6 connectivity and you want your server to have IPv4/IPv6 dual-stack capability, you need to include an **ircddb** section in your configuration file specifying both the IPv4 and the IPv6 server:
-```
+By default, not specifing an **ircddb** section in your configuration file, the sgs server will only connect to rrv4.openquad.net for an IPv4 connection. If the machine on which your *smart-group-server* is installed has IPv6 connectivity and you want your server to have IPv4/IPv6 dual-stack capability, you need to include an **ircddb** section in your configuration file specifying both the IPv4 and the IPv6 server:
+
+```text
 ircddb = (
     {
-        hostname = "rrv6.openquad.net"
+        hostname = "ircv6.openquad.net"
     }, {
-        hostname = "rr.openquad.net"
+        hostname = "ircv4.openquad.net"
     }
 )
 ```
+
 If you want your *smart-group-server* to have only IPv6 connectivity, simply don't define the second ircddb section. Please note that for dual-stack operation, the definition for the IPv6 server must appear before the definition for IPv4 server.
 
 ## Installing and Uninstalling
 
 To install and start the smart-group-server, first type `make newhostfiles`. This will download the latest DCS and DExtra host files and install them. (This command downloads the files to the build directory and then moves them to /usr/local/etc with `sudo`, so it may prompt you for your password.) Then type `sudo make install`. This will put all the executable and the sgs.cfg configuration file the in /usr/local and then start the server. See the Makefile for more information. A very useful way to start it is:
-```
+
+```bash
 sudo make install && sudo journalctl -u sgs.service -f
 ```
+
 This will allow you to view the smart-group-server log file while it's booting up. When you are satisfied it's running okay you can Control-C to end the journalctl session. To uninstall it, type `sudo make uninstall` and `sudo make removehostfiles`. This will stop the server and remove all files from /usr/local. You can then delete the build directory to remove every trace of the smart-group-server.
 
 73
