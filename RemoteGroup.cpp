@@ -29,8 +29,6 @@ m_linkStatus(linkStatus),
 m_userTimeout(userTimeout),
 m_users()
 {
-	if (logoff.compare("        "))
-		logoff.empty();
 }
 
 CRemoteGroup::~CRemoteGroup()
