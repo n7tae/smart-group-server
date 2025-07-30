@@ -12,7 +12,7 @@ SGSUSER=$(shell id -u sgs >/dev/null 2>&1 && echo 1 || echo 0 )
 # choose this if you want debugging help
 #CPPFLAGS=-ggdb -W -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 # or, you can choose this for a much smaller executable without debugging help
-CPPFLAGS=-W -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
+CPPFLAGS=-Wall -Wextra -Werror -std=c++11 -DCFG_DIR=\"$(CFGDIR)\"
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)

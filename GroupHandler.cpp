@@ -309,15 +309,15 @@ CGroupHandler::~CGroupHandler()
 {
 	for (auto it = m_ids.begin(); it != m_ids.end(); it++)
 		delete it->second;
-	m_ids.empty();
+	m_ids.clear();
 
 	for (auto it = m_users.begin(); it != m_users.end(); ++it)
 		delete it->second;
-	m_users.empty();
+	m_users.clear();
 
 	for (auto it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
 		delete it->second;
-	m_repeaters.empty();
+	m_repeaters.clear();
 }
 
 void CGroupHandler::process(CHeaderData &header)
@@ -910,7 +910,7 @@ void CGroupHandler::updateReflectorInfo()
 }
 
 // QuadNet no longer supports any irc SGS messages
-void CGroupHandler::logUser(LOGUSER lu, const std::string channel, const std::string user)
+void CGroupHandler::logUser(LOGUSER /*lu*/, const std::string /*channel*/, const std::string /*user*/)
 {
 	// std::string cmd(LU_OFF==lu ? "LOGOFF" : "LOGON");
 	// std::string chn(channel);

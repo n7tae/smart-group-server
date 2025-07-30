@@ -21,6 +21,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "Defs.h"
 #include "RemoteUser.h"

@@ -58,7 +58,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 				pirc = new Sircddb;
 				pirc->Hostname = "ircv4.openquad.net";
 				pirc->Username = m_callsign;
-                pirc->Password.empty();
+                pirc->Password.clear();
 				m_ircddb.push_back(pirc);
 				break;
 			case 1:
@@ -119,7 +119,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 				ToUpper(basename);
 			else {
 				printf("Malformed basename for module %d: '%s'\n", i, basename.c_str());
-				basename.empty();
+				basename.clear();
 			}
 		}
 
@@ -128,11 +128,11 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		ToUpper(band);
 		if (! isalpha(band[0])) {
 			printf("Module %d band is not a letter\n", i);
-			basename.empty();
+			basename.clear();
 		}
 		if (band[0] == 'G') {
 			printf("Module %d: Band G is reserved for the Gateway\n", i);
-			basename.empty();
+			basename.clear();
 		}
 
 		sprintf(key, "module.[%d].subscribe", i);
@@ -140,27 +140,27 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		ToUpper(subscribe);
 		if (subscribe[0] != ' ' && ('A' > subscribe[0] || subscribe[0] > 'Z')) {
 			printf("subscribe suffix not space or letter\n");
-			basename.empty();
+			basename.clear();
 		}
 		if ('L' == subscribe[0]) {
 			printf("subscribe cannot be 'L'\n");
-			basename.empty();
+			basename.clear();
 		}
 		sprintf(key, "module.[%d].unsubscribe", i);
 		get_value(cfg, key, unsubscribe, 1, 1, "T");
 		ToUpper(unsubscribe);
 		if ('A' > unsubscribe[0] || unsubscribe[0] > 'Z') {
 			printf("unsubscribe suffix not a letter\n");
-			basename.empty();
+			basename.clear();
 		}
 		if ('L' == unsubscribe[0]) {
 			printf("unsubscribe cannot be 'L'\n");
-			basename.empty();
+			basename.clear();
 		}
 		if (! subscribe.compare(unsubscribe)) {
 			// subscribe and unsubscribe suffix needs to be different
 			printf("subscribe and unsubscribe for %s are identical\n", basename.c_str());
-			basename.empty();
+			basename.clear();
 		}
 		// skip to the next module definition
 		if (0 == basename.size())
@@ -192,12 +192,11 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		sprintf(key, "module.[%d].reflector", i);
 		if (! get_value(cfg, key, basename, 8, 8, "")) {
 			printf("reflector %d must be undefined or exactly 8 chars!\n", i);
-			basename.empty();
+			basename.clear();
 		}
-		pmod->reflector.empty();
 		if (basename.size()) {
 			ToUpper(basename);
-			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS")) && isdigit(basename[3]) && isdigit(basename[4]) && isdigit(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
+			if ( (0==basename.compare(0,3,"XRF") || 0==basename.compare(0,3,"DCS")) && isalnum(basename[3]) && isalnum(basename[4]) && isalnum(basename[5]) && ' '==basename[6] && isalpha(basename[7]) )
 				pmod->reflector = basename;
 		}
 		printf("Module %d: callsign='%s' unsubscribe='%s' info='%s' usertimeout=%d reflector='%s'", i, pmod->callsign.c_str(), pmod->logoff.c_str(), pmod->info.c_str(), pmod->usertimeout, pmod->reflector.c_str());
@@ -227,7 +226,7 @@ CSGSConfig::CSGSConfig(const std::string &pathname)
 		printf("Remote enabled: password='%s', port=%d, family=IPV%d\n", m_remotePassword.c_str(), m_remotePort, m_ipv6 ? 6 : 4);
 	} else {
 		m_remotePort = 0U;
-		m_remotePassword.empty();
+		m_remotePassword.clear();
 		m_ipv6 = false;
 		printf("Remote disabled\n");
 	}
